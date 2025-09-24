@@ -33,8 +33,11 @@ Popup liên hệ: Tạo cửa sổ (popup) để người nhận liên hệ vớ
 **6. Mục "Góc chia sẻ":**
 
 Xây dựng từ đầu: Lên kế hoạch phát triển khu vực này để người dùng có thể chia sẻ kinh nghiệm, hỏi đáp về sản phẩm và chăm sóc con cái.
-**B. CHƯA CÓ GIAO DIỆN SỬ DỤNG CỦA NHÃN HÀNG (SẼ BỔ SUNG CHỨC NĂNG CẦN CÓ SAU)
+**
+B. CHƯA CÓ GIAO DIỆN SỬ DỤNG CỦA NHÃN HÀNG (SẼ BỔ SUNG CHỨC NĂNG CẦN CÓ SAU)
+
 C. CHƯA CÓ GIAO DIỆN SỬ DỤNG CỦA NGƯỜI QUẢN LÝ (SẼ BỔ SUNG CHỨC NĂNG CẦN CÓ SAU)
+
 D. CÁC CHỨC NĂNG CHUNG**
 
 Trò chuyện (Chat): Thiết kế giao diện cho tính năng chat, bao gồm chat chung trong cộng đồng và chat riêng giữa hai người dùng.

@@ -1,0 +1,67 @@
+@model B_M.Models.ChatViewModel
+@{
+    ViewBag.Title = "Tin nhắn";
+}
+
+<div class="chat-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="chat-header">
+                    <h2><i class="fa-solid fa-comments"></i> Tin nhắn</h2>
+                    <p class="text-muted">Danh sách cuộc hội thoại của bạn</p>
+                </div>
+
+                @if (Model.Conversations != null && Model.Conversations.Any())
+                {
+                    <div class="conversations-list">
+                        @foreach (var conversation in Model.Conversations)
+                        {
+                            <div class="conversation-item" data-aos="fade-up">
+                                <a href="@Url.Action("Conversation", "Chat", new { userId = conversation.OtherUserID })" class="conversation-link">
+                                    <div class="conversation-avatar">
+                                        <img src="@conversation.OtherUserAvatar" alt="@conversation.OtherUserName" class="avatar">
+                                        @if (conversation.IsOnline)
+                                        {
+                                            <span class="online-indicator"></span>
+                                        }
+                                    </div>
+                                    <div class="conversation-content">
+                                        <div class="conversation-header">
+                                            <h4 class="conversation-name">@conversation.OtherUserName</h4>
+                                            <span class="conversation-time">@conversation.LastMessageTime.ToString("HH:mm")</span>
+                                        </div>
+                                        <div class="conversation-preview">
+                                            <p class="last-message">@conversation.LastMessage</p>
+                                            @if (conversation.UnreadCount > 0)
+                                            {
+                                                <span class="unread-badge">@conversation.UnreadCount</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fa-solid fa-comments"></i>
+                        </div>
+                        <h3>Chưa có cuộc hội thoại nào</h3>
+                        <p>Bạn chưa có tin nhắn nào với ai.</p>
+                        <a href="@Url.Action("Index", "MilkDonation")" class="btn btn-primary">
+                            <i class="fa-solid fa-hand-holding-heart"></i> Xem tin sữa mẹ
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}

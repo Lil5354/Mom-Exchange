@@ -20,11 +20,11 @@ namespace B_M.Models
         public string FullNameSearch { get; set; }
         public string PhoneSearch { get; set; }
         public string AddressSearch { get; set; }
-        public string StatusFilter { get; set; } // "active", "inactive", "all"
+        public string StatusFilter { get; set; }
         public DateTime? CreatedFrom { get; set; }
         public DateTime? CreatedTo { get; set; }
-        public string SortBy { get; set; } // "name", "email", "created", "role"
-        public string SortOrder { get; set; } // "asc", "desc"
+        public string SortBy { get; set; }
+        public string SortOrder { get; set; }
         
         // Search options
         public bool ShowAdvancedSearch { get; set; }

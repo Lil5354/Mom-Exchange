@@ -1,21 +1,24 @@
 ﻿// File: Controllers/AccountController.cs
 using B_M.Models;
 using B_M.Helpers;
+using B_M.Repositories;
 using System;
+using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using Microsoft.Owin.Security;
+using System.Threading.Tasks;
 
 namespace B_M.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserRepository userRepository;
+        private readonly B_M.Repositories.UserRepository userRepository;
 
         public AccountController()
         {
-            userRepository = new UserRepository();
+            userRepository = new B_M.Repositories.UserRepository();
         }
 
         protected override void Dispose(bool disposing)
@@ -47,8 +50,8 @@ namespace B_M.Controllers
             {
                 System.Diagnostics.Debug.WriteLine($"ERROR getting OWIN context: {ex.Message}");
             }
-            
-            return View();
+
+            return View(new LoginViewModel());
         }
 
         // POST: /Account/Login
@@ -89,9 +92,18 @@ namespace B_M.Controllers
 
                 // Đăng nhập thành công
                 // Tạo OWIN authentication cookie
+                // Use the same input (email or username) that user used to login
+                var identityName = model.EmailOrUsername;
+                
+                System.Diagnostics.Debug.WriteLine($"=== LOGIN SUCCESS DEBUG ===");
+                System.Diagnostics.Debug.WriteLine($"User Email: {user.Email}");
+                System.Diagnostics.Debug.WriteLine($"User UserName: {user.UserName}");
+                System.Diagnostics.Debug.WriteLine($"Identity Name: {identityName}");
+                System.Diagnostics.Debug.WriteLine($"============================");
+                
                 var identity = new System.Security.Claims.ClaimsIdentity(new[] 
                 {
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, user.Email),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, identityName),
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.UserID.ToString()),
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, user.Role.ToString()),
                     new System.Security.Claims.Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "ASP.NET Identity"),
@@ -110,7 +122,13 @@ namespace B_M.Controllers
                 Session["FullName"] = user.UserDetails?.FullName ?? "User";
                 Session["Role"] = user.Role;
                 Session["IsActive"] = user.IsActive;
+                Session["AvatarURL"] = !string.IsNullOrEmpty(user.UserDetails?.ProfilePictureURL) 
+                    ? user.UserDetails.ProfilePictureURL 
+                    : "/images/avatar-default.jpg";
 
+                // Add success message for login
+                TempData["SuccessMessage"] = $"Chào mừng trở lại, {user.UserDetails?.FullName ?? "User"}!";
+                
                 // Chuyển hướng
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
@@ -123,8 +141,11 @@ namespace B_M.Controllers
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"LOGIN ERROR: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+                
                 ModelState.AddModelError("", "Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại.");
-                // Log error here if needed
+                TempData["ErrorMessage"] = "Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại.";
                 return View(model);
             }
         }
@@ -135,31 +156,56 @@ namespace B_M.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Register(RegisterViewModel model)
         {
+            System.Diagnostics.Debug.WriteLine("=== REGISTER POST START ===");
+            System.Diagnostics.Debug.WriteLine($"ModelState.IsValid: {ModelState.IsValid}");
+            
+            if (!ModelState.IsValid)
+            {
+                foreach (var key in ModelState.Keys)
+                {
+                    var errors = ModelState[key].Errors;
+                    if (errors.Count > 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"ModelState Error - {key}: {string.Join(", ", errors.Select(e => e.ErrorMessage))}");
+                    }
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Kiểm tra username đã tồn tại chưa (chỉ khi có nhập username)
-                    if (!string.IsNullOrEmpty(model.UserName) && userRepository.UsernameExists(model.UserName))
+                    System.Diagnostics.Debug.WriteLine("=== REGISTER POST DEBUG ===");
+                    System.Diagnostics.Debug.WriteLine($"Username: {model.UserName}");
+                    System.Diagnostics.Debug.WriteLine($"FullName: {model.FullName}");
+                    System.Diagnostics.Debug.WriteLine($"Email: {model.Email}");
+                    System.Diagnostics.Debug.WriteLine($"PhoneNumber: {model.PhoneNumber}");
+
+                    // Kiểm tra username đã tồn tại chưa (username bắt buộc)
+                    if (userRepository.UsernameExists(model.UserName))
                     {
+                        System.Diagnostics.Debug.WriteLine($"ERROR: Username {model.UserName} already exists");
                         ModelState.AddModelError("UserName", "Tên đăng nhập này đã được sử dụng.");
                         ViewBag.ShowRegister = true;
                         return View("Login", model);
                     }
 
-                    // Kiểm tra email đã tồn tại chưa
-                    if (userRepository.EmailExists(model.Email))
-                    {
-                        ModelState.AddModelError("Email", "Email này đã được đăng ký.");
-                        ViewBag.ShowRegister = true;
-                        return View("Login", model);
-                    }
+                    // Email không bắt buộc - skip validation nếu không có
+                    // if (!string.IsNullOrEmpty(model.Email) && userRepository.EmailExists(model.Email))
+                    // {
+                    //     ModelState.AddModelError("Email", "Email này đã được đăng ký.");
+                    //     ViewBag.ShowRegister = true;
+                    //     return View("Login", model);
+                    // }
+
+                    var generatedEmail = string.IsNullOrEmpty(model.Email) ? $"{model.UserName}@local.temp" : model.Email;
+                    System.Diagnostics.Debug.WriteLine($"Generated Email: {generatedEmail}");
 
                     // Tạo user mới
                     User newUser = new User
                     {
                         UserName = model.UserName,
-                        Email = model.Email,
+                        Email = generatedEmail,
                         PhoneNumber = model.PhoneNumber,
                         PasswordHash = PasswordHelper.HashPassword(model.Password),
                         Role = 2, // Default role: Mom
@@ -174,17 +220,23 @@ namespace B_M.Controllers
                         ReputationScore = 0
                     };
 
+                    System.Diagnostics.Debug.WriteLine("Attempting to create user...");
+
                     // Lưu vào database
                     bool result = userRepository.CreateUser(newUser, newUserDetails);
+
+                    System.Diagnostics.Debug.WriteLine($"CreateUser result: {result}");
 
                     if (result)
                     {
                         // Đăng ký thành công
+                        System.Diagnostics.Debug.WriteLine("=== REGISTER SUCCESS ===");
                         TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
                         return RedirectToAction("Login");
                     }
                     else
                     {
+                        System.Diagnostics.Debug.WriteLine("ERROR: CreateUser returned false");
                         ModelState.AddModelError("", "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại.");
                         ViewBag.ShowRegister = true;
                         return View("Login", model);
@@ -192,8 +244,14 @@ namespace B_M.Controllers
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại.");
-                    // Log error here if needed
+                    System.Diagnostics.Debug.WriteLine($"EXCEPTION in Register: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+                    if (ex.InnerException != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                    }
+                    
+                    ModelState.AddModelError("", $"Đã xảy ra lỗi trong quá trình đăng ký: {ex.Message}");
                     ViewBag.ShowRegister = true;
                     return View("Login", model);
                 }
@@ -226,7 +284,8 @@ namespace B_M.Controllers
             System.Diagnostics.Debug.WriteLine($"Provider: {provider}");
             System.Diagnostics.Debug.WriteLine($"Return URL: {returnUrl}");
             
-            // Request a redirect to the external login provider
+            // Request a redirect to the external login provider  
+            // Use ExternalLoginCallback for better OAuth compatibility
             var redirectUri = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }, Request.Url.Scheme);
             System.Diagnostics.Debug.WriteLine($"Redirect URI: {redirectUri}");
             System.Diagnostics.Debug.WriteLine($"======================");
@@ -234,20 +293,32 @@ namespace B_M.Controllers
             return new ChallengeResult(provider, redirectUri);
         }
 
+        // GET: /Account/LinkGoogleCallback - Alias for ExternalLoginCallback
+        [AllowAnonymous]
+        public async Task<ActionResult> LinkGoogleCallback(string returnUrl)
+        {
+            System.Diagnostics.Debug.WriteLine($"=== LinkGoogleCallback Called ===");
+            System.Diagnostics.Debug.WriteLine($"Return URL: {returnUrl}");
+            return await ExternalLoginCallback(returnUrl);
+        }
+
         // GET: /Account/ExternalLoginCallback
         [AllowAnonymous]
-        public ActionResult ExternalLoginCallback(string returnUrl)
+        public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine($"=== GOOGLE CALLBACK ===");
                 System.Diagnostics.Debug.WriteLine($"Return URL: {returnUrl}");
+                System.Diagnostics.Debug.WriteLine($"Request URL: {Request.Url}");
+                System.Diagnostics.Debug.WriteLine($"Query String: {Request.QueryString}");
 
-                var loginInfo = System.Web.HttpContext.Current.GetOwinContext().Authentication.GetExternalLoginInfoAsync().Result;
+                var loginInfo = await System.Web.HttpContext.Current.GetOwinContext().Authentication.GetExternalLoginInfoAsync();
                 if (loginInfo == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("ERROR: loginInfo is null");
-                    TempData["ErrorMessage"] = "Không thể lấy thông tin từ Google. Vui lòng thử lại.";
+                    System.Diagnostics.Debug.WriteLine("ERROR: loginInfo is null - OAuth config issue");
+                    System.Diagnostics.Debug.WriteLine($"Request URL: {Request.Url}");
+                    TempData["ErrorMessage"] = "Lỗi xác thực Google. Vui lòng kiểm tra cấu hình hoặc thử lại.";
                     return RedirectToAction("Login");
                 }
 
@@ -268,6 +339,29 @@ namespace B_M.Controllers
                 // Kiểm tra user đã tồn tại chưa
                 var existingUser = userRepository.GetUserByEmail(email);
                 
+                // CRITICAL: Prevent Google login if email exists but not properly linked
+                if (existingUser != null)
+                {
+                    // Case 1: User exists but GoogleId is null (unlinked or username/password account)
+                    if (string.IsNullOrEmpty(existingUser.GoogleId))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"BLOCKED: Email {email} exists but not linked to Google (GoogleId is null)");
+                        TempData["ErrorMessage"] = "Email này thuộc về một tài khoản khác không liên kết với Google. Vui lòng sử dụng tên đăng nhập và mật khẩu để đăng nhập.";
+                        return RedirectToAction("Login");
+                    }
+                    
+                    // Case 2: Verify GoogleId matches (additional security)
+                    var googleId = loginInfo.ExternalIdentity?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(googleId) && existingUser.GoogleId != googleId)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"BLOCKED: Email {email} linked to different GoogleId");
+                        System.Diagnostics.Debug.WriteLine($"Expected GoogleId: {existingUser.GoogleId}");
+                        System.Diagnostics.Debug.WriteLine($"Provided GoogleId: {googleId}");
+                        TempData["ErrorMessage"] = "Có vấn đề với xác thực Google. Vui lòng liên hệ hỗ trợ.";
+                        return RedirectToAction("Login");
+                    }
+                }
+                
                 if (existingUser != null)
                 {
                     // User đã tồn tại - đăng nhập
@@ -287,6 +381,9 @@ namespace B_M.Controllers
                     Session["FullName"] = existingUser.UserDetails?.FullName ?? name;
                     Session["Role"] = existingUser.Role;
                     Session["IsActive"] = existingUser.IsActive;
+                    Session["AvatarURL"] = !string.IsNullOrEmpty(existingUser.UserDetails?.ProfilePictureURL) 
+                        ? existingUser.UserDetails.ProfilePictureURL 
+                        : "/images/avatar-default.jpg";
 
                     System.Diagnostics.Debug.WriteLine($"LOGIN SUCCESS: {existingUser.Email}");
                     TempData["SuccessMessage"] = $"Chào mừng trở lại, {existingUser.UserDetails?.FullName ?? name}!";
@@ -298,9 +395,13 @@ namespace B_M.Controllers
                     // Tạo user mới từ Google account
                     System.Diagnostics.Debug.WriteLine($"CREATING NEW USER: {email}");
                     
+                    // Get Google OAuth subject ID
+                    var googleId = loginInfo.ExternalIdentity?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    
                     var newUser = new User
                     {
                         Email = email,
+                        GoogleId = googleId, // Store Google OAuth ID
                         PasswordHash = PasswordHelper.HashPassword(Guid.NewGuid().ToString()), // Random password
                         Role = 2, // Mom role
                         IsActive = true,
@@ -320,29 +421,21 @@ namespace B_M.Controllers
 
                     if (result)
                     {
-                        // Đăng nhập sau khi tạo account
+                        // Tạo account thành công - chuyển đến CompleteProfile
                         var createdUser = userRepository.GetUserByEmail(email);
                         if (createdUser != null)
                         {
-                            // Sử dụng OWIN Authentication như Login action
-                            var identity = new System.Security.Claims.ClaimsIdentity("ApplicationCookie");
-                            identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, createdUser.Email));
-                            identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, createdUser.UserID.ToString()));
-                            identity.AddClaim(new System.Security.Claims.Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "ASP.NET Identity"));
-                            
-                            var authManager = HttpContext.GetOwinContext().Authentication;
-                            authManager.SignIn(identity);
-                            
-                            Session["UserID"] = createdUser.UserID;
-                            Session["UserEmail"] = createdUser.Email;
-                            Session["FullName"] = createdUser.UserDetails?.FullName ?? name;
-                            Session["Role"] = createdUser.Role;
-                            Session["IsActive"] = createdUser.IsActive;
+                            // Set temp session variables for CompleteProfile
+                            Session["TempUserID"] = createdUser.UserID;
+                            Session["TempEmail"] = createdUser.Email;
+                            Session["TempFullName"] = createdUser.UserDetails?.FullName ?? name;
+                            Session["TempRole"] = createdUser.Role;
 
-                            System.Diagnostics.Debug.WriteLine($"REGISTRATION SUCCESS: {createdUser.Email}");
-                            TempData["SuccessMessage"] = $"Chào mừng, {createdUser.UserDetails?.FullName ?? name}! Tài khoản đã được tạo thành công.";
+                            System.Diagnostics.Debug.WriteLine($"NEW USER CREATED: {createdUser.Email} - Redirecting to CompleteProfile");
+                            TempData["InfoMessage"] = $"Chào mừng, {createdUser.UserDetails?.FullName ?? name}! Hãy hoàn thiện thông tin để sử dụng đầy đủ tính năng.";
                             
-                            return RedirectToLocal(returnUrl);
+                            // Redirect to CompleteProfile instead of home
+                            return RedirectToAction("CompleteProfile");
                         }
                         else
                         {
@@ -361,10 +454,17 @@ namespace B_M.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"EXCEPTION in ExternalLoginCallback: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"=== CRITICAL ERROR in ExternalLoginCallback ===");
+                System.Diagnostics.Debug.WriteLine($"Exception Type: {ex.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"Message: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
                 
-                TempData["ErrorMessage"] = "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.";
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+                
+                TempData["ErrorMessage"] = $"Lỗi Google OAuth: {ex.Message}. Vui lòng thử lại hoặc đăng nhập bằng tài khoản thường.";
                 return RedirectToAction("Login");
             }
         }
@@ -394,13 +494,8 @@ namespace B_M.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult CompleteProfile(CompleteProfileViewModel model)
+        public ActionResult CompleteProfile(CompleteProfileViewModel model, string submitType)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
             try
             {
                 // Kiểm tra session
@@ -410,19 +505,37 @@ namespace B_M.Controllers
                     return RedirectToAction("Login");
                 }
 
-                // Kiểm tra username đã tồn tại chưa
-                if (!string.IsNullOrEmpty(model.UserName) && userRepository.UsernameExists(model.UserName))
-                {
-                    ModelState.AddModelError("UserName", "Tên đăng nhập này đã được sử dụng.");
-                    return View(model);
-                }
-
                 // Lấy user hiện tại
                 var user = userRepository.GetUserByEmail(model.Email);
                 if (user == null)
                 {
                     TempData["ErrorMessage"] = "Không tìm thấy thông tin người dùng.";
                     return RedirectToAction("Login");
+                }
+
+                // Kiểm tra nếu user chọn skip
+                if (submitType == "skip")
+                {
+                    System.Diagnostics.Debug.WriteLine($"USER SKIPPED COMPLETE PROFILE: {user.Email}");
+                    
+                    // Đăng nhập user với thông tin hiện tại
+                    LoginUserAfterCompletion(user);
+                    
+                    TempData["InfoMessage"] = $"Chào mừng, {user.UserDetails?.FullName}! Bạn có thể cập nhật thông tin bổ sung trong phần hồ sơ cá nhân.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // Validation chỉ khi complete (không skip)
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                // Kiểm tra username đã tồn tại chưa
+                if (!string.IsNullOrEmpty(model.UserName) && userRepository.UsernameExists(model.UserName))
+                {
+                    ModelState.AddModelError("UserName", "Tên đăng nhập này đã được sử dụng.");
+                    return View(model);
                 }
 
                 // Cập nhật thông tin user
@@ -446,19 +559,10 @@ namespace B_M.Controllers
 
                 if (updateResult)
                 {
-                    // Xóa session temp
-                    Session.Remove("TempUserID");
-                    Session.Remove("TempEmail");
-                    Session.Remove("TempFullName");
-                    Session.Remove("TempRole");
-
+                    System.Diagnostics.Debug.WriteLine($"USER COMPLETED PROFILE: {user.Email}");
+                    
                     // Đăng nhập user
-                    FormsAuthentication.SetAuthCookie(user.Email, false);
-                    Session["UserID"] = user.UserID;
-                    Session["UserEmail"] = user.Email;
-                    Session["FullName"] = user.UserDetails?.FullName;
-                    Session["Role"] = user.Role;
-                    Session["IsActive"] = user.IsActive;
+                    LoginUserAfterCompletion(user);
 
                     TempData["SuccessMessage"] = $"Chào mừng đến với MomExchange, {user.UserDetails?.FullName}! Hồ sơ của bạn đã được hoàn thiện.";
                     return RedirectToAction("Index", "Home");
@@ -475,6 +579,44 @@ namespace B_M.Controllers
                 ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.");
                 return View(model);
             }
+        }
+
+        /// <summary>
+        /// Helper method to login user after completing or skipping profile completion
+        /// </summary>
+        private void LoginUserAfterCompletion(User user)
+        {
+            // Xóa session temp
+            Session.Remove("TempUserID");
+            Session.Remove("TempEmail");
+            Session.Remove("TempFullName");
+            Session.Remove("TempRole");
+
+            // Tạo OWIN authentication
+            var identity = new System.Security.Claims.ClaimsIdentity(new[] 
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, user.Email),
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.UserID.ToString()),
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, user.Role.ToString()),
+                new System.Security.Claims.Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", "ASP.NET Identity"),
+                new System.Security.Claims.Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", user.UserID.ToString())
+            }, "ApplicationCookie");
+
+            var authManager = HttpContext.GetOwinContext().Authentication;
+            authManager.SignIn(new Microsoft.Owin.Security.AuthenticationProperties
+            {
+                IsPersistent = false
+            }, identity);
+
+            // Set session variables
+            Session["UserID"] = user.UserID;
+            Session["UserEmail"] = user.Email;
+            Session["FullName"] = user.UserDetails?.FullName;
+            Session["Role"] = user.Role;
+            Session["IsActive"] = user.IsActive;
+            Session["AvatarURL"] = !string.IsNullOrEmpty(user.UserDetails?.ProfilePictureURL) 
+                ? user.UserDetails.ProfilePictureURL 
+                : "/images/avatar-default.jpg";
         }
 
         private ActionResult RedirectToLocal(string returnUrl)

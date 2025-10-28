@@ -1,0 +1,188 @@
+@model IEnumerable<B_M.Models.Notification>
+
+@{
+    ViewBag.Title = "Thông báo";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <div class="header-content">
+                    <h1 class="page-title">
+                        <i class="fa-solid fa-bell"></i>
+                        Thông báo
+                    </h1>
+                    <p class="page-subtitle">Danh sách thông báo của bạn</p>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="btn btn-outline-primary" onclick="markAllAsRead()">
+                        <i class="fa-solid fa-check-double"></i>
+                        Đánh dấu tất cả đã đọc
+                    </button>
+                </div>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="notifications-container">
+                    @foreach (var notification in Model)
+                    {
+                        <div class="notification-item @(notification.IsRead ? "read" : "unread")" data-notification-id="@notification.NotificationID">
+                            <div class="notification-icon">
+                                @switch (notification.Type)
+                                {
+                                    case 1: // Request Received
+                                        <i class="fa-solid fa-hand-holding-heart text-info"></i>
+                                        break;
+                                    case 2: // Request Accepted
+                                        <i class="fa-solid fa-check-circle text-success"></i>
+                                        break;
+                                    case 3: // Request Declined
+                                        <i class="fa-solid fa-times-circle text-warning"></i>
+                                        break;
+                                    case 4: // Post Closed
+                                        <i class="fa-solid fa-lock text-secondary"></i>
+                                        break;
+                                    default:
+                                        <i class="fa-solid fa-bell text-info"></i>
+                                        break;
+                                }
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-header">
+                                    <h5 class="notification-title">@notification.Title</h5>
+                                    <span class="notification-type-badge @notification.TypeClass">
+                                        @notification.TypeText
+                                    </span>
+                                </div>
+                                <p class="notification-message">@notification.Message</p>
+                                <div class="notification-footer">
+                                    <span class="notification-time">
+                                        <i class="fa-solid fa-clock"></i>
+                                        @notification.TimeAgo
+                                    </span>
+                                    @if (!notification.IsRead)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-primary mark-read-btn" onclick="markAsRead(@notification.NotificationID)">
+                                            <i class="fa-solid fa-check"></i>
+                                            Đánh dấu đã đọc
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-bell-slash"></i>
+                    </div>
+                    <h4>Chưa có thông báo nào</h4>
+                    <p>Bạn chưa có thông báo nào trong hệ thống.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-refresh unread count every 30 seconds
+            setInterval(function() {
+                updateNotificationBadge();
+            }, 30000);
+        });
+
+        function markAsRead(notificationId) {
+            $.ajax({
+                url: '@Url.Action("MarkAsRead", "Notification")',
+                type: 'POST',
+                data: {
+                    notificationId: notificationId,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var $notification = $('div[data-notification-id="' + notificationId + '"]');
+                        $notification.removeClass('unread').addClass('read');
+                        $notification.find('.mark-read-btn').fadeOut();
+                        updateNotificationBadge();
+                    }
+                },
+                error: function() {
+                    showToast('Có lỗi xảy ra khi đánh dấu thông báo', 'error');
+                }
+            });
+        }
+
+        function markAllAsRead() {
+            if (!confirm('Bạn có chắc chắn muốn đánh dấu tất cả thông báo là đã đọc?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("MarkAllAsRead", "Notification")',
+                type: 'POST',
+                data: {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('.notification-item').removeClass('unread').addClass('read');
+                        $('.mark-read-btn').fadeOut();
+                        updateNotificationBadge();
+                        showToast(response.message, 'success');
+                    } else {
+                        showToast(response.message, 'error');
+                    }
+                },
+                error: function() {
+                    showToast('Có lỗi xảy ra khi đánh dấu thông báo', 'error');
+                }
+            });
+        }
+
+        function updateNotificationBadge() {
+            $.ajax({
+                url: '@Url.Action("GetUnreadCount", "Notification")',
+                type: 'GET',
+                success: function(response) {
+                    var $badge = $('.notification-badge');
+                    if (response.count > 0) {
+                        $badge.text(response.count).show();
+                    } else {
+                        $badge.hide();
+                    }
+                }
+            });
+        }
+
+        // Toast notification function
+        function showToast(message, type) {
+            var toastClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            var toastIcon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            var toast = $('<div class="alert ' + toastClass + ' alert-dismissible fade show toast-notification" role="alert">' +
+                '<i class="fa-solid ' + toastIcon + '"></i> ' + message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+            
+            $('body').append(toast);
+            
+            setTimeout(function() {
+                toast.fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        }
+    </script>
+}

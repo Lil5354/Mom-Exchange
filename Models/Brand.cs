@@ -1,12 +1,32 @@
-﻿// Models/Brand.cs
+﻿// Models/Brand.cs - Restructured for Module 3
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace B_M.Models
 {
     public class Brand
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        [Key]
+        public int BrandID { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        public string BrandName { get; set; }
+
+        [StringLength(1024)]
+        public string LogoUrl { get; set; }
+
         public string Description { get; set; }
-        public string LogoUrl { get; set; } // Đường dẫn đến file logo
+
+        [Required]
+        public int UserID { get; set; } // FK to Users (Role=3)
+
+        // Navigation properties
+        [ForeignKey("UserID")]
+        public virtual User User { get; set; }
+
+        public virtual ICollection<ProductB2C> Products { get; set; } = new List<ProductB2C>();
+        public virtual ICollection<BrandCategoryPermission> CategoryPermissions { get; set; } = new List<BrandCategoryPermission>();
     }
 }

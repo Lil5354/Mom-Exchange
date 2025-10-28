@@ -19,13 +19,12 @@ namespace B_M
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             
             // Cấu hình AntiForgeryToken cho Claims-based authentication
-            AntiForgeryConfig.UniqueClaimTypeIdentifier = System.Security.Claims.ClaimTypes.NameIdentifier;
+            AntiForgeryConfig.UniqueClaimTypeIdentifier = System.Security.Claims.ClaimTypes.Name;
         }
 
         protected void Application_Error()
         {
-            // Tạm thời comment để test routing
-            /*
+            
             var exception = Server.GetLastError();
             var httpException = exception as HttpException;
             
@@ -46,7 +45,7 @@ namespace B_M
                     Response.Redirect("~/Error/ServerError");
                 }
             }
-            */
+           
         }
     }
 }

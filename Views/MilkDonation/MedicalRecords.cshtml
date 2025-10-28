@@ -1,0 +1,143 @@
+@model B_M.Models.MedicalRecordsViewModel
+@{
+    ViewBag.Title = "Hồ sơ y tế";
+}
+
+<div class="medical-records-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="records-card">
+                    <div class="records-header">
+                        <h2><i class="fa-solid fa-file-medical"></i> Hồ sơ y tế</h2>
+                        <p class="text-muted">Upload hồ sơ y tế để nâng cấp lên Tầng 2 - Xác thực y tế đầy đủ</p>
+                    </div>
+
+                    <div class="current-status">
+                        <div class="status-badge @Model.VerificationStatusClass">
+                            <i class="fa-solid fa-info-circle"></i>
+                            Trạng thái hiện tại: @Model.VerificationStatusText
+                        </div>
+                    </div>
+
+                    @using (Html.BeginForm("UploadMedicalRecord", "MilkDonation", FormMethod.Post, new { @class = "upload-form", enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.UserID)
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-upload"></i>
+                                Chọn file hồ sơ y tế
+                            </label>
+                            <input type="file" name="medicalFile" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required />
+                            <small class="form-text text-muted">
+                                <i class="fa-solid fa-info-circle"></i>
+                                Chấp nhận: PDF, JPG, PNG, DOC, DOCX (tối đa 10MB)
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fa-solid fa-upload"></i>
+                                Upload hồ sơ
+                            </button>
+                        </div>
+                    }
+
+                    @if (Model.ExistingRecords != null && Model.ExistingRecords.Any())
+                    {
+                        <div class="existing-records">
+                            <h4><i class="fa-solid fa-history"></i> Hồ sơ đã upload</h4>
+                            <div class="records-list">
+                                @foreach (var record in Model.ExistingRecords.OrderByDescending(r => r.UploadedAt))
+                                {
+                                    <div class="record-item">
+                                        <div class="record-info">
+                                            <div class="record-name">
+                                                <i class="fa-solid fa-file"></i>
+                                                @record.FileName
+                                            </div>
+                                            <div class="record-meta">
+                                                <span class="upload-date">
+                                                    <i class="fa-solid fa-calendar"></i>
+                                                    @record.UploadedAt.ToString("dd/MM/yyyy HH:mm")
+                                                </span>
+                                                <span class="record-status @(record.VerificationStatus == 0 ? "status-pending" : record.VerificationStatus == 1 ? "status-approved" : "status-rejected")">
+                                                    switch (record.VerificationStatus)
+                                                    {
+                                                        case 0:
+                                                            <i class="fa-solid fa-clock"></i> Đang chờ duyệt
+                                                            break;
+                                                        case 1:
+                                                            <i class="fa-solid fa-check-circle"></i> Đã được duyệt
+                                                            break;
+                                                        case 2:
+                                                            <i class="fa-solid fa-times-circle"></i> Bị từ chối
+                                                            break;
+                                                    }
+                                                </span>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(record.ReviewNotes))
+                                            {
+                                                <div class="review-notes">
+                                                    <strong>Ghi chú từ admin:</strong> @record.ReviewNotes
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="info-card">
+                    <h4><i class="fa-solid fa-info-circle"></i> Hướng dẫn upload hồ sơ</h4>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <h5><i class="fa-solid fa-file-medical"></i> Các loại hồ sơ được chấp nhận</h5>
+                            <ul>
+                                <li>Kết quả xét nghiệm máu (CBC, Lipid, Glucose...)</li>
+                                <li>Kết quả xét nghiệm viêm gan B, C</li>
+                                <li>Kết quả xét nghiệm HIV</li>
+                                <li>Giấy khám sức khỏe tổng quát</li>
+                                <li>Các xét nghiệm khác liên quan đến sức khỏe</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-item">
+                            <h5><i class="fa-solid fa-shield-alt"></i> Quy trình duyệt</h5>
+                            <ol>
+                                <li>Upload file hồ sơ y tế</li>
+                                <li>Admin sẽ xem xét và duyệt trong vòng 24-48h</li>
+                                <li>Nếu được duyệt, bạn sẽ có "Thẻ xanh"</li>
+                                <li>Bài đăng của bạn sẽ được ưu tiên hiển thị</li>
+                            </ol>
+                        </div>
+
+                        <div class="info-item">
+                            <h5><i class="fa-solid fa-lock"></i> Bảo mật thông tin</h5>
+                            <p>Hồ sơ y tế của bạn được bảo mật tuyệt đối và chỉ admin mới có thể xem để duyệt.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="@Url.Action("CreatePost", "MilkDonation")" class="btn btn-success btn-lg">
+                        <i class="fa-solid fa-plus"></i>
+                        Đăng tin cho tặng sữa
+                    </a>
+                    <a href="@Url.Action("Index", "MilkDonation")" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}

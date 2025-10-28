@@ -1,0 +1,184 @@
+@model B_M.Models.CreateRequestViewModel
+
+<div class="create-request-modal-content">
+    <div class="request-header">
+        <h3><i class="fa-solid fa-hand-holding-heart"></i> Gửi Yêu cầu Nhận Sữa</h3>
+        <p class="text-muted">Gửi lời nhắn cho người cho để thể hiện sự quan tâm của bạn</p>
+    </div>
+
+    @if (Model.ShowWarning)
+    {
+        <div class="alert alert-warning-custom mb-4">
+            <div class="alert-icon">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+            </div>
+            <div class="alert-content">
+                <h5><strong>CẢNH BÁO QUAN TRỌNG</strong></h5>
+                <p class="mb-0">@Model.ShowWarning</p>
+            </div>
+        </div>
+    }
+
+    <div class="post-info mb-4">
+        <div class="post-card-small">
+            <div class="post-header">
+                <h4>@Model.PostTitle</h4>
+                <span class="verification-badge @(Model.VerificationTier == 1 ? "tier-basic" : "tier-verified")">
+                    @if (Model.VerificationTier == 1)
+                    {
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                        <text>THẺ VÀNG - Khai báo Cơ bản</text>
+                    }
+                    else
+                    {
+                        <i class="fa-solid fa-check-circle"></i>
+                        <text>THẺ XANH - Đã Xác thực Y tế</text>
+                    }
+                </span>
+            </div>
+            <div class="post-meta">
+                <span><i class="fa-solid fa-user"></i> Người cho: @Model.DonorName</span>
+            </div>
+        </div>
+    </div>
+
+    <form id="createRequestForm">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.PostID)
+        @Html.HiddenFor(m => m.DonorUserID)
+
+        <div class="form-section">
+            <h4><i class="fa-solid fa-comment-dots"></i> Lời nhắn cho người cho</h4>
+            <p class="form-help">
+                <i class="fa-solid fa-lightbulb"></i>
+                <strong>Gợi ý:</strong> Bạn có thể chia sẻ về hoàn cảnh của mình, hoặc bạn ở gần đâu... để giúp người cho dễ dàng quyết định hơn.
+            </p>
+            
+            <div class="form-group">
+                @Html.TextAreaFor(m => m.Note, new { 
+                    @class = "form-control", 
+                    @rows = "4", 
+                    @placeholder = "Ví dụ: Chào bạn, mình là mẹ của bé 3 tháng tuổi ở quận 1. Bé nhà mình sinh non nên rất cần sữa mẹ để phát triển tốt. Mình có thể đến nhận vào cuối tuần này được không ạ? Cảm ơn bạn rất nhiều!",
+                    @maxlength = "1000"
+                })
+                <small class="form-text text-muted">
+                    <i class="fa-solid fa-info-circle"></i>
+                    Tối đa 1000 ký tự. Lời nhắn này sẽ giúp người cho hiểu rõ hơn về hoàn cảnh của bạn.
+                </small>
+                @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary-custom" onclick="closeModal('createRequestModal')">
+                <i class="fa-solid fa-times"></i>
+                Hủy
+            </button>
+            <button type="submit" class="btn btn-primary-custom" id="submitRequestBtn">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span class="btn-text">Gửi Yêu cầu</span>
+                <span class="btn-loading" style="display: none;">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Đang gửi...
+                </span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Handle form submission
+    $('#createRequestForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        var $submitBtn = $('#submitRequestBtn');
+        var $btnText = $submitBtn.find('.btn-text');
+        var $btnLoading = $submitBtn.find('.btn-loading');
+        
+        // Show loading state
+        $submitBtn.prop('disabled', true);
+        $btnText.hide();
+        $btnLoading.show();
+        
+        $.ajax({
+            url: '@Url.Action("CreateRequest", "MilkDonation")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    showToast('success', response.message || 'Gửi yêu cầu thành công!');
+                    
+                    // Close modal after delay
+                    setTimeout(function() {
+                        closeModal('createRequestModal');
+                        // Refresh page to show updated status
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showToast('error', response.message || 'Có lỗi xảy ra khi gửi yêu cầu.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Request error:', error);
+                showToast('error', 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.');
+            },
+            complete: function() {
+                // Reset button state
+                $submitBtn.prop('disabled', false);
+                $btnText.show();
+                $btnLoading.hide();
+            }
+        });
+    });
+    
+    // Character counter
+    $('#Note').on('input', function() {
+        var length = $(this).val().length;
+        var maxLength = 1000;
+        var remaining = maxLength - length;
+        
+        if (remaining < 0) {
+            $(this).val($(this).val().substring(0, maxLength));
+            remaining = 0;
+        }
+        
+        // Update character count display
+        var $helpText = $(this).siblings('.form-text');
+        if (remaining < 100) {
+            $helpText.addClass('text-warning');
+        } else {
+            $helpText.removeClass('text-warning');
+        }
+    });
+});
+
+// Toast notification function
+function showToast(type, message) {
+    // Create toast element
+    var toastClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var toastIcon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    var toast = $('<div class="alert ' + toastClass + ' alert-dismissible fade show toast-notification" role="alert">' +
+        '<i class="fa-solid ' + toastIcon + '"></i> ' + message +
+        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+        '</div>');
+    
+    // Add to page
+    $('body').append(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(function() {
+        toast.fadeOut(function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+</script>

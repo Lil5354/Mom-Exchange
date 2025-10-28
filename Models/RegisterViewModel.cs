@@ -5,7 +5,8 @@ namespace B_M.Models
 {
     public class RegisterViewModel
     {
-        [StringLength(50, ErrorMessage = "Tên đăng nhập tối đa 50 ký tự")]
+        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
+        [StringLength(50, ErrorMessage = "Tên đăng nhập tối đa 50 ký tự", MinimumLength = 3)]
         [Display(Name = "Tên đăng nhập")]
         public string UserName { get; set; }
 
@@ -13,9 +14,8 @@ namespace B_M.Models
         [Display(Name = "Họ và tên")]
         public string FullName { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập email")]
-        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ")]
-        public string Email { get; set; }
+        [Display(Name = "Email")]
+        public string Email { get; set; } = null; // Set null để tương thích với Google linking
 
         [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
         [Display(Name = "Số điện thoại")]

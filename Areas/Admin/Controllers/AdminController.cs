@@ -14,11 +14,11 @@ namespace B_M.Areas.Admin.Controllers
     [AdminAuthorize]
     public class AdminController : Controller
     {
-        private readonly UserRepository userRepository;
+        private readonly B_M.Repositories.UserRepository userRepository;
 
         public AdminController()
         {
-            userRepository = new UserRepository();
+            userRepository = new B_M.Repositories.UserRepository();
         }
 
         protected override void Dispose(bool disposing)

@@ -1,0 +1,313 @@
+@model B_M.Models.LifestyleSurveyViewModel
+
+<div class="survey-card">
+    <div class="survey-header">
+        <h2>
+            <i class="fas fa-clipboard-check"></i>
+            Hoàn thành khai báo an toàn
+        </h2>
+        <p class="text-muted">Vui lòng hoàn thành 4 phần dưới đây để trở thành người cho tặng sữa mẹ</p>
+    </div>
+
+    @using (Html.BeginForm("LifestyleSurvey", "MilkDonation", FormMethod.Post, new { @class = "lifestyle-survey-form", @id = "lifestyleSurveyForm" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+        <!-- Progress Indicator -->
+        <div class="progress-indicator">
+            <div class="progress-step active">1</div>
+            <div class="progress-line"></div>
+            <div class="progress-step active">2</div>
+            <div class="progress-line"></div>
+            <div class="progress-step active">3</div>
+            <div class="progress-line"></div>
+            <div class="progress-step active">4</div>
+        </div>
+
+        <!-- Phần 1: Giới thiệu và Cảnh báo -->
+        <div class="form-section">
+            <h4><i class="fas fa-info-circle"></i> Phần 1: Giới thiệu và cảnh báo quan trọng</h4>
+            <div class="section-intro">
+                <p><strong>Chào bạn,</strong> Để đảm bảo sự an toàn và minh bạch cơ bản cho cộng đồng, bạn cần hoàn thành bảng tự khai báo gồm 4 phần dưới đây. Các câu trả lời của bạn sẽ được hiển thị công khai cùng với tin đăng.</p>
+            </div>
+            
+            <div class="alert-warning-custom">
+                <h5><i class="fas fa-exclamation-triangle"></i> CẢNH BÁO QUAN TRỌNG:</h5>
+                <ul>
+                    <li>Đây <strong>KHÔNG PHẢI</strong> là một quy trình xác thực y tế.</li>
+                    <li>Việc hoàn thành bảng này sẽ cấp cho bạn huy hiệu <strong>"Thẻ Vàng - Khai báo Cơ bản"</strong>.</li>
+                    <li>Theo khuyến nghị của nền tảng, sữa được cho tặng ở tầng này <strong>không nên dùng cho bé uống</strong> mà chỉ nên sử dụng cho các mục đích khác (ví dụ: tắm cho bé, làm xà phòng...).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Phần 2: Sàng lọc Lối sống -->
+        <div class="form-section">
+            <h4><i class="fas fa-heartbeat"></i> Phần 2: Sàng lọc lối sống (Bắt buộc)</h4>
+            <p class="text-muted mb-4"><em>Tất cả các câu trả lời "Có" ở phần này sẽ được hiển thị công khai bên cạnh tin đăng của bạn</em></p>
+
+            <!-- Câu hỏi 1: Hút thuốc -->
+            <div class="form-group">
+                <label class="form-label">@Html.DisplayNameFor(m => m.IsSmoker)</label>
+                <div class="radio-group">
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.IsSmoker, true, new { @id = "IsSmoker_True" })
+                        <label for="IsSmoker_True">
+                            <i class="fas fa-smoking check-icon"></i>
+                            Có
+                        </label>
+                    </div>
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.IsSmoker, false, new { @id = "IsSmoker_False" })
+                        <label for="IsSmoker_False">
+                            <i class="fas fa-ban check-icon"></i>
+                            Không
+                        </label>
+                    </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.IsSmoker, "", new { @class = "text-danger" })
+            </div>
+
+            <!-- Câu hỏi 2: Đồ uống có cồn -->
+            <div class="form-group">
+                <label class="form-label">@Html.DisplayNameFor(m => m.UsesAlcohol)</label>
+                <div class="radio-group">
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.UsesAlcohol, true, new { @id = "UsesAlcohol_True" })
+                        <label for="UsesAlcohol_True">
+                            <i class="fas fa-wine-glass check-icon"></i>
+                            Có
+                        </label>
+                    </div>
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.UsesAlcohol, false, new { @id = "UsesAlcohol_False" })
+                        <label for="UsesAlcohol_False">
+                            <i class="fas fa-ban check-icon"></i>
+                            Không
+                        </label>
+                    </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.UsesAlcohol, "", new { @class = "text-danger" })
+            </div>
+
+            <!-- Câu hỏi 3: Sử dụng thuốc -->
+            <div class="form-group">
+                <label class="form-label">@Html.DisplayNameFor(m => m.UsesMedication)</label>
+                <div class="radio-group">
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.UsesMedication, true, new { @id = "UsesMedication_True" })
+                        <label for="UsesMedication_True">
+                            <i class="fas fa-pills check-icon"></i>
+                            Có
+                        </label>
+                    </div>
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.UsesMedication, false, new { @id = "UsesMedication_False" })
+                        <label for="UsesMedication_False">
+                            <i class="fas fa-ban check-icon"></i>
+                            Không
+                        </label>
+                    </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.UsesMedication, "", new { @class = "text-danger" })
+
+                <!-- Câu hỏi 4: Chi tiết thuốc (conditional) -->
+                <div id="medicationDetailsSection" class="conditional-field" style="display: none;">
+                    <label class="form-label">@Html.DisplayNameFor(m => m.MedicationDetails)</label>
+                    @Html.TextAreaFor(m => m.MedicationDetails, new { @class = "form-control", @rows = "3", @placeholder = "Vui lòng liệt kê tên các loại thuốc bạn đang sử dụng..." })
+                    @Html.ValidationMessageFor(m => m.MedicationDetails, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <!-- Phần 3: Sàng lọc Y tế Tự nguyện -->
+        <div class="form-section">
+            <h4><i class="fas fa-user-shield"></i> Phần 3: Sàng lọc Y tế Tự nguyện (Bắt buộc)</h4>
+            <p class="text-muted mb-4"><em>Phần này yêu cầu sự cam kết. Nếu bạn chọn "Không đồng ý", bạn sẽ không đủ điều kiện tham gia cho tặng</em></p>
+
+            <!-- Câu hỏi 5: Cam kết không sử dụng chất kích thích -->
+            <div class="form-group">
+                <label class="form-label">@Html.DisplayNameFor(m => m.CommitNoDrugs)</label>
+                <div class="radio-group">
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.CommitNoDrugs, true, new { @id = "CommitNoDrugs_True" })
+                        <label for="CommitNoDrugs_True">
+                            <i class="fas fa-check-circle check-icon"></i>
+                            Tôi đồng ý cam kết
+                        </label>
+                    </div>
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.CommitNoDrugs, false, new { @id = "CommitNoDrugs_False" })
+                        <label for="CommitNoDrugs_False">
+                            <i class="fas fa-times-circle check-icon"></i>
+                            Tôi không đồng ý
+                        </label>
+                    </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.CommitNoDrugs, "", new { @class = "text-danger" })
+            </div>
+
+            <!-- Câu hỏi 6: Cam kết không mắc bệnh truyền nhiễm -->
+            <div class="form-group">
+                <label class="form-label">@Html.DisplayNameFor(m => m.CommitNoInfectiousDiseases)</label>
+                <div class="radio-group">
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.CommitNoInfectiousDiseases, true, new { @id = "CommitNoInfectiousDiseases_True" })
+                        <label for="CommitNoInfectiousDiseases_True">
+                            <i class="fas fa-check-circle check-icon"></i>
+                            Tôi đồng ý cam kết
+                        </label>
+                    </div>
+                    <div class="form-check-custom">
+                        @Html.RadioButtonFor(m => m.CommitNoInfectiousDiseases, false, new { @id = "CommitNoInfectiousDiseases_False" })
+                        <label for="CommitNoInfectiousDiseases_False">
+                            <i class="fas fa-times-circle check-icon"></i>
+                            Tôi không đồng ý
+                        </label>
+                    </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.CommitNoInfectiousDiseases, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <!-- Phần 4: Xác nhận và Hoàn thành -->
+        <div class="form-section">
+            <h4><i class="fas fa-signature"></i> Phần 4: Xác nhận và Hoàn thành</h4>
+            <p class="text-muted mb-4"><em>Bạn phải đồng ý với cả hai điều khoản dưới đây để tiếp tục</em></p>
+
+            <div class="agreement-section">
+                <div class="agreement-item">
+                    @Html.CheckBoxFor(m => m.ConfirmTruthfulness, new { @id = "ConfirmTruthfulness" })
+                    <label for="ConfirmTruthfulness">@Html.DisplayNameFor(m => m.ConfirmTruthfulness)</label>
+                    @Html.ValidationMessageFor(m => m.ConfirmTruthfulness, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="agreement-item">
+                    @Html.CheckBoxFor(m => m.AcceptWarnings, new { @id = "AcceptWarnings" })
+                    <label for="AcceptWarnings">@Html.DisplayNameFor(m => m.AcceptWarnings)</label>
+                    @Html.ValidationMessageFor(m => m.AcceptWarnings, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary-custom" onclick="closeModal('lifestyleSurveyModal')">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="submit" class="btn btn-primary-custom" id="submitBtn">
+                <i class="fas fa-check"></i> Hoàn thành và Đăng tin
+            </button>
+        </div>
+    }
+</div>
+
+<script>
+    function selectRadio(name, value) {
+        $('input[name="' + name + '"][value="' + value + '"]').prop('checked', true);
+        
+        // Update visual state
+        $('input[name="' + name + '"]').closest('.form-check-custom').removeClass('selected');
+        $('input[name="' + name + '"][value="' + value + '"]').closest('.form-check-custom').addClass('selected');
+        
+        // Handle medication details toggle
+        if (name === 'UsesMedication') {
+            toggleMedicationDetails(value);
+        }
+    }
+
+    function toggleMedicationDetails(show) {
+        if (show) {
+            $('#medicationDetailsSection').slideDown();
+        } else {
+            $('#medicationDetailsSection').slideUp();
+            $('#MedicationDetails').val('');
+        }
+    }
+
+    $(document).ready(function() {
+        // Initialize selected states
+        $('input[type="radio"]:checked').each(function() {
+            $(this).closest('.form-check-custom').addClass('selected');
+        });
+
+        // Show medication details if already selected
+        if ($('#UsesMedication_True').is(':checked')) {
+            $('#medicationDetailsSection').show();
+        }
+
+        // Form validation and submission
+        $('#lifestyleSurveyForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            var isValid = true;
+            var errorMessage = '';
+
+            // Check required agreements
+            if (!$('#ConfirmTruthfulness').is(':checked')) {
+                isValid = false;
+                errorMessage += '• Vui lòng xác nhận tính trung thực của thông tin\n';
+            }
+
+            if (!$('#AcceptWarnings').is(':checked')) {
+                isValid = false;
+                errorMessage += '• Vui lòng xác nhận hiểu rõ các cảnh báo\n';
+            }
+
+            // Check medication details if medication is used
+            if ($('#UsesMedication_True').is(':checked') && !$('#MedicationDetails').val().trim()) {
+                isValid = false;
+                errorMessage += '• Vui lòng liệt kê các loại thuốc bạn đang sử dụng\n';
+            }
+
+            if (!isValid) {
+                alert('Vui lòng hoàn thành các thông tin sau:\n\n' + errorMessage);
+                return false;
+            }
+
+            // Show loading state
+            $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+
+            // Submit form via AJAX
+            var formData = $(this).serialize();
+            $.post('@Url.Action("LifestyleSurvey", "MilkDonation")', formData)
+                .done(function(response) {
+                    if (response.success !== false) {
+                        closeModal('lifestyleSurveyModal');
+                        // Show success message
+                        alert('Hoàn thành khai báo y tế cơ bản! Bạn đã trở thành Người cho tặng Tầng 1.');
+                        // Reload page to update status
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (response.message || 'Vui lòng thử lại.'));
+                        $('#submitBtn').prop('disabled', false).html('<i class="fas fa-check"></i> Hoàn thành và Đăng tin');
+                    }
+                })
+                .fail(function() {
+                    alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                    $('#submitBtn').prop('disabled', false).html('<i class="fas fa-check"></i> Hoàn thành và Đăng tin');
+                });
+        });
+
+        // Handle radio button clicks - click anywhere in the custom form check
+        $('.form-check-custom').on('click', function(e) {
+            // Prevent double triggering if clicking directly on radio button
+            if (e.target.type !== 'radio') {
+                var radio = $(this).find('input[type="radio"]');
+                if (radio.length > 0) {
+                    var name = radio.attr('name');
+                    var value = radio.val() === 'true';
+                    selectRadio(name, value);
+                }
+            }
+        });
+
+        // Also handle direct radio button clicks
+        $('input[type="radio"]').on('change', function() {
+            var name = $(this).attr('name');
+            var value = $(this).val() === 'true';
+            selectRadio(name, value);
+        });
+    });
+</script>

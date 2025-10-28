@@ -107,9 +107,13 @@
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <button type="submit" class="btn btn-primary" style="padding: 12px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; background: linear-gradient(135deg, #e15b7f, #f47b8e); border: none;">
+                            <button type="submit" name="submitType" value="complete" class="btn btn-primary" style="padding: 12px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; background: linear-gradient(135deg, #e15b7f, #f47b8e); border: none;">
                                 <i class="fas fa-check" style="margin-right: 8px;"></i>
                                 Hoàn thiện hồ sơ
+                            </button>
+                            <button type="submit" name="submitType" value="skip" class="btn btn-outline-primary" style="padding: 12px 30px; font-size: 16px; border-radius: 8px; border: 2px solid #e15b7f; color: #e15b7f; background: transparent;">
+                                <i class="fas fa-forward" style="margin-right: 8px;"></i>
+                                Bỏ qua, vào trang chủ
                             </button>
                             <a href="@Url.Action("Login", "Account")" class="btn btn-secondary" style="padding: 12px 30px; font-size: 16px; border-radius: 8px; text-decoration: none; text-align: center;">
                                 <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>
@@ -191,6 +195,18 @@
         border-color: #545b62;
         color: white;
         text-decoration: none;
+    }
+    
+    .btn-outline-primary {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #e15b7f, #f47b8e);
+        border-color: #e15b7f;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(225, 91, 127, 0.3);
     }
     
     .form-group label {

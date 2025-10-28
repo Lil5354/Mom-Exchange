@@ -1,11 +1,11 @@
-// File: Models/UserRepository.cs
+// File: Repositories/UserRepository.cs
 using System;
 using System.Linq;
 using System.Data.Entity;
 using System.Collections.Generic;
+using B_M.Models;
 
-
-namespace B_M.Models
+namespace B_M.Repositories
 {
     public class UserRepository : IDisposable
     {
@@ -81,6 +81,17 @@ namespace B_M.Models
             return _context.Users
                 .Include("UserDetails")
                 .FirstOrDefault(u => u.Email == emailOrUsername || u.UserName == emailOrUsername);
+        }
+
+        public bool IsGoogleEmailLinked(string googleEmail, int? excludeUserID = null)
+        {
+            if (string.IsNullOrEmpty(googleEmail))
+                return false;
+
+            return _context.Users
+                .Any(u => u.Email == googleEmail && 
+                          !string.IsNullOrEmpty(u.GoogleId) && 
+                          (excludeUserID == null || u.UserID != excludeUserID));
         }
 
         public UserDetails GetUserDetails(int userId)

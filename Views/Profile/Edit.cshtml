@@ -1,0 +1,465 @@
+@model B_M.Models.EditProfileViewModel
+
+@{
+    ViewBag.Title = "Chỉnh sửa hồ sơ";
+}
+
+<div class="container" style="padding-top: 20px;">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <!-- Success/Error Messages -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            }
+
+            <!-- Main Profile Edit Card -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3><i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ cá nhân</h3>
+                    <p>Cập nhật thông tin cá nhân của bạn để có trải nghiệm tốt hơn</p>
+                </div>
+                <div class="profile-card-body">
+                    @using (Html.BeginForm("Edit", "Profile", FormMethod.Post, new { enctype = "multipart/form-data", @class = "profile-form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(model => model.UserID)
+                        @Html.HiddenFor(model => model.ProfilePictureURL)
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <!-- Avatar Section -->
+                                <div class="avatar-section">
+                                    <h5><i class="fas fa-camera"></i> Ảnh đại diện</h5>
+                                    <div class="avatar-container">
+                                        <img id="avatarPreview" src="@Model.ProfilePictureURL" alt="Avatar" class="avatar-img">
+                                        <div class="avatar-overlay">
+                                            <i class="fas fa-camera"></i>
+                                        </div>
+                                    </div>
+                                    <input type="file" id="profileImageInput" name="profileImage" accept="image/*" style="display: none;">
+                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="document.getElementById('profileImageInput').click()">
+                                        <i class="fas fa-upload"></i> Chọn ảnh mới
+                                    </button>
+                                    <small class="form-text text-muted">JPG, PNG, GIF. Tối đa 5MB</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-8">
+                                <!-- Form Fields -->
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                                    @Html.TextBoxFor(model => model.Email, new { @class = "form-control", @readonly = "readonly" })
+                                    <small class="form-text text-muted">Email không thể thay đổi</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-user"></i> Họ và tên</label>
+                                    @Html.TextBoxFor(model => model.FullName, new { @class = "form-control", @placeholder = "Nhập họ và tên đầy đủ" })
+                                    @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-phone"></i> Số điện thoại</label>
+                                    @Html.TextBoxFor(model => model.PhoneNumber, new { @class = "form-control", @placeholder = "Nhập số điện thoại" })
+                                    @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ</label>
+                                    @Html.TextAreaFor(model => model.Address, new { @class = "form-control", @rows = "3", @placeholder = "Nhập địa chỉ của bạn" })
+                                    @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-save">
+                                <i class="fas fa-save"></i> Lưu thay đổi
+                            </button>
+                            <a href="@Url.Action("Index", "Profile")" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Hủy bỏ
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Google Account Linking Card -->
+            <div class="google-card">
+                <div class="google-card-header">
+                    <h5><i class="fab fa-google"></i> Liên kết tài khoản Google</h5>
+                </div>
+                <div class="google-card-body">
+                    <p class="google-description">
+                        Liên kết tài khoản Google để có thể đăng nhập bằng Google thay vì username/password.
+                    </p>
+
+                    @if (ViewBag.IsGoogleLinked == true)
+                    {
+                        <div class="google-status linked">
+                            <div class="status-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="status-content">
+                                <h6>Đã liên kết thành công</h6>
+                                <p>Tài khoản Google đã được liên kết với tài khoản của bạn.</p>
+                            </div>
+                        </div>
+
+                        <a href="@Url.Action("ConfirmUnlinkGoogle", "Profile")" class="btn btn-outline-danger">
+                            <i class="fas fa-unlink"></i> Hủy liên kết Google
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="google-status not-linked">
+                            <div class="status-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="status-content">
+                                <h6>Chưa liên kết</h6>
+                                <p>Bạn chưa liên kết tài khoản Google nào.</p>
+                            </div>
+                        </div>
+
+                        <a href="@Url.Action("LinkGoogle", "Profile")" class="btn btn-google">
+                            <i class="fab fa-google"></i> Liên kết với Google
+                        </a>
+                    }
+
+                    <div class="security-note">
+                        <i class="fas fa-shield-alt"></i>
+                        <strong>Bảo mật:</strong> Sau khi liên kết, bạn có thể đăng nhập bằng Google hoặc username/password.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Beautiful Styling -->
+<style>
+    /* Profile Card */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    .profile-card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .profile-card-header h3 {
+        margin: 0 0 10px 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .profile-card-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .profile-card-body {
+        padding: 30px;
+    }
+
+    /* Avatar Section */
+    .avatar-section {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+        margin: 15px 0;
+    }
+
+    .avatar-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+    }
+
+    .avatar-img:hover {
+        transform: scale(1.05);
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+
+    .avatar-container:hover .avatar-overlay {
+        opacity: 1;
+    }
+
+    .avatar-overlay i {
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    /* Form Styling */
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #374151;
+    }
+
+    .form-label i {
+        margin-right: 8px;
+        color: #667eea;
+    }
+
+    .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Form Actions */
+    .form-actions {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 20px;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px 30px;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        margin-right: 10px;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Google Card */
+    .google-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .google-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .google-card-header {
+        background: linear-gradient(135deg, #db4437 0%, #ea4335 100%);
+        color: white;
+        padding: 20px 30px;
+    }
+
+    .google-card-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .google-card-body {
+        padding: 30px;
+    }
+
+    .google-description {
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+
+    /* Google Status */
+    .google-status {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .google-status.linked {
+        background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+        border: 1px solid #10b981;
+    }
+
+    .google-status.not-linked {
+        background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+        border: 1px solid #3b82f6;
+    }
+
+    .status-icon {
+        font-size: 2rem;
+    }
+
+    .google-status.linked .status-icon {
+        color: #10b981;
+    }
+
+    .google-status.not-linked .status-icon {
+        color: #3b82f6;
+    }
+
+    .status-content h6 {
+        margin: 0 0 5px 0;
+        font-weight: 600;
+    }
+
+    .status-content p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    /* Google Button */
+    .btn-google {
+        background: linear-gradient(135deg, #db4437 0%, #ea4335 100%);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-google:hover {
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(219, 68, 55, 0.3);
+    }
+
+    /* Security Note */
+    .security-note {
+        margin-top: 20px;
+        padding: 15px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fef7e0 100%);
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #92400e;
+    }
+
+    .security-note i {
+        margin-right: 8px;
+    }
+
+    /* Animations */
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .profile-card, .google-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .google-card {
+        animation-delay: 0.2s;
+        animation-fill-mode: both;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+
+        .profile-card-body, .google-card-body {
+            padding: 20px;
+        }
+
+        .avatar-img {
+            width: 100px;
+            height: 100px;
+        }
+    }
+</style>
+
+<script>
+    // Avatar preview
+    document.getElementById('profileImageInput').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('avatarPreview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Make avatar clickable
+    document.querySelector('.avatar-container').addEventListener('click', function () {
+        document.getElementById('profileImageInput').click();
+    });
+</script>

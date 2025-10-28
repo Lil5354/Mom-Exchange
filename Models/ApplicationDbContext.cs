@@ -7,10 +7,14 @@ namespace B_M.Models
     {
         public ApplicationDbContext() : base("MomExchangeDB")
         {
+            // Disable initializer to prevent crashes when table doesn't exist yet
+            // Migration will be run manually via Package Manager Console: Update-Database
+            Database.SetInitializer<ApplicationDbContext>(null);
         }
 
         public DbSet<User> Users { get; set; }
         public DbSet<UserDetails> UserDetails { get; set; }
+        public DbSet<ApplicationSetting> ApplicationSettings { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -80,6 +84,37 @@ namespace B_M.Models
                 .HasOptional(u => u.UserDetails)
                 .WithRequired(ud => ud.User)
                 .WillCascadeOnDelete(true);
+
+            // Cấu hình bảng ApplicationSettings
+            modelBuilder.Entity<ApplicationSetting>()
+                .ToTable("ApplicationSettings")
+                .HasKey(s => s.Id);
+
+            modelBuilder.Entity<ApplicationSetting>()
+                .Property(s => s.Category)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<ApplicationSetting>()
+                .Property(s => s.Key)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<ApplicationSetting>()
+                .Property(s => s.DataType)
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<ApplicationSetting>()
+                .Property(s => s.Description)
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<ApplicationSetting>()
+                .Property(s => s.LastUpdated)
+                .IsRequired()
+                .HasColumnType("datetime2");
+
+            // Cấu hình bảng Notifications
+            
 
             base.OnModelCreating(modelBuilder);
         }

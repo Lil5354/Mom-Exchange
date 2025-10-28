@@ -46,6 +46,7 @@ namespace B_M.Models
         public int SuccessCount { get; set; }
         public int ErrorCount { get; set; }
         public int SkippedCount { get; set; }
+        public int EmailsSentCount { get; set; }
         public List<ImportUserError> Errors { get; set; } = new List<ImportUserError>();
         public List<ImportUserSuccess> SuccessUsers { get; set; } = new List<ImportUserSuccess>();
         public DateTime ImportTime { get; set; } = DateTime.Now;
@@ -69,7 +70,11 @@ namespace B_M.Models
         public byte Role { get; set; }
         public string RoleName { get; set; }
         public string GeneratedPassword { get; set; }
+        public bool EmailSent { get; set; }
+        public string EmailMessage { get; set; }
     }
 }
+
+
 
 

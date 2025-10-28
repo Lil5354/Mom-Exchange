@@ -300,7 +300,8 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid rgba(59, 130, 246, 0.1);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+            isolation: isolate;
         }
 
         .stat-card::before {
@@ -311,11 +312,13 @@
             right: 0;
             height: 4px;
             background: linear-gradient(90deg, var(--accent-blue), var(--secondary-blue));
+            z-index: 1;
         }
 
         .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
+            transform: translateY(-6px) scale(1.005);
             box-shadow: 0 16px 48px rgba(30, 58, 138, 0.2);
+            z-index: 10;
         }
 
         .stat-card .stat-icon {
@@ -330,6 +333,8 @@
             color: white;
             background: linear-gradient(135deg, var(--accent-blue), var(--secondary-blue));
             box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         .stat-card .stat-number {
@@ -340,6 +345,8 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 8px;
+            position: relative;
+            z-index: 3;
         }
 
         .stat-card .stat-label {
@@ -348,6 +355,8 @@
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            position: relative;
+            z-index: 3;
         }
 
         .table-admin {
@@ -744,20 +753,8 @@
                 <a href="@Url.Action("Users", "Admin", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Users" ? "active" : "")">
                     <i class="fas fa-users"></i> Quản lý người dùng
                 </a>
-                <a href="@Url.Action("CreateUser", "Admin", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "CreateUser" ? "active" : "")">
-                    <i class="fas fa-user-plus"></i> Tạo tài khoản
-                </a>
-                <a href="@Url.Action("ImportUsers", "Admin", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ImportUsers" ? "active" : "")">
-                    <i class="fas fa-file-import"></i> Import Excel
-                </a>
-                <a href="@Url.Action("Posts", "Admin", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Posts" ? "active" : "")">
-                    <i class="fas fa-newspaper"></i> Quản lý bài viết
-                </a>
                 <a href="@Url.Action("Reports", "Admin", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "")">
                     <i class="fas fa-chart-bar"></i> Báo cáo
-                </a>
-                <a href="@Url.Action("Settings", "Admin", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Settings" ? "active" : "")">
-                    <i class="fas fa-cog"></i> Cài đặt
                 </a>
                 <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;"></div>
                 <a href="@Url.Action("Index", "Home", new { area = "" })" class="admin-nav-item">
@@ -774,13 +771,41 @@
             <!-- Header -->
             <div class="admin-header">
                 <h1>@ViewBag.Title</h1>
-                <div class="admin-user-info">
-                    <div class="user-avatar">
-                        @(Session["FullName"]?.ToString().Substring(0, 1).ToUpper() ?? "A")
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <!-- Notification Bell -->
+                    <div class="notification-bell-container" style="position: relative;">
+                        <button class="notification-bell-btn" id="notificationBellBtn" style="background: none; border: none; position: relative; cursor: pointer;">
+                            <i class="fas fa-bell" style="font-size: 24px; color: var(--primary-blue);"></i>
+                            <span class="notification-badge" id="notificationBadge" style="display: none; position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center;">0</span>
+                        </button>
+                        
+                        <!-- Notification Dropdown -->
+                        <div class="notification-dropdown" id="notificationDropdown" style="display: none; position: absolute; right: 0; top: 45px; width: 350px; max-height: 500px; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1050; overflow: hidden;">
+                            <div class="notification-header" style="padding: 15px 20px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); color: white;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <h6 style="margin: 0; font-weight: 600;">Thông báo</h6>
+                                    <button class="btn btn-sm" onclick="markAllAsRead()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer;">
+                                        Đánh dấu đã đọc
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-list" id="notificationList" style="max-height: 400px; overflow-y: auto;">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: var(--primary-blue);"></i>
+                                    <p class="mt-2 text-muted">Đang tải...</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="user-details">
-                        <h6>@Session["FullName"]</h6>
-                        <small>Quản trị viên</small>
+
+                    <div class="admin-user-info">
+                        <div class="user-avatar">
+                            @(Session["FullName"]?.ToString().Substring(0, 1).ToUpper() ?? "A")
+                        </div>
+                        <div class="user-details">
+                            <h6>@Session["FullName"]</h6>
+                            <small>Quản trị viên</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -822,6 +847,125 @@
         setTimeout(function() {
             $('.alert').fadeOut();
         }, 5000);
+    </script>
+
+    <!-- Notification Bell JavaScript -->
+    <script>
+        // Notification Bell functionality
+        $(document).ready(function() {
+            // Toggle notification dropdown
+            $('#notificationBellBtn').on('click', function(e) {
+                e.stopPropagation();
+                $('#notificationDropdown').toggle();
+                if ($('#notificationDropdown').is(':visible')) {
+                    loadNotifications();
+                }
+            });
+
+            // Close dropdown when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.notification-bell-container').length) {
+                    $('#notificationDropdown').hide();
+                }
+            });
+
+            // Load unread count on page load
+            loadNotificationCount();
+
+            // Poll for new notifications every 30 seconds
+            setInterval(loadNotificationCount, 30000);
+        });
+
+        // Load notification count
+        function loadNotificationCount() {
+            $.ajax({
+                url: '@Url.Action("GetUnreadCount", "NotificationApi", new { area = "" })',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success && response.count > 0) {
+                        $('#notificationBadge').text(response.count > 9 ? '9+' : response.count).show();
+                    } else {
+                        $('#notificationBadge').hide();
+                    }
+                },
+                error: function() {
+                    console.log('Error loading notification count');
+                }
+            });
+        }
+
+        // Load notifications list
+        function loadNotifications() {
+            $.ajax({
+                url: '@Url.Action("GetNotifications", "NotificationApi", new { area = "" })',
+                type: 'GET',
+                data: { page: 0, size: 10 },
+                success: function(response) {
+                    if (response.success && response.data && response.data.length > 0) {
+                        var html = '';
+                        response.data.forEach(function(notif) {
+                            var unreadClass = notif.IsRead ? '' : 'unread';
+                            var unreadStyle = notif.IsRead ? '' : 'background: #f0f9ff; border-left: 3px solid #3b82f6;';
+                            
+                            html += '<div class="notification-item ' + unreadClass + '" style="padding: 15px 20px; border-bottom: 1px solid #e5e7eb; cursor: pointer; transition: background 0.2s; ' + unreadStyle + '" onclick="markAsRead(' + notif.Id + ', \'' + (notif.Link || '#') + '\')">';
+                            html += '<div style="display: flex; justify-content: space-between;">';
+                            html += '<strong style="color: #1e3a8a; font-size: 14px;">' + notif.Title + '</strong>';
+                            html += '<small style="color: #6b7280;">' + formatDate(notif.CreatedAt) + '</small>';
+                            html += '</div>';
+                            html += '<p style="margin: 5px 0 0 0; color: #4b5563; font-size: 13px;">' + notif.Message + '</p>';
+                            html += '</div>';
+                        });
+                        $('#notificationList').html(html);
+                    } else {
+                        $('#notificationList').html('<div class="text-center py-4"><i class="fas fa-inbox" style="font-size: 40px; color: #d1d5db;"></i><p class="mt-2 text-muted">Không có thông báo mới</p></div>');
+                    }
+                },
+                error: function() {
+                    $('#notificationList').html('<div class="text-center py-4"><i class="fas fa-exclamation-circle text-danger"></i><p class="mt-2 text-danger">Lỗi tải thông báo</p></div>');
+                }
+            });
+        }
+
+        // Mark single notification as read and navigate
+        function markAsRead(id, link) {
+            $.ajax({
+                url: '@Url.Action("MarkAsRead", "NotificationApi", new { area = "" })',
+                type: 'POST',
+                data: { id: id },
+                success: function() {
+                    loadNotificationCount();
+                    if (link && link !== '#') {
+                        window.location.href = link;
+                    }
+                }
+            });
+        }
+
+        // Mark all as read
+        function markAllAsRead() {
+            $.ajax({
+                url: '@Url.Action("MarkAllAsRead", "NotificationApi", new { area = "" })',
+                type: 'POST',
+                success: function() {
+                    loadNotificationCount();
+                    loadNotifications();
+                }
+            });
+        }
+
+        // Format date helper
+        function formatDate(dateString) {
+            var date = new Date(dateString);
+            var now = new Date();
+            var diff = Math.floor((now - date) / 1000); // seconds
+
+            if (diff < 60) return 'Vừa xong';
+            if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
+            if (diff < 604800) return Math.floor(diff / 86400) + ' ngày trước';
+            
+            return date.toLocaleDateString('vi-VN');
+        }
     </script>
 
     @RenderSection("scripts", required: false)

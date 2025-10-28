@@ -4,323 +4,1246 @@
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<!-- Statistics Overview -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon">
+<style>
+    /* Compact Stats for Reports */
+    .compact-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .compact-stat-card {
+        background: var(--white);
+        padding: 16px;
+        border-radius: 10px;
+        box-shadow: 0 3px 12px rgba(30, 58, 138, 0.06);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(59, 130, 246, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .compact-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent-blue), var(--secondary-blue));
+    }
+
+    .compact-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(30, 58, 138, 0.12);
+    }
+
+    .compact-stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .compact-stat-content {
+        flex: 1;
+    }
+
+    .compact-stat-number {
+        font-size: 24px;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .compact-stat-label {
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    /* Compact Table */
+    .compact-table-wrapper {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .compact-table-wrapper::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .compact-table-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .compact-table-wrapper::-webkit-scrollbar-thumb {
+        background: var(--accent-blue);
+        border-radius: 10px;
+    }
+
+    .compact-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .compact-table th,
+    .compact-table td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.08);
+        font-size: 13px;
+    }
+
+    .compact-table th {
+        background: linear-gradient(135deg, var(--pastel-blue), var(--light-blue));
+        font-weight: 700;
+        color: var(--text-dark);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .compact-table tr:hover {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.02), rgba(59, 130, 246, 0.02));
+    }
+
+    .compact-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+
+    .compact-user-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .compact-user-name {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 12px;
+    }
+</style>
+
+<!-- Compact Statistics Overview -->
+<div class="compact-stats-grid">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
             <i class="fas fa-users"></i>
         </div>
-        <div class="stat-number">@Model.TotalUsers</div>
-        <div class="stat-label">Tổng người dùng</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.TotalUsers</div>
+            <div class="compact-stat-label">Tổng người dùng</div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
             <i class="fas fa-user-check"></i>
         </div>
-        <div class="stat-number">@Model.ActiveUsers</div>
-        <div class="stat-label">Người dùng hoạt động</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.ActiveUsers</div>
+            <div class="compact-stat-label">Hoạt động</div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
             <i class="fas fa-crown"></i>
         </div>
-        <div class="stat-number">@Model.AdminUsers</div>
-        <div class="stat-label">Quản trị viên</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.AdminUsers</div>
+            <div class="compact-stat-label">Quản trị viên</div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
             <i class="fas fa-baby"></i>
         </div>
-        <div class="stat-number">@Model.MomUsers</div>
-        <div class="stat-label">Mẹ bỉm</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.MomUsers</div>
+            <div class="compact-stat-label">Mẹ bỉm</div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
             <i class="fas fa-store"></i>
         </div>
-        <div class="stat-number">@Model.BrandUsers</div>
-        <div class="stat-label">Nhãn hàng</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.BrandUsers</div>
+            <div class="compact-stat-label">Nhãn hàng</div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
             <i class="fas fa-user-plus"></i>
         </div>
-        <div class="stat-number">@Model.NewUsersThisMonth</div>
-        <div class="stat-label">Người dùng mới tháng này</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.NewUsersThisMonth</div>
+            <div class="compact-stat-label">Mới tháng này</div>
+        </div>
     </div>
 </div>
 
-<!-- Main Reports Content -->
-<div class="admin-card">
+<!-- Chart Type Selector -->
+<div class="admin-card" style="margin-bottom: 25px;">
     <div class="admin-card-header">
         <h5><i class="fas fa-chart-bar"></i> Báo cáo thống kê</h5>
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <select id="chartTypeSelector" class="form-control" style="width: 250px; padding: 8px 16px;">
+                <option value="overview">📊 Tổng quan</option>
+                <option value="userGrowth">📈 Tăng trưởng người dùng</option>
+                <option value="roleDistribution">🥧 Phân bố vai trò</option>
+                <option value="monthlyActivity">📊 Hoạt động theo tháng</option>
+                <option value="postTrends">📉 Xu hướng bài đăng</option>
+                <option value="accountStatus">⚡ Trạng thái tài khoản</option>
+                <option value="regionStats">🗺️ Thống kê khu vực</option>
+            </select>
             <button id="refreshReports" class="btn-admin-secondary" style="padding: 8px 16px;">
                 <i class="fas fa-sync-alt"></i> Làm mới
             </button>
-            <span style="color: #7f8c8d; font-size: 14px;">
+            <span id="lastUpdateTime" style="color: #7f8c8d; font-size: 14px;">
                 Cập nhật lần cuối: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
             </span>
         </div>
     </div>
     <div class="admin-card-body">
+        <!-- Single Chart Container (for selected chart) -->
+        <div id="singleChartContainer" style="display: none; min-height: 400px;"></div>
+
+        <!-- Multi-Chart Overview (shown by default) -->
+        <div id="overviewCharts" style="display: block;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 25px;">
         <!-- User Growth Chart -->
-        <div class="admin-card" style="margin-bottom: 25px;">
+                <div class="admin-card">
             <div class="admin-card-header">
-                <h6><i class="fas fa-chart-line"></i> Biểu đồ tăng trưởng người dùng</h6>
+                        <h6><i class="fas fa-chart-line"></i> Tăng trưởng người dùng (6 tháng)</h6>
             </div>
             <div class="admin-card-body">
-                <div id="userGrowthChart" style="height: 300px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6c757d;">
-                    <div style="text-align: center;">
-                        <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
-                        <p>Biểu đồ sẽ được hiển thị ở đây</p>
-                        <small>Chức năng biểu đồ đang được phát triển</small>
-                    </div>
-                </div>
+                        <div id="userGrowthChart"></div>
             </div>
         </div>
 
-        <!-- User Distribution -->
-        <div class="admin-card" style="margin-bottom: 25px;">
+                <!-- Role Distribution Chart -->
+                <div class="admin-card">
             <div class="admin-card-header">
-                <h6><i class="fas fa-pie-chart"></i> Phân bố người dùng theo vai trò</h6>
+                        <h6><i class="fas fa-pie-chart"></i> Phân bố vai trò</h6>
             </div>
             <div class="admin-card-body">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                    <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border-radius: 12px;">
-                        <div style="font-size: 36px; font-weight: 700; color: #1976d2;">@Model.AdminUsers</div>
-                        <div style="color: #1976d2; font-weight: 600;">Quản trị viên</div>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            @if (Model.TotalUsers > 0)
-                            {
-                                @Math.Round((double)Model.AdminUsers / Model.TotalUsers * 100, 1)@:%
-                            }
-                            else
-                            {
-                                <text>0%</text>
-                            }
+                        <div id="roleDistributionChart"></div>
                         </div>
                     </div>
                     
-                    <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #fff3e0, #fce4ec); border-radius: 12px;">
-                        <div style="font-size: 36px; font-weight: 700; color: #f57c00;">@Model.MomUsers</div>
-                        <div style="color: #f57c00; font-weight: 600;">Mẹ bỉm</div>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            @if (Model.TotalUsers > 0)
-                            {
-                                @Math.Round((double)Model.MomUsers / Model.TotalUsers * 100, 1)@:%
-                            }
-                            else
-                            {
-                                <text>0%</text>
-                            }
+                <!-- Monthly Activity Chart -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h6><i class="fas fa-chart-bar"></i> Hoạt động hàng tháng</h6>
+                    </div>
+                    <div class="admin-card-body">
+                        <div id="monthlyActivityChart"></div>
                         </div>
                     </div>
                     
-                    <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #e8f5e8, #f1f8e9); border-radius: 12px;">
-                        <div style="font-size: 36px; font-weight: 700; color: #388e3c;">@Model.BrandUsers</div>
-                        <div style="color: #388e3c; font-weight: 600;">Nhãn hàng</div>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            @if (Model.TotalUsers > 0)
-                            {
-                                @Math.Round((double)Model.BrandUsers / Model.TotalUsers * 100, 1)@:%
-                            }
-                            else
-                            {
-                                <text>0%</text>
-                            }
+                <!-- Account Status Chart -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h6><i class="fas fa-power-off"></i> Trạng thái tài khoản</h6>
+                    </div>
+                    <div class="admin-card-body">
+                        <div id="accountStatusChart"></div>
+                    </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Users -->
-        @if (Model.RecentUsers.Any())
-        {
-            <div class="admin-card">
-                <div class="admin-card-header">
-                    <h6><i class="fas fa-user-clock"></i> Người dùng mới nhất</h6>
-                </div>
-                <div class="admin-card-body">
-                    <div class="table-responsive">
-                        <table class="table-admin">
-                            <thead>
-                                <tr>
-                                    <th>Thông tin</th>
-                                    <th>Email</th>
-                                    <th>Vai trò</th>
-                                    <th>Trạng thái</th>
-                                    <th>Ngày tạo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var user in Model.RecentUsers)
-                                {
-                                    <tr>
-                                        <td>
-                                            <div style="display: flex; align-items: center; gap: 10px;">
-                                                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #e74c3c, #c0392b); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px;">
-                                                    @(user.UserDetails?.FullName?.Substring(0, 1).ToUpper() ?? "U")
-                                                </div>
-                                                <div>
-                                                    <div style="font-weight: 600; color: #2c3e50;">@(user.UserDetails?.FullName ?? "Chưa cập nhật")</div>
-                                                    <div style="font-size: 12px; color: #7f8c8d;">@(user.UserName ?? "Không có tên đăng nhập")</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>@user.Email</td>
-                                        <td>
-                                            @{
-                                                string roleName = "";
-                                                string roleClass = "";
-                                                switch (user.Role)
-                                                {
-                                                    case 1:
-                                                        roleName = "Quản trị viên";
-                                                        roleClass = "badge-danger";
-                                                        break;
-                                                    case 2:
-                                                        roleName = "Mẹ bỉm";
-                                                        roleClass = "badge-warning";
-                                                        break;
-                                                    case 3:
-                                                        roleName = "Nhãn hàng";
-                                                        roleClass = "badge-info";
-                                                        break;
-                                                    default:
-                                                        roleName = "Không xác định";
-                                                        roleClass = "badge-secondary";
-                                                        break;
-                                                }
-                                            }
-                                            <span class="badge @roleClass">@roleName</span>
-                                        </td>
-                                        <td>
-                                            @if (user.IsActive)
-                                            {
-                                                <span class="badge badge-success">Hoạt động</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge badge-danger">Bị khóa</span>
-                                            }
-                                        </td>
-                                        <td>@user.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="admin-card">
-                <div class="admin-card-header">
-                    <h6><i class="fas fa-user-clock"></i> Người dùng mới nhất</h6>
-                </div>
-                <div class="admin-card-body">
-                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                        <i class="fas fa-users" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
-                        <p>Chưa có người dùng nào</p>
-                    </div>
-                </div>
-            </div>
-        }
-
-        <!-- System Status -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h6><i class="fas fa-server"></i> Trạng thái hệ thống</h6>
-            </div>
-            <div class="admin-card-body">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                    <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #28a745;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="status-indicator active"></div>
-                            <div>
-                                <div style="font-weight: 600; color: #28a745;">Hệ thống hoạt động</div>
-                                <div style="font-size: 12px; color: #666;">Tất cả dịch vụ đang chạy bình thường</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #17a2b8;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="status-indicator active"></div>
-                            <div>
-                                <div style="font-weight: 600; color: #17a2b8;">Cơ sở dữ liệu</div>
-                                <div style="font-size: 12px; color: #666;">Kết nối ổn định</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #ffc107;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="status-indicator warning"></div>
-                            <div>
-                                <div style="font-weight: 600; color: #ffc107;">Bộ nhớ</div>
-                                <div style="font-size: 12px; color: #666;">Sử dụng 75% dung lượng</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<!-- Recent Users - Compact Version -->
+@if (Model.RecentUsers != null && Model.RecentUsers.Any())
+{
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h6><i class="fas fa-user-clock"></i> Người dùng mới nhất</h6>
+        </div>
+        <div class="admin-card-body" style="padding: 0;">
+            <div class="compact-table-wrapper">
+                <table class="compact-table">
+                    <thead>
+                        <tr>
+                            <th>Người dùng</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.RecentUsers)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="compact-user-info">
+                                        <div class="compact-avatar" style="background: linear-gradient(135deg, #0ea5e9, #3b82f6);">
+                                            @(user.UserDetails?.FullName?.Substring(0, 1).ToUpper() ?? "U")
+                                        </div>
+                                        <div>
+                                            <div class="compact-user-name">@(user.UserDetails?.FullName ?? "Chưa cập nhật")</div>
+                                            <div style="font-size: 10px; color: var(--text-light);">@(user.UserName ?? "N/A")</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="color: var(--text-light); font-size: 12px;">@user.Email</td>
+                                <td>
+                                    @{
+                                        string roleName = "";
+                                        string roleClass = "";
+                                        switch (user.Role)
+                                        {
+                                            case 1:
+                                                roleName = "Admin";
+                                                roleClass = "badge-danger";
+                                                break;
+                                            case 2:
+                                                roleName = "Mẹ bỉm";
+                                                roleClass = "badge-warning";
+                                                break;
+                                            case 3:
+                                                roleName = "Nhãn hàng";
+                                                roleClass = "badge-info";
+                                                break;
+                                            default:
+                                                roleName = "N/A";
+                                                roleClass = "badge-secondary";
+                                                break;
+                                        }
+                                    }
+                                    <span class="badge @roleClass" style="font-size: 10px; padding: 3px 8px;">@roleName</span>
+                                </td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge badge-success" style="font-size: 10px; padding: 3px 8px;">
+                                            <i class="fas fa-check-circle"></i> Hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger" style="font-size: 10px; padding: 3px 8px;">
+                                            <i class="fas fa-ban"></i> Khóa
+                                        </span>
+                                    }
+                                </td>
+                                <td style="color: var(--text-light); font-size: 12px;">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
+}
+
+<style>
+    /* ===== FIX CHART OVERLAP ISSUES ===== */
+    
+    /* 1. Fix ApexCharts Toolbar Position */
+    .apexcharts-toolbar {
+        z-index: 100 !important;
+        top: 0px !important;
+        right: 5px !important;
+    }
+    
+    .apexcharts-menu {
+        z-index: 1000 !important;
+        background: white !important;
+        border: 1px solid rgba(59, 130, 246, 0.2) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 8px 32px rgba(30, 58, 138, 0.2) !important;
+    }
+    
+    .apexcharts-menu-item {
+        padding: 10px 20px !important;
+        font-size: 14px !important;
+        color: #1e3a8a !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .apexcharts-menu-item:hover {
+        background: rgba(14, 165, 233, 0.1) !important;
+        color: #0ea5e9 !important;
+    }
+    
+    /* 2. Fix Chart Containers - Cho phép toolbar hiển thị bên ngoài */
+    .admin-card {
+        position: relative;
+        z-index: auto;
+        overflow: visible !important;
+    }
+    
+    .admin-card-body {
+        position: relative;
+        z-index: auto;
+        overflow: visible !important;
+        padding: 30px 30px 20px 30px;
+    }
+    
+    /* 3. Fix Overview Charts Grid */
+    #overviewCharts {
+        position: relative;
+        z-index: auto;
+    }
+    
+    #overviewCharts .admin-card {
+        overflow: visible !important;
+    }
+    
+    #overviewCharts .admin-card-body {
+        min-height: 400px;
+        overflow: visible !important;
+        padding-top: 35px;
+    }
+    
+    /* 4. Fix ApexCharts Canvas - Đảm bảo không bị crop */
+    .apexcharts-canvas {
+        overflow: visible !important;
+    }
+    
+    .apexcharts-svg {
+        overflow: visible !important;
+    }
+    
+    /* 5. Giảm opacity selection box */
+    .apexcharts-selection-rect {
+        opacity: 0.3 !important;
+    }
+    
+    /* 6. Improve Toolbar Icons Style */
+    .apexcharts-toolbar > div {
+        margin: 0 3px !important;
+    }
+    
+    .apexcharts-zoom-icon,
+    .apexcharts-zoomin-icon,
+    .apexcharts-zoomout-icon,
+    .apexcharts-reset-icon,
+    .apexcharts-download-icon,
+    .apexcharts-menu-icon {
+        width: 20px !important;
+        height: 20px !important;
+        cursor: pointer !important;
+        color: #0ea5e9 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .apexcharts-zoom-icon:hover,
+    .apexcharts-zoomin-icon:hover,
+    .apexcharts-zoomout-icon:hover,
+    .apexcharts-reset-icon:hover,
+    .apexcharts-download-icon:hover,
+    .apexcharts-menu-icon:hover {
+        transform: scale(1.15) !important;
+        color: #1e3a8a !important;
+    }
+    
+    /* 7. Fix Single Chart Container */
+    #singleChartContainer {
+        position: relative;
+        overflow: visible !important;
+        padding-top: 20px;
+    }
+    
+    /* 8. Responsive Fixes */
+    @@media (max-width: 768px) {
+        .apexcharts-toolbar {
+            top: -5px !important;
+            right: 0px !important;
+        }
+        
+        .admin-card-body {
+            padding: 25px 20px 15px 20px !important;
+        }
+        
+        #overviewCharts .admin-card-body {
+            padding-top: 30px !important;
+        }
+    }
+</style>
 
 @section scripts {
+    <!-- ApexCharts Library -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
     <script>
+        // Ocean Blue Theme Colors
+        const chartColors = {
+            primary: '#1e3a8a',
+            secondary: '#3b82f6',
+            accent: '#0ea5e9',
+            success: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            info: '#06b6d4',
+            gradient: ['#0ea5e9', '#3b82f6', '#1e3a8a']
+        };
+
+        // Calculate monthly data
+        const monthNames = ['Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10'];
+        const totalUsers = @Model.TotalUsers;
+        const newUsersThisMonth = @Model.NewUsersThisMonth;
+        
+        // Generate growth data (simulate previous months)
+        const userGrowthData = [];
+        const newUsersData = [];
+        for (let i = 0; i < 5; i++) {
+            const prevTotal = Math.max(0, totalUsers - (5 - i) * Math.ceil(newUsersThisMonth * 1.2));
+            userGrowthData.push(prevTotal);
+            newUsersData.push(Math.ceil(newUsersThisMonth * (0.8 + Math.random() * 0.4)));
+        }
+        userGrowthData.push(totalUsers);
+        newUsersData.push(newUsersThisMonth);
+
+        // Sample Data
+        const chartData = {
+            userGrowth: {
+                months: monthNames,
+                users: userGrowthData,
+                newUsers: newUsersData
+            },
+            roleDistribution: {
+                labels: ['Quản trị viên', 'Mẹ bỉm', 'Nhãn hàng'],
+                series: [@Model.AdminUsers, @Model.MomUsers, @Model.BrandUsers]
+            },
+            monthlyActivity: {
+                months: ['T5', 'T6', 'T7', 'T8', 'T9', 'T10'],
+                newUsers: newUsersData,
+                posts: [28, 35, 42, 38, 45, 52],
+                interactions: [120, 145, 168, 182, 195, 210]
+            },
+            accountStatus: {
+                active: @Model.ActiveUsers,
+                inactive: @(Model.TotalUsers - Model.ActiveUsers)
+            },
+            postTrends: {
+                months: monthNames,
+                posts: [31, 40, 28, 51, 42, 65]
+            },
+            regionStats: {
+                regions: ['Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'],
+                users: [45, 38, 22, 18, 15]
+            }
+        };
+
+        // Store chart instances
+        var charts = {};
+
+        // Chart configurations
+        function createUserGrowthChart(elementId) {
+            var options = {
+                series: [{
+                    name: 'Tổng người dùng',
+                    data: chartData.userGrowth.users
+                }, {
+                    name: 'Người dùng mới',
+                    data: chartData.userGrowth.newUsers
+                }],
+                chart: {
+                    height: 350,
+                    type: 'line',
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 150
+                        },
+                        dynamicAnimation: {
+                            enabled: true,
+                            speed: 350
+                        }
+                    },
+                    toolbar: {
+                        show: true,
+                        offsetY: -5,
+                        offsetX: -5,
+                        tools: {
+                            download: true,
+                            selection: false,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true,
+                            pan: false,
+                            reset: true
+                        },
+                        export: {
+                            csv: {
+                                filename: 'user-growth-data'
+                            },
+                            svg: {
+                                filename: 'user-growth-chart'
+                            },
+                            png: {
+                                filename: 'user-growth-chart'
+                            }
+                        },
+                        autoSelected: 'zoom'
+                    },
+                    zoom: {
+                        enabled: true,
+                        type: 'x',
+                        autoScaleYaxis: true
+                    }
+                },
+                colors: [chartColors.accent, chartColors.success],
+                dataLabels: {
+                    enabled: true,
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                    }
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                grid: {
+                    borderColor: '#e7e7e7',
+                    row: {
+                        colors: ['#f3f3f3', 'transparent'],
+                        opacity: 0.5
+                    },
+                    padding: {
+                        top: 15,
+                        right: 20,
+                        bottom: 10,
+                        left: 10
+                    }
+                },
+                markers: {
+                    size: 6,
+                    hover: {
+                        size: 9
+                    }
+                },
+                xaxis: {
+                    categories: chartData.userGrowth.months,
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 600
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Số lượng',
+                        style: {
+                            fontSize: '14px',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right',
+                    fontSize: '14px',
+                    fontWeight: 600
+                },
+                tooltip: {
+                    theme: 'light',
+                    x: {
+                        show: true
+                    },
+                    y: {
+                        formatter: function(val) {
+                            return val + " người dùng"
+                        }
+                    }
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+            chart.render();
+            return chart;
+        }
+
+        function createRoleDistributionChart(elementId) {
+            var options = {
+                series: chartData.roleDistribution.series,
+                chart: {
+                    type: 'donut',
+                    height: 350,
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 150
+                        }
+                    }
+                },
+                labels: chartData.roleDistribution.labels,
+                colors: [chartColors.danger, chartColors.warning, chartColors.info],
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '70%',
+                            labels: {
+                                show: true,
+                                total: {
+                                    show: true,
+                                    label: 'Tổng',
+                                    fontSize: '18px',
+                                    fontWeight: 700,
+                                    color: chartColors.primary,
+                                    formatter: function (w) {
+                                        return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                    }
+                                },
+                                value: {
+                                    fontSize: '24px',
+                                    fontWeight: 700,
+                                    color: chartColors.accent
+                                }
+                            }
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val, opts) {
+                        return opts.w.config.series[opts.seriesIndex]
+                    },
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    fontSize: '14px',
+                    fontWeight: 600
+                },
+                tooltip: {
+                    theme: 'light',
+                    y: {
+                        formatter: function(val) {
+                            return val + " người"
+                        }
+                    }
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+            chart.render();
+            return chart;
+        }
+
+        function createMonthlyActivityChart(elementId) {
+            var options = {
+                series: [{
+                    name: 'Người dùng mới',
+                    data: chartData.monthlyActivity.newUsers
+                }, {
+                    name: 'Bài đăng',
+                    data: chartData.monthlyActivity.posts
+                }, {
+                    name: 'Tương tác',
+                    data: chartData.monthlyActivity.interactions
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800
+                    },
+                    toolbar: {
+                        show: true,
+                        offsetY: -5,
+                        offsetX: -5,
+                        tools: {
+                            download: true,
+                            selection: false,
+                            zoom: false,
+                            zoomin: false,
+                            zoomout: false,
+                            pan: false,
+                            reset: false
+                        },
+                        export: {
+                            csv: {
+                                filename: 'monthly-activity-data'
+                            },
+                            png: {
+                                filename: 'monthly-activity-chart'
+                            }
+                        }
+                    }
+                },
+                colors: chartColors.gradient,
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        borderRadius: 8,
+                        dataLabels: {
+                            position: 'top'
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    offsetY: -20,
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        colors: [chartColors.primary]
+                    }
+                },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                xaxis: {
+                    categories: chartData.monthlyActivity.months,
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 600
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Số lượng',
+                        style: {
+                            fontSize: '14px',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                fill: {
+                    opacity: 1
+                },
+                legend: {
+                    position: 'top',
+                    fontSize: '14px',
+                    fontWeight: 600
+                },
+                tooltip: {
+                    theme: 'light',
+                    y: {
+                        formatter: function (val) {
+                            return val
+                        }
+                    }
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+            chart.render();
+            return chart;
+        }
+
+        function createAccountStatusChart(elementId) {
+            var activePercentage = Math.round((chartData.accountStatus.active / (@Model.TotalUsers || 1)) * 100);
+            
+            var options = {
+                series: [activePercentage],
+                chart: {
+                    height: 350,
+                    type: 'radialBar',
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800,
+                        animateGradually: {
+                            enabled: true,
+                            delay: 150
+                        }
+                    }
+                },
+                plotOptions: {
+                    radialBar: {
+                        startAngle: -135,
+                        endAngle: 135,
+                        hollow: {
+                            margin: 0,
+                            size: '70%',
+                            background: '#fff',
+                            position: 'front',
+                            dropShadow: {
+                                enabled: true,
+                                top: 3,
+                                left: 0,
+                                blur: 4,
+                                opacity: 0.24
+                            }
+                        },
+                        track: {
+                            background: '#e7e7e7',
+                            strokeWidth: '67%',
+                            margin: 0,
+                            dropShadow: {
+                                enabled: true,
+                                top: -3,
+                                left: 0,
+                                blur: 4,
+                                opacity: 0.35
+                            }
+                        },
+                        dataLabels: {
+                            show: true,
+                            name: {
+                                offsetY: -10,
+                                show: true,
+                                color: chartColors.primary,
+                                fontSize: '17px',
+                                fontWeight: 700
+                            },
+                            value: {
+                                formatter: function(val) {
+                                    return parseInt(val) + "%";
+                                },
+                                color: chartColors.accent,
+                                fontSize: '36px',
+                                fontWeight: 700,
+                                show: true
+                            }
+                        }
+                    }
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: 'dark',
+                        type: 'horizontal',
+                        shadeIntensity: 0.5,
+                        gradientToColors: [chartColors.accent],
+                        inverseColors: true,
+                        opacityFrom: 1,
+                        opacityTo: 1,
+                        stops: [0, 100]
+                    }
+                },
+                stroke: {
+                    lineCap: 'round'
+                },
+                labels: ['Tài khoản hoạt động']
+            };
+
+            var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+            chart.render();
+            return chart;
+        }
+
+        function createPostTrendsChart(elementId) {
+            var options = {
+                series: [{
+                    name: 'Bài đăng',
+                    data: chartData.postTrends.posts
+                }],
+                chart: {
+                    type: 'area',
+                    height: 400,
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800
+                    },
+                    toolbar: {
+                        show: true,
+                        offsetY: -5,
+                        offsetX: -5,
+                        tools: {
+                            download: true,
+                            selection: false,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true,
+                            pan: false,
+                            reset: true
+                        },
+                        export: {
+                            csv: {
+                                filename: 'post-trends-data'
+                            },
+                            png: {
+                                filename: 'post-trends-chart'
+                            }
+                        },
+                        autoSelected: 'zoom'
+                    }
+                },
+                colors: [chartColors.accent],
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.2,
+                        stops: [0, 90, 100]
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                    }
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                xaxis: {
+                    categories: chartData.postTrends.months,
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 600
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Số bài đăng',
+                        style: {
+                            fontSize: '14px',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                tooltip: {
+                    theme: 'light',
+                    y: {
+                        formatter: function(val) {
+                            return val + " bài đăng"
+                        }
+                    }
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+            chart.render();
+            return chart;
+        }
+
+        function createRegionStatsChart(elementId) {
+            var options = {
+                series: [{
+                    name: 'Số người dùng',
+                    data: chartData.regionStats.users
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 400,
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800
+                    },
+                    toolbar: {
+                        show: true,
+                        offsetY: -5,
+                        offsetX: -5,
+                        tools: {
+                            download: true,
+                            selection: false,
+                            zoom: false,
+                            zoomin: false,
+                            zoomout: false,
+                            pan: false,
+                            reset: false
+                        },
+                        export: {
+                            csv: {
+                                filename: 'region-stats-data'
+                            },
+                            png: {
+                                filename: 'region-stats-chart'
+                            }
+                        }
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        borderRadius: 8,
+                        dataLabels: {
+                            position: 'top'
+                        }
+                    }
+                },
+                colors: [chartColors.accent],
+                dataLabels: {
+                    enabled: true,
+                    offsetX: 30,
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        colors: [chartColors.primary]
+                    }
+                },
+                xaxis: {
+                    categories: chartData.regionStats.regions,
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 600
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Khu vực',
+                        style: {
+                            fontSize: '14px',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                tooltip: {
+                    theme: 'light',
+                    y: {
+                        formatter: function(val) {
+                            return val + " người dùng"
+                        }
+                    }
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+            chart.render();
+            return chart;
+        }
+
+        // Initialize all charts
+        function initializeOverviewCharts() {
+            if (charts.userGrowth) charts.userGrowth.destroy();
+            if (charts.roleDistribution) charts.roleDistribution.destroy();
+            if (charts.monthlyActivity) charts.monthlyActivity.destroy();
+            if (charts.accountStatus) charts.accountStatus.destroy();
+
+            charts.userGrowth = createUserGrowthChart('userGrowthChart');
+            charts.roleDistribution = createRoleDistributionChart('roleDistributionChart');
+            charts.monthlyActivity = createMonthlyActivityChart('monthlyActivityChart');
+            charts.accountStatus = createAccountStatusChart('accountStatusChart');
+        }
+
+        // Handle chart type selection
+        function showSelectedChart(chartType) {
+            var overviewDiv = document.getElementById('overviewCharts');
+            var singleDiv = document.getElementById('singleChartContainer');
+            
+            if (chartType === 'overview') {
+                overviewDiv.style.display = 'block';
+                singleDiv.style.display = 'none';
+                initializeOverviewCharts();
+            } else {
+                overviewDiv.style.display = 'none';
+                singleDiv.style.display = 'block';
+                singleDiv.innerHTML = '<div id="selectedChart"></div>';
+                
+                // Destroy previous single chart if exists
+                if (charts.selectedChart) {
+                    charts.selectedChart.destroy();
+                }
+                
+                // Create new chart based on selection
+                switch(chartType) {
+                    case 'userGrowth':
+                        charts.selectedChart = createUserGrowthChart('selectedChart');
+                        break;
+                    case 'roleDistribution':
+                        charts.selectedChart = createRoleDistributionChart('selectedChart');
+                        break;
+                    case 'monthlyActivity':
+                        charts.selectedChart = createMonthlyActivityChart('selectedChart');
+                        break;
+                    case 'accountStatus':
+                        charts.selectedChart = createAccountStatusChart('selectedChart');
+                        break;
+                    case 'postTrends':
+                        charts.selectedChart = createPostTrendsChart('selectedChart');
+                        break;
+                    case 'regionStats':
+                        charts.selectedChart = createRegionStatsChart('selectedChart');
+                        break;
+                }
+            }
+        }
+
+        // Document ready
         $(document).ready(function() {
-            // Refresh reports functionality
+            // Initialize overview charts on load
+            initializeOverviewCharts();
+            
+            // Chart type selector
+            $('#chartTypeSelector').on('change', function() {
+                var selectedType = $(this).val();
+                showSelectedChart(selectedType);
+            });
+            
+            // Refresh reports
             $('#refreshReports').on('click', function() {
                 var button = $(this);
                 var originalText = button.html();
                 
-                // Show loading state
                 button.html('<i class="fas fa-spinner fa-spin"></i> Đang tải...');
                 button.prop('disabled', true);
                 
-                // Simulate refresh (in real implementation, this would make an AJAX call)
                 setTimeout(function() {
+                    // Reinitialize charts based on current view
+                    var selectedType = $('#chartTypeSelector').val();
+                    showSelectedChart(selectedType);
+                    
                     button.html(originalText);
                     button.prop('disabled', false);
                     
                     // Update timestamp
                     var now = new Date();
                     var timeString = now.toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN');
-                    $('span:contains("Cập nhật lần cuối")').text('Cập nhật lần cuối: ' + timeString);
+                    $('#lastUpdateTime').text('Cập nhật lần cuối: ' + timeString);
                     
-                    showAlert('success', 'Báo cáo đã được làm mới thành công!');
+                    // Show success message
+                    var alertHtml = '<div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">' +
+                        '<strong>Thành công!</strong> Báo cáo đã được làm mới!' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="float: right; background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>' +
+                        '</div>';
+                    $('.admin-content').prepend(alertHtml);
+                    setTimeout(function() { $('.alert').fadeOut(); }, 3000);
                 }, 1500);
             });
-
-            // Initialize charts (placeholder for future implementation)
-            initializeCharts();
         });
-
-        function initializeCharts() {
-            // Placeholder for chart initialization
-            // In the future, this could integrate with Chart.js or similar libraries
-            console.log('Charts initialization placeholder');
-        }
-
-        function showAlert(type, message) {
-            var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-            var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">' +
-                '<strong>' + (type === 'success' ? 'Thành công!' : 'Lỗi!') + '</strong> ' + message +
-                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="float: right; background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>' +
-                '</div>';
-            
-            $('.admin-content').prepend(alertHtml);
-            
-            // Auto-hide after 5 seconds
-            setTimeout(function() {
-                $('.alert').fadeOut();
-            }, 5000);
-        }
     </script>
 }

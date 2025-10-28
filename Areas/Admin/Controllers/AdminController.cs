@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using B_M.Models;
 using B_M.Filters;
 using B_M.Helpers;
+using B_M.Services;
+using B_M.Repositories;
 
 namespace B_M.Areas.Admin.Controllers
 {
@@ -353,74 +356,6 @@ namespace B_M.Areas.Admin.Controllers
             }
         }
 
-        // GET: Admin/Posts
-        public ActionResult Posts(int? page, string search, string typeFilter, string statusFilter,
-            string authorSearch, string titleSearch, string contentSearch, 
-            DateTime? createdFrom, DateTime? createdTo, string sortBy, string sortOrder,
-            bool showAdvancedSearch = false, bool caseSensitive = false, bool exactMatch = false)
-        {
-            try
-            {
-                // Get all posts from different sources
-                var allPosts = GetAllPosts();
-                var totalPostsCount = allPosts.Count;
-                
-                // Apply filters
-                allPosts = ApplyPostFilters(allPosts, search, typeFilter, statusFilter, 
-                    authorSearch, titleSearch, contentSearch, createdFrom, createdTo, 
-                    caseSensitive, exactMatch);
-                
-                // Apply sorting
-                allPosts = ApplyPostSorting(allPosts, sortBy, sortOrder);
-                
-                // Pagination
-                int pageSize = 10;
-                int pageNumber = page ?? 1;
-                var pagedPosts = allPosts.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-
-                var viewModel = new AdminPostsViewModel
-                {
-                    Posts = pagedPosts,
-                    CurrentPage = pageNumber,
-                    TotalPages = (int)Math.Ceiling((double)allPosts.Count / pageSize),
-                    TotalPosts = totalPostsCount,
-                    
-                    // Basic search
-                    SearchTerm = search,
-                    TypeFilter = typeFilter,
-                    StatusFilter = statusFilter,
-                    
-                    // Advanced search
-                    AuthorSearch = authorSearch,
-                    TitleSearch = titleSearch,
-                    ContentSearch = contentSearch,
-                    CreatedFrom = createdFrom,
-                    CreatedTo = createdTo,
-                    SortBy = sortBy,
-                    SortOrder = sortOrder,
-                    
-                    // Search options
-                    ShowAdvancedSearch = showAdvancedSearch,
-                    CaseSensitive = caseSensitive,
-                    ExactMatch = exactMatch,
-                    
-                    // Statistics
-                    TotalCommunityPosts = allPosts.Count(p => p.Type == "Community"),
-                    TotalTradePosts = allPosts.Count(p => p.Type == "Trade"),
-                    TotalSocialPosts = allPosts.Count(p => p.Type == "Social"),
-                    TotalMilkPosts = allPosts.Count(p => p.Type == "Milk"),
-                    PendingPosts = allPosts.Count(p => p.Status == "Pending"),
-                    RejectedPosts = allPosts.Count(p => p.Status == "Rejected")
-                };
-
-                return View(viewModel);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải danh sách bài viết: " + ex.Message;
-                return View(new AdminPostsViewModel());
-            }
-        }
 
         // GET: Admin/Reports
         public ActionResult Reports()
@@ -463,6 +398,215 @@ namespace B_M.Areas.Admin.Controllers
                 // Return view với model rỗng
                 return View(new AdminDashboardViewModel());
             }
+        }
+
+        // GET: Admin/GetChartData - API for chart data
+        [HttpGet]
+        public JsonResult GetChartData(string chartType)
+        {
+            try
+            {
+                object data = null;
+                
+                switch (chartType?.ToLower())
+                {
+                    case "usergrowth":
+                        data = GetUserGrowthData();
+                        break;
+                    case "roledistribution":
+                        data = GetRoleDistributionData();
+                        break;
+                    case "monthlyactivity":
+                        data = GetMonthlyActivityData();
+                        break;
+                    case "accountstatus":
+                        data = GetAccountStatusData();
+                        break;
+                    case "posttrends":
+                        data = GetPostTrendsData();
+                        break;
+                    case "regionstats":
+                        data = GetRegionStatsData();
+                        break;
+                    default:
+                        return Json(new { success = false, message = "Invalid chart type" }, JsonRequestBehavior.AllowGet);
+                }
+                
+                return Json(new { success = true, data = data }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetChartData Error: {ex.Message}");
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // Helper: Get user growth data (6 months)
+        private object GetUserGrowthData()
+        {
+            var sixMonthsAgo = DateTime.Now.AddMonths(-6);
+            var users = userRepository.GetAllUsers();
+            
+            var monthlyData = Enumerable.Range(0, 6)
+                .Select(i =>
+                {
+                    var monthDate = sixMonthsAgo.AddMonths(i);
+                    var endOfMonth = new DateTime(monthDate.Year, monthDate.Month, 1).AddMonths(1).AddDays(-1);
+                    
+                    var usersUpToMonth = users.Count(u => u.CreatedAt <= endOfMonth);
+                    var newUsersInMonth = users.Count(u => u.CreatedAt.Year == monthDate.Year && u.CreatedAt.Month == monthDate.Month);
+                    
+                    return new
+                    {
+                        Month = monthDate.ToString("MM/yyyy"),
+                        MonthName = "Tháng " + monthDate.Month,
+                        TotalUsers = usersUpToMonth,
+                        NewUsers = newUsersInMonth
+                    };
+                }).ToList();
+            
+            return new
+            {
+                months = monthlyData.Select(m => m.MonthName).ToArray(),
+                totalUsers = monthlyData.Select(m => m.TotalUsers).ToArray(),
+                newUsers = monthlyData.Select(m => m.NewUsers).ToArray()
+            };
+        }
+
+        // Helper: Get role distribution data
+        private object GetRoleDistributionData()
+        {
+            var users = userRepository.GetAllUsers();
+            return new
+            {
+                labels = new[] { "Quản trị viên", "Mẹ bỉm", "Nhãn hàng" },
+                series = new[] 
+                {
+                    users.Count(u => u.Role == 1),
+                    users.Count(u => u.Role == 2),
+                    users.Count(u => u.Role == 3)
+                }
+            };
+        }
+
+        // Helper: Get monthly activity data
+        private object GetMonthlyActivityData()
+        {
+            var sixMonthsAgo = DateTime.Now.AddMonths(-6);
+            var users = userRepository.GetAllUsers();
+            
+            var monthlyData = Enumerable.Range(0, 6)
+                .Select(i =>
+                {
+                    var monthDate = sixMonthsAgo.AddMonths(i);
+                    var newUsersInMonth = users.Count(u => u.CreatedAt.Year == monthDate.Year && u.CreatedAt.Month == monthDate.Month);
+                    
+                    // Simulate posts and interactions data (would come from actual posts table)
+                    var posts = (int)(newUsersInMonth * 2.5);
+                    var interactions = (int)(newUsersInMonth * 5);
+                    
+                    return new
+                    {
+                        Month = "T" + monthDate.Month,
+                        NewUsers = newUsersInMonth,
+                        Posts = posts,
+                        Interactions = interactions
+                    };
+                }).ToList();
+            
+            return new
+            {
+                months = monthlyData.Select(m => m.Month).ToArray(),
+                newUsers = monthlyData.Select(m => m.NewUsers).ToArray(),
+                posts = monthlyData.Select(m => m.Posts).ToArray(),
+                interactions = monthlyData.Select(m => m.Interactions).ToArray()
+            };
+        }
+
+        // Helper: Get account status data
+        private object GetAccountStatusData()
+        {
+            var users = userRepository.GetAllUsers();
+            return new
+            {
+                active = users.Count(u => u.IsActive),
+                inactive = users.Count(u => !u.IsActive),
+                total = users.Count
+            };
+        }
+
+        // Helper: Get post trends data
+        private object GetPostTrendsData()
+        {
+            var sixMonthsAgo = DateTime.Now.AddMonths(-6);
+            var users = userRepository.GetAllUsers();
+            
+            // Simulate post trends based on user growth
+            var monthlyPosts = Enumerable.Range(0, 6)
+                .Select(i =>
+                {
+                    var monthDate = sixMonthsAgo.AddMonths(i);
+                    var usersInMonth = users.Count(u => u.CreatedAt <= monthDate.AddMonths(1).AddDays(-1));
+                    
+                    // Estimate posts based on active users (each user ~2 posts per month on average)
+                    var estimatedPosts = (int)(usersInMonth * 0.6 * 2);
+                    
+                    return new
+                    {
+                        Month = "Tháng " + monthDate.Month,
+                        Posts = estimatedPosts
+                    };
+                }).ToList();
+            
+            return new
+            {
+                months = monthlyPosts.Select(m => m.Month).ToArray(),
+                posts = monthlyPosts.Select(m => m.Posts).ToArray()
+            };
+        }
+
+        // Helper: Get region statistics data
+        private object GetRegionStatsData()
+        {
+            var users = userRepository.GetAllUsers();
+            
+            // Group users by address/region (simplified - would need actual region data)
+            var regionData = new Dictionary<string, int>();
+            
+            foreach (var user in users)
+            {
+                var address = user.UserDetails?.Address ?? "Không rõ";
+                
+                // Categorize by major cities (simplified logic)
+                string region = "Khác";
+                if (address.Contains("Hà Nội") || address.Contains("Ha Noi"))
+                    region = "Hà Nội";
+                else if (address.Contains("Hồ Chí Minh") || address.Contains("TP.HCM") || address.Contains("Sài Gòn"))
+                    region = "TP.HCM";
+                else if (address.Contains("Đà Nẵng") || address.Contains("Da Nang"))
+                    region = "Đà Nẵng";
+                else if (address.Contains("Hải Phòng") || address.Contains("Hai Phong"))
+                    region = "Hải Phòng";
+                else if (address.Contains("Cần Thơ") || address.Contains("Can Tho"))
+                    region = "Cần Thơ";
+                
+                if (regionData.ContainsKey(region))
+                    regionData[region]++;
+                else
+                    regionData[region] = 1;
+            }
+            
+            // Get top 5 regions
+            var topRegions = regionData
+                .OrderByDescending(kv => kv.Value)
+                .Take(5)
+                .ToList();
+            
+            return new
+            {
+                regions = topRegions.Select(r => r.Key).ToArray(),
+                users = topRegions.Select(r => r.Value).ToArray()
+            };
         }
 
         // GET: Admin/TestReports - Test action
@@ -556,349 +700,6 @@ namespace B_M.Areas.Admin.Controllers
             }
         }
 
-        // GET: Admin/Settings
-        public ActionResult Settings()
-        {
-            try
-            {
-                var viewModel = new SettingsViewModel();
-                
-                // Load default settings (in real implementation, load from database)
-                LoadDefaultSettings(viewModel);
-                
-                return View(viewModel);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải cài đặt: " + ex.Message;
-                return View(new SettingsViewModel());
-            }
-        }
-
-        // POST: Admin/SaveEmailSettings
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult SaveEmailSettings(EmailSettingsViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ.", errors = GetModelErrors() });
-                }
-
-                // TODO: Save email settings to database
-                // For now, just return success
-                
-                return Json(new { 
-                    success = true, 
-                    message = "Cài đặt email đã được lưu thành công.",
-                    data = new {
-                        smtpHost = model.SmtpHost,
-                        smtpPort = model.SmtpPort,
-                        enableSSL = model.EnableSSL,
-                        fromEmail = model.FromEmail,
-                        fromName = model.FromName,
-                        isEnabled = model.IsEnabled
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/TestEmailSettings
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult TestEmailSettings(EmailSettingsViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ.", errors = GetModelErrors() });
-                }
-
-                // TODO: Implement actual email testing
-                // For now, simulate test result
-                bool testResult = !string.IsNullOrEmpty(model.SmtpHost) && !string.IsNullOrEmpty(model.Username);
-                
-                return Json(new { 
-                    success = true, 
-                    message = testResult ? "Test email thành công!" : "Test email thất bại!",
-                    data = new {
-                        testResult = testResult,
-                        testTime = DateTime.Now
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi test email: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/SaveSecuritySettings
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult SaveSecuritySettings(SecuritySettingsViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ.", errors = GetModelErrors() });
-                }
-
-                // TODO: Save security settings to database
-                
-                return Json(new { 
-                    success = true, 
-                    message = "Cài đặt bảo mật đã được lưu thành công.",
-                    data = new {
-                        minPasswordLength = model.MinPasswordLength,
-                        sessionTimeout = model.SessionTimeoutMinutes,
-                        maxLoginAttempts = model.MaxLoginAttempts,
-                        enableTwoFactor = model.EnableTwoFactor
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/SaveNotificationSettings
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult SaveNotificationSettings(NotificationSettingsViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ.", errors = GetModelErrors() });
-                }
-
-                // TODO: Save notification settings to database
-                
-                return Json(new { 
-                    success = true, 
-                    message = "Cài đặt thông báo đã được lưu thành công.",
-                    data = new {
-                        enableEmail = model.EnableEmailNotifications,
-                        enablePush = model.EnablePushNotifications,
-                        notifyNewUser = model.NotifyNewUserRegistration
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/SaveSystemConfiguration
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult SaveSystemConfiguration(SystemConfigurationViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ.", errors = GetModelErrors() });
-                }
-
-                // TODO: Save system configuration to database
-                
-                return Json(new { 
-                    success = true, 
-                    message = "Cấu hình hệ thống đã được lưu thành công.",
-                    data = new {
-                        siteName = model.SiteName,
-                        maintenanceMode = model.MaintenanceMode,
-                        maxFileSize = model.MaxFileUploadSizeMB
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/SaveBackupSettings
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult SaveBackupSettings(BackupSettingsViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ.", errors = GetModelErrors() });
-                }
-
-                // TODO: Save backup settings to database
-                
-                return Json(new { 
-                    success = true, 
-                    message = "Cài đặt sao lưu đã được lưu thành công.",
-                    data = new {
-                        enableAutoBackup = model.EnableAutoBackup,
-                        backupFrequency = model.BackupFrequencyDays,
-                        keepBackupCount = model.KeepBackupCount
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/SaveMonitoringSettings
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult SaveMonitoringSettings(MonitoringSettingsViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ.", errors = GetModelErrors() });
-                }
-
-                // TODO: Save monitoring settings to database
-                
-                return Json(new { 
-                    success = true, 
-                    message = "Cài đặt giám sát đã được lưu thành công.",
-                    data = new {
-                        enableSystemMonitoring = model.EnableSystemMonitoring,
-                        enableErrorTracking = model.EnableErrorTracking,
-                        logRetentionDays = model.LogRetentionDays
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/CreateBackup
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult CreateBackup()
-        {
-            try
-            {
-                // TODO: Implement actual backup creation
-                // For now, simulate backup process
-                
-                return Json(new { 
-                    success = true, 
-                    message = "Sao lưu đã được tạo thành công.",
-                    data = new {
-                        backupId = Guid.NewGuid().ToString(),
-                        backupTime = DateTime.Now,
-                        backupSize = "25.6 MB"
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi tạo sao lưu: " + ex.Message });
-            }
-        }
-
-        // Helper methods
-        private void LoadDefaultSettings(SettingsViewModel viewModel)
-        {
-            // Email Settings
-            viewModel.EmailSettings.SmtpHost = "smtp.gmail.com";
-            viewModel.EmailSettings.SmtpPort = 587;
-            viewModel.EmailSettings.EnableSSL = true;
-            viewModel.EmailSettings.FromEmail = "noreply@momexchange.com";
-            viewModel.EmailSettings.FromName = "MomExchange System";
-            viewModel.EmailSettings.IsEnabled = true;
-
-            // Security Settings
-            viewModel.SecuritySettings.MinPasswordLength = 8;
-            viewModel.SecuritySettings.RequireSpecialChars = true;
-            viewModel.SecuritySettings.RequireNumbers = true;
-            viewModel.SecuritySettings.RequireUppercase = true;
-            viewModel.SecuritySettings.SessionTimeoutMinutes = 30;
-            viewModel.SecuritySettings.MaxLoginAttempts = 5;
-            viewModel.SecuritySettings.EnableTwoFactor = false;
-            viewModel.SecuritySettings.AccountLockoutMinutes = 15;
-            viewModel.SecuritySettings.LogSecurityEvents = true;
-            viewModel.SecuritySettings.PasswordChangeDays = 90;
-
-            // Notification Settings
-            viewModel.NotificationSettings.EnableEmailNotifications = true;
-            viewModel.NotificationSettings.EnablePushNotifications = true;
-            viewModel.NotificationSettings.NotifyNewUserRegistration = true;
-            viewModel.NotificationSettings.NotifyPasswordReset = true;
-            viewModel.NotificationSettings.NotifyAccountLocked = true;
-            viewModel.NotificationSettings.NotifySystemMaintenance = true;
-            viewModel.NotificationSettings.NotifySecurityAlerts = true;
-
-            // System Configuration
-            viewModel.SystemConfiguration.SiteName = "MomExchange";
-            viewModel.SystemConfiguration.SiteDescription = "Nền tảng trao đổi và chia sẻ cho các bà mẹ";
-            viewModel.SystemConfiguration.SiteUrl = "https://momexchange.com";
-            viewModel.SystemConfiguration.ContactEmail = "contact@momexchange.com";
-            viewModel.SystemConfiguration.MaintenanceMode = false;
-            viewModel.SystemConfiguration.MaxFileUploadSizeMB = 10;
-            viewModel.SystemConfiguration.MaxFileUploadCount = 5;
-            viewModel.SystemConfiguration.EnableCaching = true;
-            viewModel.SystemConfiguration.CacheExpirationMinutes = 60;
-            viewModel.SystemConfiguration.ApiRateLimitPerMinute = 100;
-            viewModel.SystemConfiguration.AllowedFileExtensions = "jpg,jpeg,png,gif,pdf,doc,docx";
-
-            // Backup Settings
-            viewModel.BackupSettings.EnableAutoBackup = true;
-            viewModel.BackupSettings.BackupFrequencyDays = 7;
-            viewModel.BackupSettings.KeepBackupCount = 5;
-            viewModel.BackupSettings.BackupLocation = "/backups/";
-            viewModel.BackupSettings.CompressBackup = true;
-            viewModel.BackupSettings.IncludeFiles = true;
-            viewModel.BackupSettings.IncludeDatabase = true;
-            viewModel.BackupSettings.EnableEmailNotification = true;
-
-            // Monitoring Settings
-            viewModel.MonitoringSettings.EnableSystemMonitoring = true;
-            viewModel.MonitoringSettings.EnableErrorTracking = true;
-            viewModel.MonitoringSettings.EnablePerformanceMonitoring = true;
-            viewModel.MonitoringSettings.EnableUserActivityLogging = true;
-            viewModel.MonitoringSettings.LogRetentionDays = 30;
-            viewModel.MonitoringSettings.MaxLogEntries = 1000;
-            viewModel.MonitoringSettings.EnableRealTimeLogging = true;
-            viewModel.MonitoringSettings.LogLevel = "Info";
-            viewModel.MonitoringSettings.EnableEmailAlerts = true;
-            viewModel.MonitoringSettings.DiskSpaceThresholdPercent = 80;
-            viewModel.MonitoringSettings.MemoryThresholdPercent = 85;
-            viewModel.MonitoringSettings.CPUThresholdPercent = 90;
-        }
-
-        private List<string> GetModelErrors()
-        {
-            var errors = new List<string>();
-            foreach (var modelState in ModelState.Values)
-            {
-                foreach (var error in modelState.Errors)
-                {
-                    errors.Add(error.ErrorMessage);
-                }
-            }
-            return errors;
-        }
 
         // POST: Admin/DeleteUser
         [HttpPost]
@@ -971,250 +772,6 @@ namespace B_M.Areas.Admin.Controllers
             };
         }
 
-        // Posts Management Helper Methods
-        private List<PostItem> GetAllPosts()
-        {
-            var posts = new List<PostItem>();
-            
-            // Add sample Community Posts
-            posts.AddRange(GetSampleCommunityPosts());
-            
-            // Add sample Trade Posts
-            posts.AddRange(GetSampleTradePosts());
-            
-            // Add sample Social Posts
-            posts.AddRange(GetSampleSocialPosts());
-            
-            // Add sample Milk Posts
-            posts.AddRange(GetSampleMilkPosts());
-            
-            return posts;
-        }
-
-        private List<PostItem> GetSampleCommunityPosts()
-        {
-            return new List<PostItem>
-            {
-                new PostItem
-                {
-                    Id = 1,
-                    Type = "Community",
-                    Title = "Kinh nghiệm chăm sóc trẻ sơ sinh",
-                    AuthorName = "Mẹ Bối Bối",
-                    AuthorEmail = "meboi@example.com",
-                    Content = "Chia sẻ kinh nghiệm chăm sóc trẻ sơ sinh từ những ngày đầu...",
-                    Excerpt = "Chia sẻ kinh nghiệm chăm sóc trẻ sơ sinh từ những ngày đầu...",
-                    CreatedAt = DateTime.Now.AddDays(-5),
-                    Status = "Active",
-                    LikeCount = 25,
-                    CommentCount = 8,
-                    ViewCount = 150,
-                    ImageUrl = "/images/community1.jpg",
-                    Tags = new List<string> { "chăm sóc", "trẻ sơ sinh", "kinh nghiệm" },
-                    Location = "Hà Nội"
-                },
-                new PostItem
-                {
-                    Id = 2,
-                    Type = "Community",
-                    Title = "Cách chọn sữa công thức phù hợp",
-                    AuthorName = "Mẹ Minh Anh",
-                    AuthorEmail = "meminhanh@example.com",
-                    Content = "Hướng dẫn chi tiết cách chọn sữa công thức phù hợp với từng độ tuổi...",
-                    Excerpt = "Hướng dẫn chi tiết cách chọn sữa công thức phù hợp...",
-                    CreatedAt = DateTime.Now.AddDays(-3),
-                    Status = "Pending",
-                    LikeCount = 12,
-                    CommentCount = 5,
-                    ViewCount = 80,
-                    ImageUrl = "/images/community2.jpg",
-                    Tags = new List<string> { "sữa công thức", "dinh dưỡng" },
-                    Location = "TP.HCM"
-                }
-            };
-        }
-
-        private List<PostItem> GetSampleTradePosts()
-        {
-            return new List<PostItem>
-            {
-                new PostItem
-                {
-                    Id = 3,
-                    Type = "Trade",
-                    Title = "Trao đổi quần áo trẻ em",
-                    AuthorName = "Mẹ Lan Anh",
-                    AuthorEmail = "melananh@example.com",
-                    Content = "Mình có nhiều quần áo trẻ em size 6-12 tháng muốn trao đổi...",
-                    Excerpt = "Mình có nhiều quần áo trẻ em size 6-12 tháng muốn trao đổi...",
-                    CreatedAt = DateTime.Now.AddDays(-2),
-                    Status = "Active",
-                    LikeCount = 8,
-                    CommentCount = 3,
-                    ViewCount = 45,
-                    ImageUrl = "/images/trade1.jpg",
-                    Tags = new List<string> { "trao đổi", "quần áo", "trẻ em" },
-                    Location = "Đà Nẵng"
-                }
-            };
-        }
-
-        private List<PostItem> GetSampleSocialPosts()
-        {
-            return new List<PostItem>
-            {
-                new PostItem
-                {
-                    Id = 4,
-                    Type = "Social",
-                    Title = "Chia sẻ khoảnh khắc đáng yêu",
-                    AuthorName = "Mẹ Hương",
-                    AuthorEmail = "mehuong@example.com",
-                    Content = "Khoảnh khắc bé yêu tập đi đầu tiên...",
-                    Excerpt = "Khoảnh khắc bé yêu tập đi đầu tiên...",
-                    CreatedAt = DateTime.Now.AddDays(-1),
-                    Status = "Active",
-                    LikeCount = 35,
-                    CommentCount = 12,
-                    ViewCount = 200,
-                    ImageUrl = "/images/social1.jpg",
-                    Tags = new List<string> { "khoảnh khắc", "bé yêu" },
-                    Location = "Hải Phòng"
-                }
-            };
-        }
-
-        private List<PostItem> GetSampleMilkPosts()
-        {
-            return new List<PostItem>
-            {
-                new PostItem
-                {
-                    Id = 5,
-                    Type = "Milk",
-                    Title = "Hiến tặng sữa mẹ",
-                    AuthorName = "Mẹ Thu Trang",
-                    AuthorEmail = "methutrang@example.com",
-                    Content = "Mình có sữa mẹ dư thừa muốn hiến tặng cho các bé cần...",
-                    Excerpt = "Mình có sữa mẹ dư thừa muốn hiến tặng cho các bé cần...",
-                    CreatedAt = DateTime.Now.AddDays(-4),
-                    Status = "Pending",
-                    LikeCount = 15,
-                    CommentCount = 6,
-                    ViewCount = 90,
-                    ImageUrl = "/images/milk1.jpg",
-                    Tags = new List<string> { "hiến tặng", "sữa mẹ" },
-                    Location = "Cần Thơ",
-                    IsHealthVerified = true
-                }
-            };
-        }
-
-        private List<PostItem> ApplyPostFilters(List<PostItem> posts, string search, string typeFilter, 
-            string statusFilter, string authorSearch, string titleSearch, string contentSearch,
-            DateTime? createdFrom, DateTime? createdTo, bool caseSensitive, bool exactMatch)
-        {
-            // Basic search
-            if (!string.IsNullOrEmpty(search))
-            {
-                posts = posts.Where(p => 
-                    ContainsText(p.Title, search, caseSensitive, exactMatch) || 
-                    ContainsText(p.AuthorName, search, caseSensitive, exactMatch) ||
-                    ContainsText(p.Content, search, caseSensitive, exactMatch)
-                ).ToList();
-            }
-
-            // Type filter
-            if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "all")
-            {
-                posts = posts.Where(p => p.Type == typeFilter).ToList();
-            }
-
-            // Status filter
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "all")
-            {
-                posts = posts.Where(p => p.Status == statusFilter).ToList();
-            }
-
-            // Advanced search filters
-            if (!string.IsNullOrEmpty(authorSearch))
-            {
-                posts = posts.Where(p => ContainsText(p.AuthorName, authorSearch, caseSensitive, exactMatch)).ToList();
-            }
-
-            if (!string.IsNullOrEmpty(titleSearch))
-            {
-                posts = posts.Where(p => ContainsText(p.Title, titleSearch, caseSensitive, exactMatch)).ToList();
-            }
-
-            if (!string.IsNullOrEmpty(contentSearch))
-            {
-                posts = posts.Where(p => ContainsText(p.Content, contentSearch, caseSensitive, exactMatch)).ToList();
-            }
-
-            // Date range filter
-            if (createdFrom.HasValue)
-            {
-                posts = posts.Where(p => p.CreatedAt >= createdFrom.Value).ToList();
-            }
-
-            if (createdTo.HasValue)
-            {
-                posts = posts.Where(p => p.CreatedAt <= createdTo.Value.AddDays(1).AddTicks(-1)).ToList();
-            }
-
-            return posts;
-        }
-
-        private List<PostItem> ApplyPostSorting(List<PostItem> posts, string sortBy, string sortOrder)
-        {
-            if (string.IsNullOrEmpty(sortBy))
-            {
-                sortBy = "created";
-            }
-
-            if (string.IsNullOrEmpty(sortOrder))
-            {
-                sortOrder = "desc";
-            }
-
-            bool isAscending = sortOrder.ToLower() == "asc";
-
-            switch (sortBy.ToLower())
-            {
-                case "title":
-                    return isAscending 
-                        ? posts.OrderBy(p => p.Title).ToList()
-                        : posts.OrderByDescending(p => p.Title).ToList();
-                
-                case "author":
-                    return isAscending 
-                        ? posts.OrderBy(p => p.AuthorName).ToList()
-                        : posts.OrderByDescending(p => p.AuthorName).ToList();
-                
-                case "type":
-                    return isAscending 
-                        ? posts.OrderBy(p => p.Type).ToList()
-                        : posts.OrderByDescending(p => p.Type).ToList();
-                
-                case "status":
-                    return isAscending 
-                        ? posts.OrderBy(p => p.Status).ToList()
-                        : posts.OrderByDescending(p => p.Status).ToList();
-                
-                case "created":
-                default:
-                    return isAscending 
-                        ? posts.OrderBy(p => p.CreatedAt).ToList()
-                        : posts.OrderByDescending(p => p.CreatedAt).ToList();
-            }
-        }
-
-        private PostItem GetPostById(int id, string type)
-        {
-            var allPosts = GetAllPosts();
-            return allPosts.FirstOrDefault(p => p.Id == id && p.Type == type);
-        }
 
         private string GetRoleName(byte role)
         {
@@ -1422,9 +979,12 @@ namespace B_M.Areas.Admin.Controllers
 
                 // Generate password if requested
                 string password = model.Password;
+                string temporaryPassword = null;
+                
                 if (model.GenerateRandomPassword)
                 {
                     password = B_M.Helpers.PasswordGenerator.GeneratePassword();
+                    temporaryPassword = password;
                     model.GeneratedPassword = password;
                 }
 
@@ -1453,7 +1013,40 @@ namespace B_M.Areas.Admin.Controllers
 
                 if (success)
                 {
-                    TempData["SuccessMessage"] = $"Đã tạo tài khoản thành công cho {model.FullName} ({model.Email})";
+                    // Send welcome email if requested
+                    if (model.SendEmailNotification)
+                    {
+                        try
+                        {
+                            var emailService = new EmailService();
+                            var emailResult = emailService.SendWelcomeEmail(
+                                model.Email, 
+                                model.FullName, 
+                                model.Email,
+                                temporaryPassword
+                            );
+
+                            if (emailResult.Success)
+                            {
+                                TempData["SuccessMessage"] = $"Đã tạo tài khoản thành công cho {model.FullName} ({model.Email}). Email thông báo đã được gửi.";
+                            }
+                            else
+                            {
+                                TempData["SuccessMessage"] = $"Đã tạo tài khoản thành công cho {model.FullName} ({model.Email})";
+                                TempData["WarningMessage"] = $"Không thể gửi email thông báo: {emailResult.Message}";
+                            }
+                        }
+                        catch (Exception emailEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Email sending error: {emailEx.Message}");
+                            TempData["SuccessMessage"] = $"Đã tạo tài khoản thành công cho {model.FullName} ({model.Email})";
+                            TempData["WarningMessage"] = "Không thể gửi email thông báo. Vui lòng kiểm tra cấu hình email.";
+                        }
+                    }
+                    else
+                    {
+                        TempData["SuccessMessage"] = $"Đã tạo tài khoản thành công cho {model.FullName} ({model.Email})";
+                    }
                     
                     if (model.GenerateRandomPassword)
                     {
@@ -1580,104 +1173,6 @@ namespace B_M.Areas.Admin.Controllers
             }
         }
 
-        // POST: Admin/ApprovePost
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult ApprovePost(int postId, string postType)
-        {
-            try
-            {
-                // TODO: Implement actual post approval logic
-                // For now, simulate approval
-                return Json(new { 
-                    success = true, 
-                    message = "Đã duyệt bài viết thành công.",
-                    data = new {
-                        postId = postId,
-                        status = "Active",
-                        statusClass = "badge-success"
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/RejectPost
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult RejectPost(int postId, string postType, string reason)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(reason))
-                {
-                    return Json(new { success = false, message = "Vui lòng nhập lý do từ chối." });
-                }
-
-                // TODO: Implement actual post rejection logic
-                // For now, simulate rejection
-                return Json(new { 
-                    success = true, 
-                    message = "Đã từ chối bài viết thành công.",
-                    data = new {
-                        postId = postId,
-                        status = "Rejected",
-                        statusClass = "badge-danger",
-                        rejectionReason = reason
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // POST: Admin/DeletePost
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeletePost(int postId, string postType)
-        {
-            try
-            {
-                // TODO: Implement actual post deletion logic
-                // For now, simulate deletion
-                return Json(new { 
-                    success = true, 
-                    message = "Đã xóa bài viết thành công."
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
-        // GET: Admin/PostDetails
-        public ActionResult PostDetails(int id, string type)
-        {
-            try
-            {
-                // TODO: Implement post details view
-                // For now, return a simple view
-                var post = GetPostById(id, type);
-                if (post == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy bài viết.";
-                    return RedirectToAction("Posts");
-                }
-
-                return View(post);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải chi tiết bài viết: " + ex.Message;
-                return RedirectToAction("Posts");
-            }
-        }
 
         // GET: Admin/DownloadTemplate
         public ActionResult DownloadTemplate()
@@ -1695,5 +1190,6 @@ namespace B_M.Areas.Admin.Controllers
                 return RedirectToAction("ImportUsers");
             }
         }
+
     }
 }

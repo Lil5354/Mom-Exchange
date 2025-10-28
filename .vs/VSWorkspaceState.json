@@ -1,7 +1,11 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Areas",
+    "\\Areas\\Admin",
+    "\\Areas\\Admin\\Controllers",
+    "\\Models"
   ],
-  "SelectedNode": "\\B\u0026M.sln",
+  "SelectedNode": "\\Areas\\Admin\\Controllers\\AdminController.cs",
   "PreviewInSolutionExplorer": false
 }

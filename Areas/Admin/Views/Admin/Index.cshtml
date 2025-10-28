@@ -4,69 +4,252 @@
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+<style>
+    /* Compact Stats Grid */
+    .compact-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .compact-stat-card {
+        background: var(--white);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .compact-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-blue), var(--secondary-blue));
+    }
+
+    .compact-stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(30, 58, 138, 0.15);
+    }
+
+    .compact-stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .compact-stat-content {
+        flex: 1;
+    }
+
+    .compact-stat-number {
+        font-size: 28px;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+
+    .compact-stat-label {
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    /* Compact Table */
+    .compact-table-wrapper {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .compact-table-wrapper::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .compact-table-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .compact-table-wrapper::-webkit-scrollbar-thumb {
+        background: var(--accent-blue);
+        border-radius: 10px;
+    }
+
+    .compact-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .compact-table th,
+    .compact-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        font-size: 14px;
+    }
+
+    .compact-table th {
+        background: linear-gradient(135deg, var(--pastel-blue), var(--light-blue));
+        font-weight: 700;
+        color: var(--text-dark);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .compact-table tr:hover {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.03), rgba(59, 130, 246, 0.03));
+    }
+
+    .compact-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+
+    .compact-user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .compact-user-name {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 13px;
+    }
+
+    @@media (max-width: 768px) {
+        .compact-stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .compact-stat-card {
+            padding: 15px;
+        }
+
+        .compact-stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+
+        .compact-stat-number {
+            font-size: 22px;
+        }
+    }
+</style>
+
+<div class="compact-stats-grid">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
             <i class="fas fa-users"></i>
         </div>
-        <div class="stat-number">@Model.TotalUsers</div>
-        <div class="stat-label">Tổng người dùng</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.TotalUsers</div>
+            <div class="compact-stat-label">Tổng người dùng</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
             <i class="fas fa-user-check"></i>
         </div>
-        <div class="stat-number">@Model.ActiveUsers</div>
-        <div class="stat-label">Người dùng hoạt động</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.ActiveUsers</div>
+            <div class="compact-stat-label">Người dùng hoạt động</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
             <i class="fas fa-crown"></i>
         </div>
-        <div class="stat-number">@Model.AdminUsers</div>
-        <div class="stat-label">Quản trị viên</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.AdminUsers</div>
+            <div class="compact-stat-label">Quản trị viên</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
             <i class="fas fa-baby"></i>
         </div>
-        <div class="stat-number">@Model.MomUsers</div>
-        <div class="stat-label">Mẹ bỉm</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.MomUsers</div>
+            <div class="compact-stat-label">Mẹ bỉm</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
             <i class="fas fa-store"></i>
         </div>
-        <div class="stat-number">@Model.BrandUsers</div>
-        <div class="stat-label">Nhãn hàng</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.BrandUsers</div>
+            <div class="compact-stat-label">Nhãn hàng</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
             <i class="fas fa-user-plus"></i>
         </div>
-        <div class="stat-number">@Model.NewUsersThisMonth</div>
-        <div class="stat-label">Người dùng mới tháng này</div>
+        <div class="compact-stat-content">
+            <div class="compact-stat-number">@Model.NewUsersThisMonth</div>
+            <div class="compact-stat-label">Người dùng mới tháng này</div>
+        </div>
     </div>
 </div>
 
 <div class="admin-card">
     <div class="admin-card-header">
         <h5><i class="fas fa-clock"></i> Người dùng mới gần đây</h5>
-        <a href="@Url.Action("Users", "Admin", new { area = "Admin" })" class="btn-admin">Xem tất cả</a>
+        <a href="@Url.Action("Users", "Admin", new { area = "Admin" })" class="btn-admin btn-admin-secondary" style="font-size: 13px; padding: 8px 16px;">
+            <i class="fas fa-external-link-alt"></i> Xem tất cả
+        </a>
     </div>
-    <div class="admin-card-body">
+    <div class="admin-card-body" style="padding: 0;">
         @if (Model.RecentUsers.Any())
         {
-            <div class="table-responsive">
-                <table class="table-admin">
+            <div class="compact-table-wrapper">
+                <table class="compact-table">
                     <thead>
                         <tr>
-                            <th>Tên</th>
+                            <th>Người dùng</th>
                             <th>Email</th>
                             <th>Vai trò</th>
                             <th>Trạng thái</th>
@@ -78,17 +261,17 @@
                         {
                             <tr>
                                 <td>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #e74c3c, #c0392b); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px;">
+                                    <div class="compact-user-info">
+                                        <div class="compact-avatar" style="background: linear-gradient(135deg, #3498db, #2980b9);">
                                             @(user.UserDetails?.FullName?.Substring(0, 1).ToUpper() ?? "U")
                                         </div>
                                         <div>
-                                            <div style="font-weight: 600; color: #2c3e50;">@(user.UserDetails?.FullName ?? "Chưa cập nhật")</div>
-                                            <div style="font-size: 12px; color: #7f8c8d;">@user.UserName</div>
+                                            <div class="compact-user-name">@(user.UserDetails?.FullName ?? "Chưa cập nhật")</div>
+                                            <div style="font-size: 11px; color: var(--text-light);">@user.UserName</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td>@user.Email</td>
+                                <td style="color: var(--text-light); font-size: 13px;">@user.Email</td>
                                 <td>
                                     @{
                                         string roleName = "";
@@ -96,7 +279,7 @@
                                         switch (user.Role)
                                         {
                                             case 1:
-                                                roleName = "Quản trị viên";
+                                                roleName = "Admin";
                                                 roleClass = "badge-danger";
                                                 break;
                                             case 2:
@@ -108,24 +291,28 @@
                                                 roleClass = "badge-info";
                                                 break;
                                             default:
-                                                roleName = "Không xác định";
+                                                roleName = "N/A";
                                                 roleClass = "badge-secondary";
                                                 break;
                                         }
                                     }
-                                    <span class="badge @roleClass">@roleName</span>
+                                    <span class="badge @roleClass" style="font-size: 11px; padding: 4px 10px;">@roleName</span>
                                 </td>
                                 <td>
                                     @if (user.IsActive)
                                     {
-                                        <span class="badge badge-success">Hoạt động</span>
+                                        <span class="badge badge-success" style="font-size: 11px; padding: 4px 10px;">
+                                            <i class="fas fa-check-circle"></i> Hoạt động
+                                        </span>
                                     }
                                     else
                                     {
-                                        <span class="badge badge-danger">Bị khóa</span>
+                                        <span class="badge badge-danger" style="font-size: 11px; padding: 4px 10px;">
+                                            <i class="fas fa-ban"></i> Bị khóa
+                                        </span>
                                     }
                                 </td>
-                                <td>@user.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td style="color: var(--text-light); font-size: 13px;">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
                             </tr>
                         }
                     </tbody>
@@ -134,61 +321,10 @@
         }
         else
         {
-            <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                <i class="fas fa-users" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
-                <p>Chưa có người dùng nào</p>
+            <div style="text-align: center; padding: 30px; color: var(--text-light);">
+                <i class="fas fa-users" style="font-size: 40px; margin-bottom: 12px; opacity: 0.4;"></i>
+                <p style="margin: 0; font-size: 14px;">Chưa có người dùng nào</p>
             </div>
         }
-    </div>
-</div>
-
-<div class="admin-card">
-    <div class="admin-card-header">
-        <h5><i class="fas fa-chart-pie"></i> Thống kê nhanh</h5>
-    </div>
-    <div class="admin-card-body">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <div style="font-size: 24px; font-weight: 700; color: #2ecc71; margin-bottom: 5px;">
-                    @if (Model.TotalUsers > 0)
-                    {
-                        @Math.Round((double)Model.ActiveUsers / Model.TotalUsers * 100, 1)
-                    }
-                    else
-                    {
-                        @:0
-                    }%
-                </div>
-                <div style="color: #7f8c8d; font-size: 14px;">Tỷ lệ người dùng hoạt động</div>
-            </div>
-
-            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <div style="font-size: 24px; font-weight: 700; color: #3498db; margin-bottom: 5px;">
-                    @if (Model.TotalUsers > 0)
-                    {
-                        @Math.Round((double)Model.NewUsersThisMonth / Model.TotalUsers * 100, 1)
-                    }
-                    else
-                    {
-                        @:0
-                    }%
-                </div>
-                <div style="color: #7f8c8d; font-size: 14px;">Tăng trưởng tháng này</div>
-            </div>
-
-            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <div style="font-size: 24px; font-weight: 700; color: #e74c3c; margin-bottom: 5px;">
-                    @if (Model.TotalUsers > 0)
-                    {
-                        @Math.Round((double)Model.AdminUsers / Model.TotalUsers * 100, 1)
-                    }
-                    else
-                    {
-                        @:0
-                    }%
-                </div>
-                <div style="color: #7f8c8d; font-size: 14px;">Tỷ lệ quản trị viên</div>
-            </div>
-        </div>
     </div>
 </div>

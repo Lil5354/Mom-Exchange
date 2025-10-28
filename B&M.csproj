@@ -18,8 +18,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
-    <Use64BitIISExpress>
-    </Use64BitIISExpress>
+    <Use64BitIISExpress>false</Use64BitIISExpress>
     <IISExpressSSLPort>44335</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -146,15 +145,13 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\BrandController.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
-    <Compile Include="Controllers\ClearanceController.cs" />
-    <Compile Include="Controllers\BlogController.cs" />
-    <Compile Include="Controllers\CommunityController.cs" />
+    <Compile Include="Controllers\CartController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MilkDonationController.cs" />
-    <Compile Include="Controllers\ProductController.cs" />
-    <Compile Include="Controllers\TradeController.cs" />
+    <Compile Include="Controllers\ProfileController.cs" />
+    <Compile Include="Controllers\ChatController.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
     <Compile Include="Global.asax.cs">
@@ -162,41 +159,51 @@
     </Compile>
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Filters\AdminAuthorizeAttribute.cs" />
+    <Compile Include="Migrations\202510280518124_InitialCreate.cs" />
+    <Compile Include="Migrations\202510280518124_InitialCreate.Designer.cs">
+      <DependentUpon>202510280518124_InitialCreate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\AdminDashboardViewModel.cs" />
     <Compile Include="Models\AdminUsersViewModel.cs" />
-    <Compile Include="Migrations\202510140441587_InitialCreate.cs" />
-    <Compile Include="Migrations\202510140441587_InitialCreate.Designer.cs">
-      <DependentUpon>202510140441587_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202510140601006_AddUserNameField.cs" />
-    <Compile Include="Migrations\202510140601006_AddUserNameField.Designer.cs">
-      <DependentUpon>202510140601006_AddUserNameField.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202510140652089_FixModelChanges.cs" />
-    <Compile Include="Migrations\202510140652089_FixModelChanges.Designer.cs">
-      <DependentUpon>202510140652089_FixModelChanges.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\AffiliateClick.cs" />
+    <Compile Include="Models\AffiliateSale.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Brand.cs" />
-    <Compile Include="Models\BrandDetailViewModel.cs" />
-    <Compile Include="Models\CategoryViewModel.cs" />
-    <Compile Include="Models\CommunityPost.cs" />
+    <Compile Include="Models\BrandCategoryPermission.cs" />
+    <Compile Include="Models\PostC2C.cs" />
+    <Compile Include="Models\PostC2CImage.cs" />
+    <Compile Include="Models\ProductB2C.cs" />
+    <Compile Include="Models\ProductB2CImage.cs" />
+    <Compile Include="Models\CartViewModel.cs" />
+    <Compile Include="Models\Category.cs" />
+    <Compile Include="Models\CompleteProfileViewModel.cs" />
+    <Compile Include="Models\LinkGoogleAccountViewModel.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
+    <Compile Include="Models\Message.cs" />
     <Compile Include="Models\MilkDonationPost.cs" />
-    <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\Notification.cs" />
+    <Compile Include="Controllers\NotificationController.cs" />
+    <Compile Include="Models\MilkDonationViewModel.cs" />
+    <Compile Include="Models\Order.cs" />
+    <Compile Include="Models\OrderDetail.cs" />
+    <Compile Include="Models\ProductViewModel.cs" />
+    <Compile Include="Models\ProfileViewModel.cs" />
+    <Compile Include="Models\Rating.cs" />
     <Compile Include="Models\RegisterViewModel.cs" />
-    <Compile Include="Models\SocialPost.cs" />
-    <Compile Include="Models\TradePost.cs" />
+    <Compile Include="Models\UnlinkGoogleViewModel.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserDetails.cs" />
-    <Compile Include="Models\CompleteProfileViewModel.cs" />
+    <Compile Include="Models\UserLifestyleSurvey.cs" />
+    <Compile Include="Models\UserMedicalRecord.cs" />
     <Compile Include="Models\UserRepository.cs" />
+    <Compile Include="Models\ChatViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\account-style.css" />
+    <Content Include="Content\milk-donation-style.css" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-grid.rtl.css" />
@@ -244,23 +251,41 @@
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\Blog\Index.cshtml" />
     <Content Include="Views\Product\Details.cshtml" />
+    <Content Include="Views\Product\Index.cshtml" />
+    <Content Include="Views\Product\MyProducts.cshtml" />
+    <Content Include="Views\Product\Create.cshtml" />
+    <Content Include="Views\Profile\Index.cshtml" />
+    <Content Include="Views\Profile\ConfirmGoogleLink.cshtml" />
+    <Content Include="Views\Profile\ConfirmUnlinkGoogle.cshtml" />
+    <Content Include="Views\Profile\Edit.cshtml" />
+    <Content Include="Views\Profile\MilkDonation.cshtml" />
     <Content Include="Views\MilkDonation\Index.cshtml" />
     <Content Include="Views\MilkDonation\Details.cshtml" />
+    <Content Include="Views\MilkDonation\MedicalRecords.cshtml" />
+    <Content Include="Views\MilkDonation\CreatePost.cshtml" />
+    <Content Include="Views\MilkDonation\MyPosts.cshtml" />
+    <Content Include="Views\MilkDonation\_LifestyleSurveyPartial.cshtml" />
+    <Content Include="Views\MilkDonation\_CreateRequestPartial.cshtml" />
+    <Content Include="Views\MilkDonation\_MedicalRecordsPartial.cshtml" />
+    <Compile Include="Models\MilkDonationRequest.cs" />
+    <Content Include="Views\MilkDonation\_WaitingListPartial.cshtml" />
+    <Content Include="Views\MilkDonation\WaitingList.cshtml" />
+    <Content Include="Views\Notification\Index.cshtml" />
+    <Content Include="Views\Chat\Index.cshtml" />
+    <Content Include="Views\Chat\Conversation.cshtml" />
     <Content Include="Views\Brand\Index.cshtml" />
     <Content Include="Views\Clearance\Index.cshtml" />
     <Content Include="Views\Trade\Index.cshtml" />
     <Content Include="Views\Brand\Details.cshtml" />
-    <Content Include="Views\Blog\Details.cshtml" />
     <Content Include="Views\Community\Index.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\CompleteProfile.cshtml" />
+    <Content Include="Views\Cart\Index.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Shared\ServerError.cshtml" />
     <Content Include="Areas\Admin\web.config" />
@@ -273,21 +298,11 @@
     <Content Include="Areas\Admin\Views\Admin\Reports.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\Settings.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
+    <Content Include="Views\MilkDonation\LifestyleSurvey.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="images\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\202510140441587_InitialCreate.resx">
-      <DependentUpon>202510140441587_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202510140601006_AddUserNameField.resx">
-      <DependentUpon>202510140601006_AddUserNameField.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202510140652089_FixModelChanges.resx">
-      <DependentUpon>202510140652089_FixModelChanges.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />
@@ -316,6 +331,11 @@
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\202510280518124_InitialCreate.resx">
+      <DependentUpon>202510280518124_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -335,8 +355,6 @@
           <DevelopmentServerPort>53251</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>https://localhost:44335</IISUrl>
-          <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
-          <IISAppRootUrl>https://localhost:44335/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

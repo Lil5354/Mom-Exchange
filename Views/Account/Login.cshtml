@@ -12,21 +12,44 @@
 <link href="~/Content/account-style.css" rel="stylesheet" />
 
 <div class="auth-page-wrapper">
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="max-width: 500px; margin: 20px auto; background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 8px;">
-            <strong>Thành công!</strong> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="float: right; background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
-        </div>
-    }
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="toast toast-success" data-message="@TempData["SuccessMessage"]" data-type="success">
+                <div class="toast-icon">✅</div>
+                <div class="toast-content">
+                    <div class="toast-title">Thành công!</div>
+                    <div class="toast-message">@TempData["SuccessMessage"]</div>
+                </div>
+                <button class="toast-close" onclick="closeToast(this)">&times;</button>
+            </div>
+        }
 
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="max-width: 500px; margin: 20px auto; background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; border-radius: 8px;">
-            <strong>Lỗi!</strong> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="float: right; background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
-        </div>
-    }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="toast toast-error" data-message="@TempData["ErrorMessage"]" data-type="error">
+                <div class="toast-icon">❌</div>
+                <div class="toast-content">
+                    <div class="toast-title">Lỗi!</div>
+                    <div class="toast-message">@TempData["ErrorMessage"]</div>
+                </div>
+                <button class="toast-close" onclick="closeToast(this)">&times;</button>
+            </div>
+        }
+
+        @if (TempData["InfoMessage"] != null)
+        {
+            <div class="toast toast-info" data-message="@TempData["InfoMessage"]" data-type="info">
+                <div class="toast-icon">ℹ️</div>
+                <div class="toast-content">
+                    <div class="toast-title">Thông báo!</div>
+                    <div class="toast-message">@TempData["InfoMessage"]</div>
+                </div>
+                <button class="toast-close" onclick="closeToast(this)">&times;</button>
+            </div>
+        }
+    </div>
 
     <div class="container-auth @(ViewBag.ShowRegister == true ? "right-panel-active" : "")" id="container-auth">
         <div class="form-container sign-up-container">
@@ -40,23 +63,23 @@
                         <i class="fab fa-google"></i>
                     </button>
                 </div>
-                <span>hoặc sử dụng email của bạn để đăng ký</span>
+                <span>hoặc sử dụng tên đăng nhập để tạo tài khoản</span>
+
+                <input type="text" name="UserName" placeholder="Tên đăng nhập" />
+                @Html.ValidationMessage("UserName", "", new { @class = "text-danger" })
 
                 <input type="text" name="FullName" placeholder="Họ và tên" />
                 @Html.ValidationMessage("FullName", "", new { @class = "text-danger" })
-                
-                <input type="email" name="Email" placeholder="Email" />
-                @Html.ValidationMessage("Email", "", new { @class = "text-danger" })
-                
+
                 <input type="text" name="PhoneNumber" placeholder="Số điện thoại (không bắt buộc)" />
                 @Html.ValidationMessage("PhoneNumber", "", new { @class = "text-danger" })
-                
+
                 <input type="password" name="Password" placeholder="Mật khẩu" />
                 @Html.ValidationMessage("Password", "", new { @class = "text-danger" })
-                
+
                 <input type="password" name="ConfirmPassword" placeholder="Xác nhận mật khẩu" />
                 @Html.ValidationMessage("ConfirmPassword", "", new { @class = "text-danger" })
-                
+
                 <button class="auth-button" type="submit">Đăng Ký</button>
             }
         </div>
@@ -72,14 +95,14 @@
                         <i class="fab fa-google"></i>
                     </button>
                 </div>
-                <span>hoặc sử dụng tài khoản của bạn</span>
+                <span>hoặc đăng nhập bằng tên đăng nhập</span>
 
-                <input type="text" name="EmailOrUsername" placeholder="Email" />
+                <input type="text" name="EmailOrUsername" placeholder="Tên đăng nhập" />
                 @Html.ValidationMessage("EmailOrUsername", "", new { @class = "text-danger" })
-                
+
                 <input type="password" name="Password" placeholder="Mật khẩu" />
                 @Html.ValidationMessage("Password", "", new { @class = "text-danger" })
-                
+
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin: 15px 0 10px 0;">
                     <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; font-size: 14px;">
                         @Html.CheckBox("RememberMe", loginModel.RememberMe, new { style = "cursor: pointer;" })
@@ -95,12 +118,12 @@
             <div class="overlay">
                 <div class="overlay-panel overlay-left">
                     <h1>Chào mừng trở lại!</h1>
-                    <p>Để giữ kết nối với cộng đồng, vui lòng đăng nhập bằng thông tin cá nhân của bạn</p>
+                    <p>Đăng nhập bằng tên đăng nhập và mật khẩu hoặc sử dụng Google để tiếp tục</p>
                     <button class="auth-button ghost" id="signIn">Đăng Nhập</button>
                 </div>
                 <div class="overlay-panel overlay-right">
                     <h1>Chào bạn!</h1>
-                    <p>Nhập thông tin cá nhân của bạn và bắt đầu hành trình cùng chúng tôi</p>
+                    <p>Tạo tên đăng nhập và mật khẩu để bắt đầu hành trình cùng chúng tôi. Bạn có thể liên kết Google sau!</p>
                     <button class="auth-button ghost" id="signUp">Đăng Ký</button>
                 </div>
             </div>
@@ -113,6 +136,154 @@
     <input type="hidden" name="provider" value="Google" />
     <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
 </form>
+
+<!-- Toast Notification Styles -->
+<style>
+    /* Toast Container */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 400px;
+    }
+
+    /* Toast Base Styles */
+    .toast {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .toast::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(45deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2));
+    }
+
+    /* Toast Success */
+    .toast-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    /* Toast Error */
+    .toast-error {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    /* Toast Info */
+    .toast-info {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    /* Toast Components */
+    .toast-icon {
+        font-size: 24px;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .toast-content {
+        flex: 1;
+    }
+
+    .toast-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .toast-message {
+        font-size: 13px;
+        opacity: 0.9;
+        line-height: 1.4;
+    }
+
+    .toast-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 12px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+
+    .toast-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Animations */
+    @@keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    .toast.removing {
+        animation: slideOutRight 0.3s ease-in-out forwards;
+    }
+
+    /* Responsive */
+    @@media (max-width: 480px) {
+        .toast-container {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+        }
+        
+        .toast {
+            padding: 14px;
+        }
+        
+        .toast-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+    }
+</style>
 
 @section scripts {
     <script>
@@ -132,6 +303,65 @@
         function loginWithGoogle() {
             console.log('Google login clicked');
             document.getElementById('googleLoginForm').submit();
+        }
+
+        // Toast Notification Functions
+        function closeToast(button) {
+            const toast = button.parentElement;
+            toast.classList.add('removing');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+
+        // Auto-close toasts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(toast => {
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        closeToast(toast.querySelector('.toast-close'));
+                    }
+                }, 5000);
+            });
+        });
+
+        // Function to create toast dynamically (for AJAX calls)
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️'
+            };
+
+            const titles = {
+                success: 'Thành công!',
+                error: 'Lỗi!',
+                info: 'Thông báo!'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type]}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${titles[type]}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="closeToast(this)">&times;</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-close
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    closeToast(toast.querySelector('.toast-close'));
+                }
+            }, 5000);
         }
     </script>
 }

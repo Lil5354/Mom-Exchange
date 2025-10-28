@@ -1,0 +1,154 @@
+@model B_M.Models.LinkGoogleAccountViewModel
+@{
+    ViewBag.Title = "Xác nhận liên kết Google";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card" style="margin-top: 50px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none;">
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #e15b7f, #f47b8e); padding: 20px;">
+                    <h3 style="margin-bottom: 0;">
+                        <i class="fab fa-google" style="margin-right: 8px;"></i>
+                        Xác nhận liên kết tài khoản Google
+                    </h3>
+                </div>
+                <div class="card-body" style="padding: 30px;">
+                    
+                    @if (Model.Action == "confirm")
+                    {
+                        <div class="alert alert-warning" style="border-radius: 10px; padding: 20px;">
+                            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                            <strong>Cảnh báo!</strong> Tài khoản Google <strong>@Model.GoogleEmail</strong> đã được sử dụng bởi một tài khoản khác.
+                            <br><br>
+                            Bạn có muốn tiếp tục liên kết không? Điều này có thể gây xung đột.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info" style="background-color: #e3f2fd; border: none; border-radius: 10px; padding: 20px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            <strong>Xác nhận liên kết:</strong>
+                            <br><br>
+                            Bạn đang liên kết tài khoản Google <strong>@Model.GoogleEmail</strong> với tài khoản hiện tại <strong>@Model.CurrentEmail</strong>.
+                        </div>
+                    }
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user" style="font-size: 2rem; color: #6c757d; margin-bottom: 10px;"></i>
+                                    <h5>Tài khoản hiện tại</h5>
+                                    <p><strong>@Model.CurrentFullName</strong></p>
+                                    <p class="text-muted">@Model.CurrentEmail</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card" style="background-color: #fff3cd; border: 1px solid #ffeaa7;">
+                                <div class="card-body text-center">
+                                    <i class="fab fa-google" style="font-size: 2rem; color: #dc3545; margin-bottom: 10px;"></i>
+                                    <h5>Tài khoản Google</h5>
+                                    <p><strong>@Model.GoogleName</strong></p>
+                                    <p class="text-muted">@Model.GoogleEmail</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @using (Html.BeginForm("ConfirmGoogleLink", "Profile", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.GoogleEmail)
+                        @Html.HiddenFor(m => m.GoogleName)
+                        @Html.HiddenFor(m => m.CurrentEmail)
+                        @Html.HiddenFor(m => m.CurrentFullName)
+                        @Html.HiddenFor(m => m.Action)
+
+                        <div class="form-group" style="margin-top: 30px;">
+                            <label for="CurrentPassword" style="font-weight: bold; color: #333; margin-bottom: 8px; display: block;">
+                                <i class="fas fa-lock" style="margin-right: 8px; color: #007bff;"></i>
+                                Nhập mật khẩu hiện tại để xác nhận <span style="color: #dc3545;">*</span>
+                            </label>
+                            @Html.PasswordFor(m => m.CurrentPassword, new { 
+                                @class = "form-control", 
+                                @placeholder = "Nhập mật khẩu của tài khoản hiện tại",
+                                @required = "required",
+                                @style = "padding: 12px; font-size: 16px;"
+                            })
+                            @Html.ValidationMessageFor(m => m.CurrentPassword, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 30px;">
+                            <button type="submit" class="btn btn-primary" style="padding: 12px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; background: linear-gradient(135deg, #e15b7f, #f47b8e); border: none;">
+                                <i class="fas fa-link" style="margin-right: 8px;"></i>
+                                Xác nhận liên kết
+                            </button>
+                            <a href="@Url.Action("Edit", "Profile")" class="btn btn-secondary" style="padding: 12px 30px; font-size: 16px; border-radius: 8px; text-decoration: none; text-align: center;">
+                                <i class="fas fa-times" style="margin-right: 8px;"></i>
+                                Hủy bỏ
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .form-control:focus {
+        border-color: #e15b7f;
+        box-shadow: 0 0 0 0.2rem rgba(225, 91, 127, 0.25);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #e15b7f, #f47b8e);
+        border: none;
+        border-radius: 10px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(225, 91, 127, 0.4);
+        background: linear-gradient(135deg, #d14a6f, #e36a7e);
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .alert {
+        border-radius: 10px;
+    }
+    
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .card {
+            margin-top: 20px;
+        }
+        
+        .card-body {
+            padding: 20px !important;
+        }
+    }
+</style>

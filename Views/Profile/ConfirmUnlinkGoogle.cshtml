@@ -1,0 +1,391 @@
+@model B_M.Models.UnlinkGoogleViewModel
+
+@{
+    ViewBag.Title = "Xác nhận hủy liên kết Google";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="unlink-google-container">
+    <div class="unlink-google-card">
+        <div class="card-header">
+            <div class="icon-container">
+                <i class="fab fa-google google-icon"></i>
+                <i class="fas fa-unlink unlink-icon"></i>
+            </div>
+            <h2>Hủy liên kết tài khoản Google</h2>
+            <p class="subtitle">Để hủy liên kết tài khoản Google, bạn cần có tên đăng nhập và mật khẩu riêng</p>
+        </div>
+
+        <div class="current-info">
+            <h4>Tài khoản hiện tại</h4>
+            <div class="info-item">
+                <span class="label">Họ tên:</span>
+                <span class="value">@Model.CurrentFullName</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Email:</span>
+                <span class="value">@Model.CurrentEmail</span>
+            </div>
+        </div>
+
+        @using (Html.BeginForm("ProcessUnlinkGoogle", "Profile", FormMethod.Post, new { @class = "unlink-form" }))
+        {
+            @Html.AntiForgeryToken()
+
+            if (Model.HasExistingCredentials)
+            {
+                <div class="warning-box existing-credentials">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="warning-content">
+                        <h4>Bạn đã có tên đăng nhập và mật khẩu</h4>
+                        <p>Sau khi hủy liên kết, bạn sẽ chỉ có thể đăng nhập bằng tên đăng nhập và mật khẩu này.</p>
+                        <p><strong>Lưu ý:</strong> Email Google này sẽ có thể được sử dụng để đăng ký tài khoản khác.</p>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" name="action" value="confirm" class="btn btn-danger">
+                        <i class="fas fa-unlink"></i>
+                        Xác nhận hủy liên kết
+                    </button>
+                    <a href="@Url.Action("Edit", "Profile")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay lại
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="warning-box no-credentials">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="warning-content">
+                        <h4>Cần tạo tên đăng nhập và mật khẩu</h4>
+                        <p>Bạn chưa có tên đăng nhập và mật khẩu riêng. Hãy tạo ngay để có thể đăng nhập sau khi hủy liên kết Google.</p>
+                        <p><strong>Lưu ý:</strong> Sau khi hủy liên kết, email Google này sẽ có thể được sử dụng để đăng ký tài khoản khác.</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="UserName" class="form-label">
+                        <i class="fas fa-user"></i>
+                        @Html.DisplayNameFor(model => model.UserName)
+                    </label>
+                    @Html.TextBoxFor(model => model.UserName, new { @class = "form-control", @placeholder = "Nhập tên đăng nhập (3-50 ký tự)" })
+                    @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label for="Password" class="form-label">
+                        <i class="fas fa-lock"></i>
+                        @Html.DisplayNameFor(model => model.Password)
+                    </label>
+                    @Html.PasswordFor(model => model.Password, new { @class = "form-control", @placeholder = "Nhập mật khẩu (tối thiểu 6 ký tự)" })
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label for="ConfirmPassword" class="form-label">
+                        <i class="fas fa-lock"></i>
+                        @Html.DisplayNameFor(model => model.ConfirmPassword)
+                    </label>
+                    @Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control", @placeholder = "Nhập lại mật khẩu để xác nhận" })
+                    @Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" name="action" value="create" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Tạo tài khoản và hủy liên kết Google
+                    </button>
+                    <a href="@Url.Action("Edit", "Profile")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay lại
+                    </a>
+                </div>
+            }
+        }
+
+        <div class="security-note">
+            <i class="fas fa-shield-alt"></i>
+            <div class="note-content">
+                <h5>Lưu ý bảo mật</h5>
+                <ul>
+                    <li>Sau khi hủy liên kết, bạn không thể đăng nhập bằng Google với email này nữa</li>
+                    <li>Bạn chỉ có thể đăng nhập bằng tên đăng nhập và mật khẩu</li>
+                    <li>Email Google này sẽ được giải phóng và có thể dùng để đăng ký tài khoản mới</li>
+                    <li>Hãy nhớ kỹ thông tin đăng nhập để tránh bị khóa tài khoản</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .unlink-google-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .unlink-google-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .icon-container {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .google-icon {
+        color: #4285f4;
+        background: white;
+        padding: 10px;
+        border-radius: 50%;
+        margin-right: 20px;
+    }
+
+    .unlink-icon {
+        color: #dc2626;
+        background: white;
+        padding: 10px;
+        border-radius: 50%;
+    }
+
+    .card-header h2 {
+        margin: 0 0 10px 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .subtitle {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+
+    .current-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .current-info h4 {
+        margin: 0 0 15px 0;
+        color: #495057;
+        font-size: 1.1rem;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .info-item .label {
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .info-item .value {
+        color: #212529;
+    }
+
+    .unlink-form {
+        padding: 30px;
+    }
+
+    .warning-box {
+        display: flex;
+        gap: 15px;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .warning-box.existing-credentials {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+
+    .warning-box.no-credentials {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+    }
+
+    .warning-box i {
+        font-size: 1.5rem;
+        margin-top: 2px;
+    }
+
+    .warning-content h4 {
+        margin: 0 0 8px 0;
+        font-size: 1.1rem;
+    }
+
+    .warning-content p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.95rem;
+    }
+
+    .form-label i {
+        margin-right: 8px;
+        width: 16px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #e91e63;
+        box-shadow: 0 0 5px rgba(233, 30, 99, 0.3);
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #b91c1c, #dc2626);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #e91e63, #f48fb1);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #c2185b, #e91e63);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+
+    .security-note {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 25px;
+        display: flex;
+        gap: 15px;
+    }
+
+    .security-note i {
+        color: #28a745;
+        font-size: 1.5rem;
+        margin-top: 2px;
+    }
+
+    .note-content h5 {
+        margin: 0 0 10px 0;
+        color: #495057;
+        font-size: 1rem;
+    }
+
+    .note-content ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .note-content li {
+        margin-bottom: 5px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .unlink-google-container {
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        .card-header {
+            padding: 20px;
+        }
+
+        .unlink-form {
+            padding: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            justify-content: center;
+        }
+    }
+</style>

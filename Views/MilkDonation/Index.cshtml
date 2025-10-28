@@ -1,44 +1,524 @@
-﻿@model IEnumerable<B_M.Models.MilkDonationPost>
-
+﻿@model IEnumerable<B_M.Models.MilkDonationPostViewModel>
 @{
-    ViewBag.Title = "Cho Tặng Sữa Mẹ";
+    ViewBag.Title = "Cho tặng sữa mẹ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<section class="animated-hero milk-hero">
-    <div class="hero-content" data-aos="fade-up">
-        <h1>Cho Tặng Sữa Mẹ - Kết Nối Yêu Thương</h1>
-        <p>Một cộng đồng an toàn và tin cậy, nơi các bà mẹ có thể chia sẻ nguồn sữa quý giá cho những em bé cần nhất.</p>
-    </div>
-</section>
+@section Styles {
+    <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}
 
-<div class="community-page-main">
-    <div class="filter-bar" data-aos="fade-up">
-        <input type="text" placeholder="Tìm theo khu vực (ví dụ: Quận 1)...">
-        <label class="checkbox-container">
-            <input type="checkbox" checked="checked"> Chỉ hiển thị người cho đã xác thực
-            <span class="checkmark"></span>
-        </label>
+<div class="milk-donation-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h1 class="hero-title">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        Cho tặng sữa mẹ
+                    </h1>
+                    <p class="hero-subtitle">Kết nối tình yêu thương giữa các bà mẹ - An toàn, minh bạch, phi thương mại</p>
+                    
+                    @if (Session["FullName"] != null)
+                    {
+                        <div class="hero-actions">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="openCreatePostModal()">
+                                <i class="fas fa-plus"></i> Đăng tin cho tặng
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-lg" onclick="openMyPostsModal()">
+                                <i class="fas fa-list"></i> Quản lý tin đăng
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-lg" onclick="openLifestyleSurveyModal()">
+                                <i class="fas fa-clipboard-check"></i> Nâng cấp xác thực
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="hero-actions">
+                            <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user"></i> Đăng nhập để đăng tin
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="post-grid">
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="section-header">
+                    <h2>Danh sách sữa mẹ cho tặng</h2>
+                    <p class="text-muted">Các bài đăng được sắp xếp theo mức độ xác thực và thời gian</p>
+    </div>
+
+                @if (Model != null && Model.Any())
+                {
+                    <div class="posts-grid">
         @foreach (var post in Model)
-        {
-            <a href="@Url.Action("Details", "MilkDonation", new { id = post.Id })" class="product-card-link">
-                <div class="donation-card" data-aos="fade-up" data-aos-delay="@(Model.ToList().IndexOf(post) * 100)">
-                    <div class="card-image-container">
-                        <img src="@post.DonorAvatarUrl" alt="Avatar của @post.DonorName">
-                        @if (post.IsHealthVerified)
                         {
-                            <div class="verified-badge"><i class="fa-solid fa-shield-heart"></i> Đã xác thực sức khỏe</div>
+                            <div class="post-card @post.VerificationTierClass" data-aos="fade-up">
+                                <div class="verification-badge">
+                                    @if (post.VerificationTier == 1)
+                                    {
+                                        <span class="badge badge-warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            THẺ VÀNG
+                                        </span>
+                                    }
+                                    else if (post.VerificationTier == 3)
+                                    {
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check-circle"></i>
+                                            THẺ XANH
+                                        </span>
+                                    }
+                                </div>
+
+                                <div class="post-header">
+                                    <div class="donor-info">
+                                        <img src="@post.DonorAvatarUrl" alt="@post.DonorName" class="donor-avatar">
+                                        <div class="donor-details">
+                                            <h4 class="donor-name">@post.DonorName</h4>
+                                            <p class="donor-location">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                @post.Location
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="post-date">
+                                        <i class="fas fa-calendar"></i>
+                                        @post.DateOfExpression.ToString("dd/MM/yyyy")
+                                    </div>
+                                </div>
+
+                                <div class="post-content">
+                                    <div class="info-section">
+                                        <h5><i class="fas fa-utensils"></i> Chế độ ăn</h5>
+                                        <p>@post.DietInfo</p>
+                                    </div>
+
+                                    <div class="info-section">
+                                        <h5><i class="fas fa-snowflake"></i> Bảo quản</h5>
+                                        <p>@post.StorageInfo</p>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(post.Note))
+                                    {
+                                        <div class="info-section">
+                                            <h5><i class="fas fa-sticky-note"></i> Ghi chú</h5>
+                                            <p>@post.Note</p>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Verification Warning -->
+                                <div class="verification-warning">
+                                    @if (post.VerificationTier == 1)
+                                    {
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <strong>KHAI BÁO CƠ BẢN.</strong> Sữa chưa được xác thực y tế. Nền tảng khuyến nghị không dùng cho bé uống.
+                                        </div>
+                                    }
+                                    else if (post.VerificationTier == 3)
+                                    {
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle"></i>
+                                            <strong>ĐÃ XÁC THỰC Y TẾ.</strong> Người cho đã hoàn thành xác thực y tế.
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="post-footer">
+                                    <div class="post-actions">
+                                        <a href="@Url.Action("Details", "MilkDonation", new { id = post.Id })" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Xem chi tiết
+                                        </a>
+                                        <a href="@Url.Action("Conversation", "Chat", new { otherUserId = post.DonorUserId })" class="btn btn-primary">
+                                            <i class="fas fa-comments"></i> Liên hệ
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         }
                     </div>
-                    <div class="card-text-content">
-                        <h3>Tặng sữa mẹ tại @post.Location</h3>
-                        <p class="donation-info"><i class="fa-solid fa-calendar-day"></i> Ngày hút: @post.DateOfExpression.ToString("dd/MM/yyyy")</p>
-                        <p class="donation-info"><i class="fa-solid fa-user"></i> Người cho: <strong>@post.DonorName</strong></p>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-baby"></i>
+                        </div>
+                        <h3>Chưa có tin đăng nào</h3>
+                        <p>Hiện tại chưa có ai đăng tin cho tặng sữa mẹ. Hãy là người đầu tiên!</p>
+                        @if (Session["FullName"] != null)
+                        {
+                            <button type="button" class="btn btn-primary btn-lg" onclick="openCreatePostModal()">
+                                <i class="fas fa-plus"></i> Đăng tin đầu tiên
+                            </button>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user"></i> Đăng nhập để đăng tin
+                            </a>
+                        }
                     </div>
-                </div>
-            </a>
-        }
+                }
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- Floating Action Button -->
+@if (Session["FullName"] != null)
+{
+    <div class="fab-container">
+        <button type="button" class="fab" onclick="openCreatePostModal()" title="Đăng tin cho tặng">
+            <i class="fas fa-plus"></i>
+        </button>
+                </div>
+}
+
+<!-- Modal: Lifestyle Survey -->
+<div id="lifestyleSurveyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content-custom" style="width: 800px; max-width: 95vw;">
+        <div class="modal-header-custom">
+            <h3><i class="fas fa-clipboard-check"></i> Khai báo Y tế Cơ bản</h3>
+            <button type="button" class="modal-close" onclick="closeModal('lifestyleSurveyModal')">&times;</button>
+        </div>
+        <div class="modal-body-custom" id="lifestyleSurveyContent">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-3">Đang tải form...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Create Post -->
+<div id="createPostModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content-custom" style="width: 800px;">
+        <div class="modal-header-custom">
+            <h3><i class="fas fa-plus"></i> Đăng tin cho tặng sữa mẹ</h3>
+            <button type="button" class="modal-close" onclick="closeModal('createPostModal')">&times;</button>
+        </div>
+        <div class="modal-body-custom" id="createPostContent">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-3">Đang tải form...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: My Posts -->
+<div id="myPostsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content-custom" style="width: 1000px;">
+        <div class="modal-header-custom">
+            <h3><i class="fas fa-list"></i> Quản lý tin đăng của tôi</h3>
+            <button type="button" class="modal-close" onclick="closeModal('myPostsModal')">&times;</button>
+        </div>
+        <div class="modal-body-custom" id="myPostsContent">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-3">Đang tải danh sách...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Medical Records -->
+<div id="medicalRecordsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content-custom" style="width: 900px; max-width: 95vw;">
+        <div class="modal-header-custom">
+            <h3><i class="fas fa-file-medical"></i> Nâng cấp lên Tầng 2</h3>
+            <button type="button" class="modal-close" onclick="closeModal('medicalRecordsModal')">&times;</button>
+        </div>
+        <div class="modal-body-custom" id="medicalRecordsContent">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-3">Đang tải form...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS animations
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Modal functions
+        function openLifestyleSurveyModal() {
+            $('#lifestyleSurveyModal').fadeIn(300);
+            loadLifestyleSurveyForm();
+        }
+
+        function openCreatePostModal() {
+            $('#createPostModal').fadeIn(300);
+            loadCreatePostForm();
+        }
+
+        function openMyPostsModal() {
+            $('#myPostsModal').fadeIn(300);
+            loadMyPostsList();
+        }
+
+        function openMedicalRecordsModal() {
+            $('#medicalRecordsModal').fadeIn(300);
+            loadMedicalRecordsForm();
+        }
+
+        function closeModal(modalId) {
+            $('#' + modalId).fadeOut(300);
+        }
+
+        // Close modal when clicking overlay
+        $('.modal-overlay').on('click', function(e) {
+            if (e.target === this) {
+                $(this).fadeOut(300);
+            }
+        });
+
+        // ESC key to close modals
+        $(document).keyup(function(e) {
+            if (e.keyCode === 27) { // ESC key
+                $('.modal-overlay:visible').fadeOut(300);
+            }
+        });
+
+        // Load forms via AJAX
+        function loadLifestyleSurveyForm() {
+            $.ajax({
+                url: '@Url.Action("LifestyleSurvey", "MilkDonation")',
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .done(function(data) {
+                if (data.success === false) {
+                    $('#lifestyleSurveyContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ' + data.message + '</div>');
+                } else {
+                    $('#lifestyleSurveyContent').html(data);
+                    initializeLifestyleSurveyForm();
+                }
+            })
+            .fail(function() {
+                $('#lifestyleSurveyContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Không thể tải form. Vui lòng thử lại.</div>');
+            });
+        }
+
+        function loadCreatePostForm() {
+            $.get('@Url.Action("CreatePost", "MilkDonation")')
+                .done(function(data) {
+                    var formContent = $(data).find('.create-post-card').html();
+                    if (formContent) {
+                        $('#createPostContent').html('<div class="create-post-card">' + formContent + '</div>');
+                    } else {
+                        $('#createPostContent').html(data);
+                    }
+                })
+                .fail(function() {
+                    $('#createPostContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Không thể tải form. Vui lòng thử lại.</div>');
+                });
+        }
+
+        function loadMyPostsList() {
+            $.get('@Url.Action("MyPosts", "MilkDonation")')
+                .done(function(data) {
+                    var content = $(data).find('.my-posts-container .container').html();
+                    if (content) {
+                        $('#myPostsContent').html(content);
+                    } else {
+                        $('#myPostsContent').html(data);
+                    }
+                })
+                .fail(function() {
+                    $('#myPostsContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Không thể tải danh sách. Vui lòng thử lại.</div>');
+                });
+        }
+
+        function loadMedicalRecordsForm() {
+            $.ajax({
+                url: '@Url.Action("MedicalRecords", "MilkDonation")',
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(data) {
+                    $('#medicalRecordsContent').html(data);
+                },
+                error: function() {
+                    $('#medicalRecordsContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Có lỗi xảy ra khi tải form xác thực y tế.</div>');
+                }
+            });
+        }
+
+        function initializeLifestyleSurveyForm() {
+            // Re-initialize form functionality after AJAX load
+            function selectRadio(name, value) {
+                $('input[name="' + name + '"][value="' + value + '"]').prop('checked', true);
+                $('input[name="' + name + '"]').closest('.form-check-custom').removeClass('selected');
+                $('input[name="' + name + '"][value="' + value + '"]').closest('.form-check-custom').addClass('selected');
+                
+                if (name === 'UsesMedication') {
+                    toggleMedicationDetails(value);
+                }
+            }
+
+            function toggleMedicationDetails(show) {
+                if (show) {
+                    $('#medicationDetailsSection').slideDown();
+                } else {
+                    $('#medicationDetailsSection').slideUp();
+                    $('#MedicationDetails').val('');
+                }
+            }
+
+            // Bind click events
+            $('.form-check-custom').off('click').on('click', function() {
+                var radio = $(this).find('input[type="radio"]');
+                if (radio.length > 0) {
+                    var name = radio.attr('name');
+                    var value = radio.val() === 'true';
+                    selectRadio(name, value);
+                }
+            });
+
+            // Initialize selected states
+            $('input[type="radio"]:checked').each(function() {
+                $(this).closest('.form-check-custom').addClass('selected');
+            });
+
+            // Show medication details if already selected
+            if ($('#UsesMedication_True').is(':checked')) {
+                $('#medicationDetailsSection').show();
+            }
+
+            // Form submission
+            $('#lifestyleSurveyForm').off('submit').on('submit', function(e) {
+                e.preventDefault();
+                
+                var formData = $(this).serialize();
+                $.post('@Url.Action("LifestyleSurvey", "MilkDonation")', formData)
+                    .done(function(response) {
+                        if (response.success || response.indexOf('success') > -1) {
+                            closeModal('lifestyleSurveyModal');
+                            location.reload(); // Refresh to show updated status
+                        } else {
+                            // Handle validation errors
+                            $('#lifestyleSurveyContent').html(response);
+                            initializeLifestyleSurveyForm();
+                        }
+                    })
+                    .fail(function() {
+                        alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                    });
+            });
+
+            // Make selectRadio and toggleMedicationDetails available globally within modal
+            window.selectRadio = selectRadio;
+            window.toggleMedicationDetails = toggleMedicationDetails;
+        }
+
+        // Auto-open modal if TempData indicates
+        // Check for query parameters to auto-open modals
+        @if (TempData["OpenLifestyleSurveyModal"] != null)
+        {
+            <text>
+            // Đảm bảo jQuery đã load trước khi chạy
+            document.addEventListener('DOMContentLoaded', function() {
+                // Kiểm tra jQuery có sẵn không
+                if (typeof $ !== 'undefined') {
+                    setTimeout(function() {
+                        openLifestyleSurveyModal();
+                    }, 500);
+                } else {
+                    // Fallback: chờ jQuery load
+                    var checkJQuery = setInterval(function() {
+                        if (typeof $ !== 'undefined') {
+                            clearInterval(checkJQuery);
+                            setTimeout(function() {
+                                openLifestyleSurveyModal();
+                            }, 500);
+                        }
+                    }, 100);
+                }
+            });
+            </text>
+        }
+
+        // Check URL parameters for modal triggers
+        document.addEventListener('DOMContentLoaded', function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.get('openLifestyleSurvey') === 'true') {
+                if (typeof $ !== 'undefined') {
+                    setTimeout(function() {
+                        openLifestyleSurveyModal();
+                    }, 500);
+                } else {
+                    var checkJQuery = setInterval(function() {
+                        if (typeof $ !== 'undefined') {
+                            clearInterval(checkJQuery);
+                            setTimeout(function() {
+                                openLifestyleSurveyModal();
+                            }, 500);
+                        }
+                    }, 100);
+                }
+            }
+            
+            if (urlParams.get('openMedicalRecords') === 'true') {
+                if (typeof $ !== 'undefined') {
+                    setTimeout(function() {
+                        openMedicalRecordsModal();
+                    }, 500);
+                } else {
+                    var checkJQuery = setInterval(function() {
+                        if (typeof $ !== 'undefined') {
+                            clearInterval(checkJQuery);
+                            setTimeout(function() {
+                                openMedicalRecordsModal();
+                            }, 500);
+                        }
+                    }, 100);
+                }
+            }
+        });
+
+        // Auto-refresh posts every 30 seconds
+        setInterval(function() {
+            if (typeof $ !== 'undefined') {
+                if (!$('.modal-overlay:visible').length) {
+                    location.reload();
+                }
+            } else {
+                // Fallback without jQuery
+                var modals = document.querySelectorAll('.modal-overlay');
+                var hasVisibleModal = false;
+                for (var i = 0; i < modals.length; i++) {
+                    if (modals[i].style.display !== 'none' && modals[i].offsetParent !== null) {
+                        hasVisibleModal = true;
+                        break;
+                    }
+                }
+                if (!hasVisibleModal) {
+                    location.reload();
+                }
+            }
+        }, 30000);
+    </script>
+}

@@ -33,5 +33,8 @@ namespace B_M.Models
         public int UserID { get; set; }
         public string Email { get; set; }
         public string FullName { get; set; }
+        
+        // Skip flag for form submission
+        public bool IsSkipped { get; set; }
     }
 }

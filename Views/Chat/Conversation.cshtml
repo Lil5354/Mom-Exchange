@@ -1,0 +1,187 @@
+@model B_M.Models.ConversationViewModel
+@{
+    ViewBag.Title = "Cuộc hội thoại với " + Model.OtherUserName;
+}
+
+<div class="conversation-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="conversation-header">
+                    <div class="conversation-info">
+                        <a href="@Url.Action("Index", "Chat")" class="back-btn">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </a>
+                        <div class="user-info">
+                            <img src="@Model.OtherUserAvatar" alt="@Model.OtherUserName" class="user-avatar">
+                            <div class="user-details">
+                                <h3>@Model.OtherUserName</h3>
+                                <span class="user-status @(Model.IsOnline ? "online" : "offline")">
+                                    <i class="fa-solid fa-circle"></i>
+                                    @(Model.IsOnline ? "Đang hoạt động" : "Không hoạt động")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    @foreach (var message in Model.Messages)
+                    {
+                        <div class="message @(message.IsFromCurrentUser ? "message-sent" : "message-received")" data-message-id="@message.MessageID">
+                            <div class="message-content">
+                                <div class="message-text">@message.Content</div>
+                                <div class="message-time">@message.TimeDisplay</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="chat-input">
+                    @using (Html.BeginForm("SendMessage", "Chat", FormMethod.Post, new { @class = "message-form", @id = "messageForm" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ReceiverID" value="@Model.OtherUserID" />
+                        <div class="input-group">
+                            <input type="text" name="Content" class="form-control message-input" placeholder="Nhập tin nhắn..." maxlength="1000" required />
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-primary send-btn">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var lastMessageId = @(Model.Messages.Any() ? Model.Messages.Max(m => m.MessageID) : 0);
+            var otherUserId = @Model.OtherUserID;
+            var isPolling = false;
+
+            // Auto-scroll to bottom
+            function scrollToBottom() {
+                var chatMessages = $('#chatMessages');
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
+
+            // Load messages
+            function loadMessages() {
+                $.ajax({
+                    url: '@Url.Action("GetMessages", "Chat")',
+                    type: 'GET',
+                    data: { userId: otherUserId },
+                    success: function(response) {
+                        if (response.success) {
+                            var chatMessages = $('#chatMessages');
+                            chatMessages.html('');
+                            
+                            response.messages.forEach(function(message) {
+                                var messageClass = message.isFromCurrentUser ? 'message-sent' : 'message-received';
+                                var messageHtml = '<div class="message ' + messageClass + '" data-message-id="' + message.messageID + '">' +
+                                    '<div class="message-content">' +
+                                    '<div class="message-text">' + message.content + '</div>' +
+                                    '<div class="message-time">' + message.timeDisplay + '</div>' +
+                                    '</div>' +
+                                    '</div>';
+                                chatMessages.append(messageHtml);
+                            });
+                            
+                            scrollToBottom();
+                        }
+                    },
+                    error: function() {
+                        console.log('Error loading messages');
+                    }
+                });
+            }
+
+            // Send message
+            $('#messageForm').submit(function(e) {
+                e.preventDefault();
+                
+                var content = $('.message-input').val().trim();
+                if (!content) return;
+
+                var formData = $(this).serialize();
+                
+                $.ajax({
+                    url: '@Url.Action("SendMessage", "Chat")',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            $('.message-input').val('');
+                            // Reload messages to prevent duplicates
+                            loadMessages();
+                        } else {
+                            showToast(response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        showToast('Có lỗi xảy ra khi gửi tin nhắn', 'error');
+                    }
+                });
+            });
+
+            // Load new messages
+            function loadNewMessages() {
+                if (isPolling) return;
+                isPolling = true;
+
+                $.ajax({
+                    url: '@Url.Action("GetMessages", "Chat")',
+                    type: 'GET',
+                    data: {
+                        otherUserId: otherUserId,
+                        lastMessageId: lastMessageId
+                    },
+                    success: function(response) {
+                        if (response.success && response.messages.length > 0) {
+                            var chatMessages = $('#chatMessages');
+                            
+                            response.messages.forEach(function(message) {
+                                var messageHtml = '<div class="message ' + (message.IsFromCurrentUser ? 'message-sent' : 'message-received') + '" data-message-id="' + message.MessageID + '">' +
+                                    '<div class="message-content">' +
+                                    '<div class="message-text">' + message.Content + '</div>' +
+                                    '<div class="message-time">' + message.TimeDisplay + '</div>' +
+                                    '</div>' +
+                                    '</div>';
+                                
+                                chatMessages.append(messageHtml);
+                                lastMessageId = Math.max(lastMessageId, message.MessageID);
+                            });
+                            
+                            scrollToBottom();
+                        }
+                    },
+                    complete: function() {
+                        isPolling = false;
+                    }
+                });
+            }
+
+            // Poll for new messages every 3 seconds
+            setInterval(loadNewMessages, 3000);
+
+            // Initial scroll to bottom
+            scrollToBottom();
+
+            // Handle Enter key
+            $('.message-input').keypress(function(e) {
+                if (e.which === 13) {
+                    $('#messageForm').submit();
+                }
+            });
+        });
+    </script>
+}

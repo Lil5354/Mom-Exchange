@@ -13,18 +13,17 @@ namespace B_M
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
-            //// Error routes
-            //routes.MapRoute(
-            //    name: "Error404",
-            //    url: "Error/NotFound",
-            //    defaults: new { controller = "Error", action = "NotFound" }
-            //);
+            routes.MapRoute(
+                name: "Error404",
+               url: "Error/NotFound",
+               defaults: new { controller = "Error", action = "NotFound" }
+            );
 
-            //routes.MapRoute(
-            //    name: "Error500",
-            //    url: "Error/ServerError",
-            //    defaults: new { controller = "Error", action = "ServerError" }
-            //);
+            routes.MapRoute(
+               name: "Error500",
+              url: "Error/ServerError",
+               defaults: new { controller = "Error", action = "ServerError" }
+            );
 
             routes.MapRoute(
                 name: "Default",

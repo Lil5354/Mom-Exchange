@@ -1,0 +1,310 @@
+@model B_M.Models.ProfileViewModel
+
+@{
+    ViewBag.Title = "Hồ sơ cá nhân - " + Model.FullName;
+}
+
+<div class="profile-container">
+    <div class="profile-header" data-aos="fade-up">
+        <div class="profile-avatar">
+            <img src="@Model.ProfilePictureURL" alt="Avatar của @Model.FullName" class="avatar-img">
+        </div>
+        <div class="profile-info">
+            <h1 class="profile-name">@Model.FullName</h1>
+            <p class="profile-email"><i class="fa-solid fa-envelope"></i> @Model.Email</p>
+            @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+            {
+                <p class="profile-phone"><i class="fa-solid fa-phone"></i> @Model.PhoneNumber</p>
+            }
+            <p class="profile-join-date"><i class="fa-solid fa-calendar-plus"></i> Tham gia: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
+        </div>
+        <div class="profile-actions">
+            <a href="@Url.Action("Edit", "Profile")" class="btn btn-primary">
+                <i class="fa-solid fa-edit"></i> Chỉnh sửa hồ sơ
+            </a>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-stats-card" data-aos="fade-up" data-aos-delay="100">
+            <h3><i class="fa-solid fa-star"></i> Điểm uy tín</h3>
+            <div class="reputation-score">
+                <span class="score">@Model.ReputationScore.ToString("F1")</span>
+                <span class="score-max">/ 5.0</span>
+            </div>
+            <div class="reputation-stars">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    if (i <= Model.ReputationScore)
+                    {
+                        <i class="fa-solid fa-star filled"></i>
+                    }
+                    else if (i - 0.5 <= Model.ReputationScore)
+                    {
+                        <i class="fa-solid fa-star-half-stroke filled"></i>
+                    }
+                    else
+                    {
+                        <i class="fa-regular fa-star"></i>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="profile-details-card" data-aos="fade-up" data-aos-delay="200">
+            <h3><i class="fa-solid fa-user"></i> Thông tin cá nhân</h3>
+            <div class="details-list">
+                <div class="detail-item">
+                    <span class="label">Họ và tên:</span>
+                    <span class="value">@Model.FullName</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Email:</span>
+                    <span class="value">@Model.Email</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Số điện thoại:</span>
+                    <span class="value">@(!string.IsNullOrEmpty(Model.PhoneNumber) ? Model.PhoneNumber : "Chưa cập nhật")</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Địa chỉ:</span>
+                    <span class="value">@(!string.IsNullOrEmpty(Model.Address) ? Model.Address : "Chưa cập nhật")</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="milk-donation-card @Model.MilkDonationStatusClass" data-aos="fade-up" data-aos-delay="300">
+            <h3><i class="fa-solid fa-heart"></i> Trạng thái tặng sữa mẹ</h3>
+            <div class="status-display">
+                <span class="status-text">@Model.MilkDonationStatusText</span>
+                @if (Model.MilkDonationStatus == 2 || Model.MilkDonationStatus == 3)
+                {
+                    <span class="verified-badge">
+                        <i class="fa-solid fa-shield-heart"></i> Đã xác minh
+                    </span>
+                }
+            </div>
+            <div class="milk-donation-actions">
+                <a href="@Url.Action("MilkDonation", "Profile")" class="btn btn-secondary">
+                    <i class="fa-solid fa-cog"></i> Quản lý trạng thái
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .profile-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .profile-avatar {
+            position: relative;
+            flex-shrink: 0;
+            margin-right: 20px;
+        }
+
+        .avatar-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid rgba(255,255,255,0.2);
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .profile-email, .profile-phone, .profile-join-date {
+            margin: 5px 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .profile-email i, .profile-phone i, .profile-join-date i {
+            margin-right: 8px;
+            width: 20px;
+        }
+
+        .profile-actions .btn {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #e91e63, #f48fb1);
+            border: none;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .profile-actions .btn:hover {
+            background: linear-gradient(135deg, #c2185b, #e91e63);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .milk-donation-card {
+            grid-column: 1 / -1;
+        }
+
+        .profile-stats-card,
+        .profile-details-card,
+        .milk-donation-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .profile-stats-card h3,
+        .profile-details-card h3,
+        .milk-donation-card h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 1.4rem;
+        }
+
+        .reputation-score {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .score {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #f39c12;
+        }
+
+        .score-max {
+            font-size: 1.5rem;
+            color: #666;
+        }
+
+        .reputation-stars {
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .reputation-stars .fa-star.filled {
+            color: #f39c12;
+        }
+
+        .details-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .value {
+            color: #333;
+        }
+
+        .status-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .status-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .verified-badge {
+            background: #10b981;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Status classes */
+        .status-none {
+            border-left: 5px solid #6b7280;
+        }
+
+        .status-pending {
+            border-left: 5px solid #f59e0b;
+        }
+
+        .status-tier1 {
+            border-left: 5px solid #3b82f6;
+        }
+
+        .status-tier2 {
+            border-left: 5px solid #10b981;
+        }
+
+        .status-rejected {
+            border-left: 5px solid #ef4444;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-name {
+                font-size: 2rem;
+            }
+        }
+    </style>
+}
+

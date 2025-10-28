@@ -1,0 +1,690 @@
+@model B_M.Models.CartViewModel
+@{
+    ViewBag.Title = "Giỏ hàng của bạn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container" style="margin-top: 120px; margin-bottom: 60px;">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="cart-header">
+                <h2 class="page-title">
+                    <i class="fa-solid fa-shopping-cart"></i>
+                    Giỏ hàng của bạn
+                    @if (!Model.IsEmpty)
+                    {
+                        <span class="badge badge-primary">@Model.TotalItems sản phẩm</span>
+                    }
+                </h2>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["WarningMessage"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-exclamation-triangle"></i> @TempData["WarningMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (Model.IsEmpty)
+            {
+                <div class="empty-cart">
+                    <div class="empty-cart-content">
+                        <i class="fa-solid fa-shopping-cart empty-cart-icon"></i>
+                        <h3>Giỏ hàng của bạn đang trống</h3>
+                        <p>Hãy khám phá các sản phẩm tuyệt vời từ cộng đồng mẹ bỉm sữa!</p>
+                        <a href="@Url.Action("Index", "Product")" class="btn btn-primary btn-lg">
+                            <i class="fa-solid fa-shopping-bag"></i>
+                            Mua sắm ngay
+                        </a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="cart-content">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="cart-items">
+                                @foreach (var sellerGroup in Model.ItemsBySeller)
+                                {
+                                    var sellerId = sellerGroup.Key;
+                                    var items = sellerGroup.Value;
+                                    var sellerName = items.First().SellerName;
+
+                                    <div class="seller-group">
+                                        <h5 class="seller-name">
+                                            <i class="fa-solid fa-store"></i>
+                                            Cửa hàng của @sellerName
+                                        </h5>
+
+                                        @foreach (var item in items)
+                                        {
+                                            <div class="cart-item" data-product-id="@item.ProductID">
+                                                <div class="item-image">
+                                                    <img src="@item.ImageUrl" alt="@item.ProductName" 
+                                                         onerror="this.src='/images/default-product.png'" />
+                                                </div>
+
+                                                <div class="item-details">
+                                                    <h6 class="item-name">@item.ProductName</h6>
+                                                    <p class="item-location">
+                                                        <i class="fa-solid fa-map-marker-alt"></i>
+                                                        @item.Location
+                                                    </p>
+                                                    
+                                                    @if (item.IsAffiliateEnabled)
+                                                    {
+                                                        <span class="affiliate-badge">
+                                                            <i class="fa-solid fa-link"></i>
+                                                            Affiliate @item.AffiliateCommissionRate%
+                                                        </span>
+                                                    }
+                                                </div>
+
+                                                <div class="item-price">
+                                                    <span class="price">@item.Price.ToString("N0") ₫</span>
+                                                </div>
+
+                                                <div class="item-quantity">
+                                                    <div class="quantity-control">
+                                                        <button type="button" class="quantity-btn minus-btn" 
+                                                                onclick="updateQuantity(@item.ProductID, @(item.Quantity - 1))">
+                                                            <i class="fa-solid fa-minus"></i>
+                                                        </button>
+                                                        <input type="number" class="quantity-input" 
+                                                               value="@item.Quantity" min="0" max="@item.MaxQuantity"
+                                                               onchange="updateQuantity(@item.ProductID, this.value)" />
+                                                        <button type="button" class="quantity-btn plus-btn" 
+                                                                onclick="updateQuantity(@item.ProductID, @(item.Quantity + 1))"
+                                                                @(item.Quantity >= item.MaxQuantity ? "disabled" : "")>
+                                                            <i class="fa-solid fa-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                    <small class="stock-info">Còn @item.MaxQuantity</small>
+                                                </div>
+
+                                                <div class="item-subtotal">
+                                                    <span class="subtotal" id="subtotal-@item.ProductID">
+                                                        @item.SubTotal.ToString("N0") ₫
+                                                    </span>
+                                                </div>
+
+                                                <div class="item-actions">
+                                                    <button type="button" class="btn-remove" 
+                                                            onclick="removeItem(@item.ProductID)">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="cart-actions">
+                                <a href="@Url.Action("Index", "Product")" class="btn btn-outline-secondary">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                    Tiếp tục mua sắm
+                                </a>
+
+                                <button type="button" class="btn btn-outline-danger" onclick="clearCart()">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    Xóa toàn bộ giỏ hàng
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="cart-summary">
+                                <h5>Tóm tắt đơn hàng</h5>
+                                
+                                <div class="summary-row">
+                                    <span>Tạm tính (@Model.TotalItems sản phẩm):</span>
+                                    <span id="cart-subtotal">@Model.TotalAmount.ToString("N0") ₫</span>
+                                </div>
+
+                                @if (Model.TotalAffiliateCommission > 0)
+                                {
+                                    <div class="summary-row affiliate-info">
+                                        <span>
+                                            <i class="fa-solid fa-link"></i>
+                                            Hoa hồng affiliate:
+                                        </span>
+                                        <span>@Model.TotalAffiliateCommission.ToString("N0") ₫</span>
+                                    </div>
+                                }
+
+                                <div class="summary-row shipping">
+                                    <span>Phí vận chuyển:</span>
+                                    <span>Miễn phí</span>
+                                </div>
+
+                                <hr />
+
+                                <div class="summary-row total">
+                                    <strong>
+                                        <span>Tổng cộng:</span>
+                                        <span id="cart-total">@Model.TotalAmount.ToString("N0") ₫</span>
+                                    </strong>
+                                </div>
+
+                                <div class="checkout-section">
+                                    <a href="@Url.Action("Checkout")" class="btn btn-primary btn-lg btn-checkout">
+                                        <i class="fa-solid fa-credit-card"></i>
+                                        Thanh toán
+                                    </a>
+
+                                    <div class="security-info">
+                                        <small>
+                                            <i class="fa-solid fa-shield-halved"></i>
+                                            Giao dịch được bảo mật
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Hidden forms for AJAX actions -->
+<form id="update-quantity-form" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="ProductID" id="update-product-id" />
+    <input type="hidden" name="Quantity" id="update-quantity" />
+</form>
+
+<form id="remove-item-form" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="productId" id="remove-product-id" />
+</form>
+
+<form id="clear-cart-form" method="post" action="@Url.Action("Clear")" style="display: none;">
+    @Html.AntiForgeryToken()
+</form>
+
+<style>
+.cart-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.page-title {
+    color: #d63384;
+    font-weight: 700;
+    margin: 0;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 80px 20px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    margin: 40px 0;
+}
+
+.empty-cart-icon {
+    font-size: 80px;
+    color: #d63384;
+    opacity: 0.3;
+    margin-bottom: 30px;
+}
+
+.empty-cart-content h3 {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.empty-cart-content p {
+    color: #888;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.seller-group {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+}
+
+.seller-name {
+    color: #d63384;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 20px;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.item-image {
+    flex-shrink: 0;
+}
+
+.item-image img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid #f0f0f0;
+}
+
+.item-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px 0;
+    font-size: 16px;
+}
+
+.item-location {
+    color: #666;
+    margin: 0 0 8px 0;
+    font-size: 14px;
+}
+
+.affiliate-badge {
+    display: inline-block;
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.item-price {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 100px;
+}
+
+.price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #d63384;
+}
+
+.item-quantity {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 150px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.quantity-btn {
+    width: 35px;
+    height: 35px;
+    border: 2px solid #d63384;
+    background: white;
+    color: #d63384;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quantity-btn:hover:not(:disabled) {
+    background: #d63384;
+    color: white;
+}
+
+.quantity-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.quantity-input {
+    width: 60px;
+    text-align: center;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 8px;
+    font-weight: 600;
+}
+
+.stock-info {
+    color: #666;
+    font-size: 12px;
+}
+
+.item-subtotal {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 100px;
+}
+
+.subtotal {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.item-actions {
+    flex-shrink: 0;
+}
+
+.btn-remove {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-remove:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+.cart-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 0;
+    margin-top: 30px;
+    border-top: 2px solid #e9ecef;
+}
+
+.cart-summary {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    position: sticky;
+    top: 140px;
+}
+
+.cart-summary h5 {
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 15px;
+}
+
+.summary-row.total {
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+.affiliate-info {
+    color: #28a745;
+    font-size: 14px;
+}
+
+.shipping span:last-child {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.btn-checkout {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.security-info {
+    text-align: center;
+    color: #666;
+}
+
+@@media (max-width: 768px) {
+    .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .item-image {
+        align-self: center;
+    }
+
+    .item-price, .item-quantity, .item-subtotal {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .quantity-control {
+        justify-content: flex-start;
+    }
+    
+    .cart-actions {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
+
+<script>
+function updateQuantity(productId, quantity) {
+    quantity = parseInt(quantity);
+    
+    if (isNaN(quantity) || quantity < 0) {
+        quantity = 0;
+    }
+
+    $('#update-product-id').val(productId);
+    $('#update-quantity').val(quantity);
+    
+    $.ajax({
+        url: '@Url.Action("UpdateQuantity")',
+        type: 'POST',
+        data: $('#update-quantity-form').serialize(),
+        success: function(response) {
+            if (response.success) {
+                if (quantity === 0) {
+                    // Remove the item from display
+                    $('[data-product-id="' + productId + '"]').fadeOut(300, function() {
+                        $(this).remove();
+                        
+                        // Check if seller group is empty
+                        var sellerGroup = $(this).closest('.seller-group');
+                        if (sellerGroup.find('.cart-item').length === 0) {
+                            sellerGroup.fadeOut(300, function() {
+                                $(this).remove();
+                                
+                                // Check if cart is empty
+                                if ($('.cart-item').length === 0) {
+                                    location.reload();
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    // Update subtotal
+                    $('#subtotal-' + productId).text(response.subTotal.toLocaleString() + ' ₫');
+                }
+                
+                // Update cart totals
+                $('#cart-subtotal').text(response.totalAmount.toLocaleString() + ' ₫');
+                $('#cart-total').text(response.totalAmount.toLocaleString() + ' ₫');
+                
+                // Update cart badge in header if exists
+                updateCartBadge(response.itemCount);
+                
+                showMessage('Đã cập nhật số lượng!', 'success');
+            } else {
+                showMessage(response.message || 'Có lỗi xảy ra!', 'error');
+            }
+        },
+        error: function() {
+            showMessage('Có lỗi xảy ra khi cập nhật!', 'error');
+        }
+    });
+}
+
+function removeItem(productId) {
+    if (!confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+        return;
+    }
+    
+    $('#remove-product-id').val(productId);
+    
+    $.ajax({
+        url: '@Url.Action("Remove")',
+        type: 'POST',
+        data: $('#remove-item-form').serialize(),
+        success: function(response) {
+            if (response.success) {
+                $('[data-product-id="' + productId + '"]').fadeOut(300, function() {
+                    $(this).remove();
+                    
+                    // Check if seller group is empty
+                    var sellerGroup = $(this).closest('.seller-group');
+                    if (sellerGroup.find('.cart-item').length === 0) {
+                        sellerGroup.fadeOut(300, function() {
+                            $(this).remove();
+                            
+                            // Check if cart is empty
+                            if ($('.cart-item').length === 0) {
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+                
+                // Update cart totals
+                $('#cart-subtotal').text(response.totalAmount.toLocaleString() + ' ₫');
+                $('#cart-total').text(response.totalAmount.toLocaleString() + ' ₫');
+                
+                // Update cart badge in header if exists
+                updateCartBadge(response.itemCount);
+                
+                showMessage('Đã xóa sản phẩm khỏi giỏ hàng!', 'success');
+            } else {
+                showMessage(response.message || 'Có lỗi xảy ra!', 'error');
+            }
+        },
+        error: function() {
+            showMessage('Có lỗi xảy ra khi xóa sản phẩm!', 'error');
+        }
+    });
+}
+
+function clearCart() {
+    if (!confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')) {
+        return;
+    }
+    
+    $('#clear-cart-form').submit();
+}
+
+function updateCartBadge(count) {
+    // Update cart badge in navigation if it exists
+    var cartBadge = $('.cart-badge, .badge.cart-count');
+    if (cartBadge.length > 0) {
+        if (count > 0) {
+            cartBadge.text(count).show();
+        } else {
+            cartBadge.hide();
+        }
+    }
+}
+
+function showMessage(message, type) {
+    // Simple toast-like message (you can enhance this)
+    var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    
+    var alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show cart-message" role="alert">
+            <i class="fa-solid ${icon}"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    $('.cart-header').after(alertHtml);
+    
+    // Auto dismiss after 3 seconds
+    setTimeout(function() {
+        $('.cart-message').fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 3000);
+}
+
+$(document).ready(function() {
+    // Enable/disable quantity buttons based on stock
+    $('.quantity-input').on('input', function() {
+        var $input = $(this);
+        var productId = $input.closest('.cart-item').data('product-id');
+        var maxQty = parseInt($input.attr('max'));
+        var currentQty = parseInt($input.val());
+        
+        var $plusBtn = $input.siblings('.plus-btn');
+        
+        if (currentQty >= maxQty) {
+            $plusBtn.prop('disabled', true);
+        } else {
+            $plusBtn.prop('disabled', false);
+        }
+    });
+});
+</script>
+

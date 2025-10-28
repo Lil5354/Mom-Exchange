@@ -1,0 +1,484 @@
+@model B_M.Models.MilkDonationStatusViewModel
+
+@{
+    ViewBag.Title = "Quản lý trạng thái tặng sữa mẹ";
+}
+
+<div class="milk-donation-container">
+    <div class="milk-donation-header" data-aos="fade-up">
+        <h1><i class="fa-solid fa-heart"></i> Hệ thống tặng sữa mẹ 2 tầng</h1>
+        <p>Xác minh sức khỏe để tham gia chương trình tặng sữa mẹ an toàn</p>
+    </div>
+
+    <!-- Current Status -->
+    <div class="current-status-card" data-aos="fade-up" data-aos-delay="100">
+        <h2>Trạng thái hiện tại của bạn</h2>
+        <div class="status-display">
+            <div class="status-badge status-@Model.MilkDonationStatus">
+                <i class="fa-solid fa-shield-heart"></i>
+                <span>@Model.StatusText</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Process -->
+    <div class="verification-process" data-aos="fade-up" data-aos-delay="200">
+        <h2>Quy trình xác minh</h2>
+        
+        <div class="tiers-grid">
+            <!-- Tier 1 -->
+            <div class="tier-card tier-1 @(Model.MilkDonationStatus >= 1 ? "active" : "") @(Model.MilkDonationStatus >= 1 ? "completed" : "")">
+                <div class="tier-header">
+                    <div class="tier-icon">
+                        @if (Model.MilkDonationStatus >= 1)
+                        {
+                            <i class="fa-solid fa-check-circle"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-clipboard-list"></i>
+                        }
+                    </div>
+                    <div class="tier-info">
+                        <h3>Tầng 1 - Khai báo Cơ bản</h3>
+                        <p>Hoàn thành khảo sát lối sống để bắt đầu cho tặng</p>
+                    </div>
+                </div>
+                
+                <div class="tier-requirements">
+                    <h4>Yêu cầu:</h4>
+                    <ul>
+                        <li class="@(Model.HasLifestyleSurvey ? "completed" : "")">
+                            <i class="fa-solid fa-@(Model.HasLifestyleSurvey ? "check" : "circle")"></i>
+                            Hoàn thành khảo sát lối sống
+                        </li>
+                    </ul>
+                </div>
+
+                @if (Model.MilkDonationStatus == 0)
+                {
+                    <div class="tier-actions">
+                        <button onclick="openLifestyleSurveyModal()" class="btn btn-primary">
+                            <i class="fa-solid fa-clipboard-list"></i> Bắt đầu Tầng 1
+                        </button>
+                    </div>
+                }
+                else if (Model.MilkDonationStatus >= 1)
+                {
+                    <div class="tier-status">
+                        <span class="status-completed">
+                            <i class="fa-solid fa-check-circle"></i> Đã hoàn thành Tầng 1
+                        </span>
+                    </div>
+                }
+            </div>
+
+            <!-- Tier 2 -->
+            <div class="tier-card tier-2 @(Model.MilkDonationStatus >= 3 ? "completed" : "") @(Model.MilkDonationStatus >= 1 && Model.MilkDonationStatus < 3 ? "available" : "")">
+                <div class="tier-header">
+                    <div class="tier-icon">
+                        @if (Model.MilkDonationStatus >= 3)
+                        {
+                            <i class="fa-solid fa-check-circle"></i>
+                        }
+                        else if (Model.MilkDonationStatus >= 1)
+                        {
+                            <i class="fa-solid fa-file-medical"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-lock"></i>
+                        }
+                    </div>
+                    <div class="tier-info">
+                        <h3>Tầng 2 - Xác thực Y tế</h3>
+                        <p>Upload hồ sơ y tế để được xác thực đầy đủ</p>
+                    </div>
+                </div>
+                
+                <div class="tier-requirements">
+                    <h4>Yêu cầu:</h4>
+                    <ul>
+                        <li class="@(Model.MilkDonationStatus >= 1 ? "completed" : "")">
+                            <i class="fa-solid fa-@(Model.MilkDonationStatus >= 1 ? "check" : "circle")"></i>
+                            Đã hoàn thành Tầng 1
+                        </li>
+                        <li class="@(Model.HasMedicalRecords ? "completed" : "")">
+                            <i class="fa-solid fa-@(Model.HasMedicalRecords ? "check" : "circle")"></i>
+                            Upload hồ sơ y tế
+                        </li>
+                        <li class="@(Model.ApprovedMedicalRecordsCount > 0 ? "completed" : "")">
+                            <i class="fa-solid fa-@(Model.ApprovedMedicalRecordsCount > 0 ? "check" : "circle")"></i>
+                            Được admin duyệt
+                        </li>
+                    </ul>
+                </div>
+
+                @if (Model.MilkDonationStatus >= 1 && Model.MilkDonationStatus < 3)
+                {
+                    <div class="tier-actions">
+                        <button onclick="openMedicalRecordsModal()" class="btn btn-premium">
+                            <i class="fa-solid fa-file-medical"></i> 
+                            @if (Model.MilkDonationStatus == 2)
+                            {
+                                <text>Quản lý hồ sơ</text>
+                            }
+                            else
+                            {
+                                <text>Nâng cấp Tầng 2</text>
+                            }
+                        </button>
+                    </div>
+                }
+                else if (Model.MilkDonationStatus < 1)
+                {
+                    <div class="tier-status">
+                        <span class="status-locked">
+                            <i class="fa-solid fa-lock"></i> Cần hoàn thành Tầng 1 trước
+                        </span>
+                    </div>
+                }
+                else if (Model.MilkDonationStatus == 2)
+                {
+                    <div class="tier-status">
+                        <span class="status-pending">
+                            <i class="fa-solid fa-clock"></i> Đang chờ admin duyệt...
+                        </span>
+                    </div>
+                }
+                else if (Model.MilkDonationStatus >= 3)
+                {
+                    <div class="tier-status">
+                        <span class="status-completed">
+                            <i class="fa-solid fa-check-circle"></i> Đã xác thực y tế đầy đủ!
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Benefits -->
+    <div class="benefits-section" data-aos="fade-up" data-aos-delay="300">
+        <h2>Lợi ích của việc xác minh</h2>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <i class="fa-solid fa-shield-check"></i>
+                <h3>Tin cậy cao</h3>
+                <p>Tăng độ tin cậy với các mẹ khác khi tặng sữa</p>
+            </div>
+            <div class="benefit-card">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+                <h3>Ưu tiên hiển thị</h3>
+                <p>Posts tặng sữa được hiển thị ưu tiên hàng đầu</p>
+            </div>
+            <div class="benefit-card">
+                <i class="fa-solid fa-users"></i>
+                <h3>Cộng đồng chất lượng</h3>
+                <p>Kết nối với các mẹ đã được xác minh sức khỏe</p>
+            </div>
+            <div class="benefit-card">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <h3>An toàn cho bé</h3>
+                <p>Đảm bảo sữa mẹ an toàn và chất lượng</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .milk-donation-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .milk-donation-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .milk-donation-header h1 {
+            color: #e15b7f;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .milk-donation-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .current-status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .current-status-card h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .status-badge.status-0 {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .status-badge.status-1 {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-badge.status-2 {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .status-badge.status-3 {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-badge.status-4 {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .verification-process h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .tiers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .tier-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border-left: 5px solid #e5e7eb;
+            transition: all 0.3s ease;
+            height: fit-content;
+        }
+
+        .tier-card.active {
+            border-left-color: #f59e0b;
+        }
+
+        .tier-card.completed {
+            border-left-color: #10b981;
+        }
+
+        .tier-card.available {
+            border-left-color: #3b82f6;
+        }
+
+        .tier-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .tier-icon {
+            font-size: 2rem;
+        }
+
+        .tier-1 .tier-icon {
+            color: #3b82f6;
+        }
+
+        .tier-2 .tier-icon {
+            color: #10b981;
+        }
+
+        .tier-info h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 1.4rem;
+        }
+
+        .tier-info p {
+            margin: 0;
+            color: #666;
+        }
+
+        .tier-requirements h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+
+        .tier-requirements ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tier-requirements li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            color: #666;
+        }
+
+        .tier-requirements li.completed {
+            color: #10b981;
+        }
+
+        .tier-requirements li.completed i {
+            color: #10b981;
+        }
+
+        .tier-actions,
+        .tier-status {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .status-pending {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .status-locked {
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .benefits-section {
+            margin-top: 50px;
+        }
+
+        .benefits-section h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .benefit-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .benefit-card i {
+            font-size: 2.5rem;
+            color: #e15b7f;
+            margin-bottom: 15px;
+        }
+
+        .benefit-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .benefit-card p {
+            margin: 0;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .milk-donation-header h1 {
+                font-size: 2rem;
+            }
+
+            .tiers-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .tier-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function openLifestyleSurveyModal() {
+            // Redirect to MilkDonation page and trigger modal
+            window.location.href = '@Url.Action("Index", "MilkDonation")' + '?openLifestyleSurvey=true';
+        }
+
+        function openMedicalRecordsModal() {
+            // Redirect to MilkDonation page and trigger modal
+            window.location.href = '@Url.Action("Index", "MilkDonation")' + '?openMedicalRecords=true';
+        }
+    </script>
+}
+

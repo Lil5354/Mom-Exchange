@@ -87,8 +87,226 @@
             }
         }
     </style>
+    
+    @RenderSection("Styles", required: false)
+
+    <!-- Global Toast Notification Styles -->
+    <style>
+        /* Toast Container */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex !important;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+            visibility: visible !important;
+        }
+
+        /* Toast Base Styles */
+        .toast {
+            display: flex !important;
+            align-items: center;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            visibility: visible !important;
+            transform: translateX(100%);
+        }
+
+        /* Toast Animation Trigger */
+        .toast.toast-animate {
+            animation: slideInRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .toast::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(45deg, #d63384, #e91e63);
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* Toast Success */
+        .toast-success {
+            background: linear-gradient(135deg, #f8e8f0, #fce4ec);
+            color: #8e4a6b;
+            border: 1px solid #fce4ec;
+        }
+
+        /* Toast Error */
+        .toast-error {
+            background: linear-gradient(135deg, #fce4ec, #f8e8f0);
+            color: #d63384;
+            border: 1px solid #fce4ec;
+        }
+
+        /* Toast Info */
+        .toast-info {
+            background: linear-gradient(135deg, #e8f4fd, #d1ecf1);
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Toast Components */
+        .toast-icon {
+            font-size: 24px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 12px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+
+        .toast-close:hover {
+            background-color: rgba(214, 51, 132, 0.1);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Animations */
+        @@keyframes slideInRight {
+            0% {
+                transform: translateX(100%) scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: translateX(-5%) scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @@keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .toast.removing {
+            animation: slideOutRight 0.3s ease-in-out forwards;
+        }
+
+        /* Toast Hover Effects */
+        .toast:hover {
+            transform: translateX(-2px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(214, 51, 132, 0.2);
+        }
+
+        .toast:hover .toast-close {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @@media (max-width: 480px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+            
+            .toast {
+                padding: 14px;
+            }
+            
+            .toast-icon {
+                font-size: 20px;
+                margin-right: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Global Toast Notifications Container -->
+    <div class="toast-container" id="globalToastContainer">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="toast toast-success" data-message="@TempData["SuccessMessage"]" data-type="success">
+                <div class="toast-icon">✅</div>
+                <div class="toast-content">
+                    <div class="toast-title">Thành công!</div>
+                    <div class="toast-message">@TempData["SuccessMessage"]</div>
+                </div>
+                <button class="toast-close" onclick="closeToast(this)">&times;</button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="toast toast-error" data-message="@TempData["ErrorMessage"]" data-type="error">
+                <div class="toast-icon">❌</div>
+                <div class="toast-content">
+                    <div class="toast-title">Lỗi!</div>
+                    <div class="toast-message">@TempData["ErrorMessage"]</div>
+                </div>
+                <button class="toast-close" onclick="closeToast(this)">&times;</button>
+            </div>
+        }
+
+        @if (TempData["InfoMessage"] != null)
+        {
+            <div class="toast toast-info" data-message="@TempData["InfoMessage"]" data-type="info">
+                <div class="toast-icon">ℹ️</div>
+                <div class="toast-content">
+                    <div class="toast-title">Thông báo!</div>
+                    <div class="toast-message">@TempData["InfoMessage"]</div>
+                </div>
+                <button class="toast-close" onclick="closeToast(this)">&times;</button>
+            </div>
+        }
+    </div>
+
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display: none;">
         <defs>
             <filter id="goo">
@@ -100,18 +318,18 @@
     </svg>
 
     <header>
+        @Html.AntiForgeryToken()
         <div class="header-top" style="background: linear-gradient(135deg, #f8e8f0, #fce4ec); padding: 8px 0; border-bottom: 1px solid #fce4ec;">
             <div class="container-fluid" style="max-width: 100%; padding: 0 20px;">
                 <div class="row align-items-center" style="margin: 0;">
                     <div class="col-md-6" style="padding: 0;">
                         <div class="header-top-links" style="display: flex; gap: 20px; align-items: center; flex-wrap: nowrap;">
-                            <a href="@Url.Action("Index", "Blog")" style="color: #8e4a6b; text-decoration: none; font-weight: 500; transition: color 0.3s ease; white-space: nowrap;">Góc chia sẻ</a>
                             <a href="@Url.Action("About", "Home")" style="color: #8e4a6b; text-decoration: none; font-weight: 500; transition: color 0.3s ease; white-space: nowrap;">Về MomExchange</a>
                             <a href="@Url.Action("Contact", "Home")" style="color: #8e4a6b; text-decoration: none; font-weight: 500; transition: color 0.3s ease; white-space: nowrap;">Liên hệ</a>
                         </div>
-            </div>
+                    </div>
                     <div class="col-md-6 text-end" style="padding: 0;">
-            <div class="header-top-promo">
+                        <div class="header-top-promo">
                             <a href="@Url.Action("Index", "MilkDonation")" style="color: #d63384; text-decoration: none; font-weight: 600; transition: color 0.3s ease; white-space: nowrap;">
                                 <i class="fa-solid fa-hand-holding-heart" style="margin-right: 5px;"></i> Cho tặng sữa mẹ
                             </a>
@@ -133,13 +351,13 @@
                                     <a href="#" style="display: block; padding: 8px 20px; color: #333; text-decoration: none; transition: background 0.3s ease;">Bobby</a>
                                     <a href="#" style="display: block; padding: 8px 20px; color: #333; text-decoration: none; transition: background 0.3s ease;">Huggies</a>
                                     <a href="@Url.Action("Index", "Brand")" style="display: block; padding: 8px 20px; color: #d63384; text-decoration: none; font-weight: 600; transition: background 0.3s ease;">Xem tất cả nhãn hàng</a>
-                     </div>
-                </div>
+                                </div>
+                            </div>
                             <a href="@Url.Action("Index", "Community")" style="color: #333; text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 20px; transition: all 0.3s ease; position: relative; white-space: nowrap;">Cộng đồng</a>
                         </div>
-            </div>
+                    </div>
                     <div class="col-md-4 text-center" style="padding: 0;">
-            <div class="logo">
+                        <div class="logo">
                             <a href="@Url.Action("Index", "Home")" style="font-size: 28px; font-weight: 800; color: #d63384; text-decoration: none; background: linear-gradient(135deg, #d63384, #e91e63); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">MomExchange</a>
                         </div>
                     </div>
@@ -147,19 +365,72 @@
                         @if (Session["FullName"] != null)
                         {
                             <div style="display: flex; align-items: center; gap: 15px; flex-wrap: nowrap;">
+                                <!-- Notification Dropdown -->
+                                <div class="notification-dropdown" style="position: relative;">
+                                    <div class="notification-trigger" style="position: relative; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: linear-gradient(135deg, #d63384, #e91e63); border-radius: 50%; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(214, 51, 132, 0.3); cursor: pointer;">
+                                        <i class="fa-solid fa-bell" style="color: white; font-size: 18px;"></i>
+                                        <span class="notification-badge" id="notificationBadge" style="position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 2px solid white; display: none;">0</span>
+                                    </div>
+                                    
+                                    <!-- Notification Dropdown Content -->
+                                    <div class="notification-dropdown-content" id="notificationDropdownContent" style="position: absolute; top: 100%; right: 0; width: 350px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #e9ecef; z-index: 1000; display: none; overflow: hidden;">
+                                        <!-- Header -->
+                                        <div class="notification-header" style="padding: 16px 20px; border-bottom: 1px solid #f8f9fa; background: linear-gradient(135deg, #fce4ec, #f8e8f0);">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <h5 style="margin: 0; color: #d63384; font-weight: 600;">
+                                                    <i class="fa-solid fa-bell" style="margin-right: 8px;"></i>
+                                                    Thông báo
+                                                </h5>
+                                                <button type="button" class="btn-mark-all-read" style="background: none; border: none; color: #d63384; font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.3s ease;">
+                                                    <i class="fa-solid fa-check-double" style="margin-right: 4px;"></i>
+                                                    Đọc tất cả
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Notification List -->
+                                        <div class="notification-list" id="notificationList" style="max-height: 300px; overflow-y: auto;">
+                                            <!-- Notifications will be loaded here via AJAX -->
+                                            <div class="notification-loading" style="padding: 20px; text-align: center; color: #6c757d;">
+                                                <i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>
+                                                Đang tải...
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Footer -->
+                                        <div class="notification-footer" style="padding: 12px 20px; border-top: 1px solid #f8f9fa; background: #f8f9fa;">
+                                            <a href="@Url.Action("Index", "Notification")" style="display: block; text-align: center; color: #d63384; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                                <i class="fa-solid fa-external-link-alt" style="margin-right: 6px;"></i>
+                                                Xem tất cả thông báo
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- User Dropdown -->
                                 <div class="user-dropdown" style="position: relative;">
                                     <div class="user-info" style="display: flex; align-items: center; gap: 8px; padding: 8px 15px; background: linear-gradient(135deg, #fce4ec, #f8e8f0); border-radius: 25px; border: 1px solid #fce4ec; transition: all 0.3s ease; cursor: pointer; white-space: nowrap;">
-                                        <i class="fa-solid fa-user-circle" style="color: #d63384; font-size: 18px;"></i>
-                                        <span style="color: #8e4a6b; font-weight: 500;">Xin chào, <strong style="color: #d63384;">@Session["FullName"]</strong></span>
+                                        @if (!string.IsNullOrEmpty(ViewBag.UserAvatarURL as string))
+                                        {
+                                            <img src="@ViewBag.UserAvatarURL" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #d63384;" />
+                                        }
+                                        else
+                                        {
+                                            <i class="fa-solid fa-user-circle" style="color: #d63384; font-size: 18px;"></i>
+                                        }
+                                        <span style="color: #8e4a6b; font-weight: 500;">Xin chào, <strong style="color: #d63384;">@Html.Raw(Session["FullName"])</strong></span>
                                         <i class="fa-solid fa-chevron-down" style="color: #d63384; font-size: 12px; margin-left: 5px; transition: transform 0.3s ease;"></i>
                                     </div>
                                     <div class="user-dropdown-content" style="position: absolute; top: 100%; right: 0; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border-radius: 15px; padding: 10px 0; min-width: 220px; z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; margin-top: 5px;">
                                         <div style="padding: 10px 20px; border-bottom: 1px solid #f0f0f0;">
-                                            <div style="font-weight: 600; color: #d63384; font-size: 14px;">@Session["FullName"]</div>
+                                            <div style="font-weight: 600; color: #d63384; font-size: 14px;">@Html.Raw(Session["FullName"])</div>
                                             <div style="color: #8e4a6b; font-size: 12px;">@Session["UserEmail"]</div>
                                         </div>
-                                        <a href="@Url.Action("Profile", "Account")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
+                                        <a href="@Url.Action("Index", "Profile")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
+                                            <i class="fa-solid fa-user" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
+                                            Hồ sơ cá nhân
+                                        </a>
+                                        <a href="@Url.Action("Edit", "Profile")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
                                             <i class="fa-solid fa-user-edit" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Chỉnh sửa thông tin
                                         </a>
@@ -178,6 +449,10 @@
                                         <a href="@Url.Action("Favorites", "Account")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
                                             <i class="fa-solid fa-heart" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Yêu thích
+                                        </a>
+                                        <a href="@Url.Action("MyPosts", "MilkDonation")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
+                                            <i class="fa-solid fa-hand-holding-heart" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
+                                            Quản lý tin sữa
                                         </a>
                                         @if (Session["Role"] != null && (byte)Session["Role"] == 1)
                                         {
@@ -205,8 +480,8 @@
                                 <i class="fa-solid fa-user" style="margin-right: 8px;"></i> Đăng nhập / Đăng ký
                             </a>
                         }
-                     </div>
-            </div>
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
@@ -243,6 +518,50 @@
             <p>&copy; @DateTime.Now.Year - MomExchange. Xây dựng bởi cộng đồng các bà mẹ.</p>
         </div>
     </footer>
+
+    <!-- Messenger-Style Chat Popup -->
+    <div id="chatPopup" class="chat-popup" style="position: fixed; bottom: 20px; right: 20px; width: 350px; height: 500px; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 1000; display: none; overflow: hidden; border: 1px solid #e9ecef;">
+        <!-- Chat Header -->
+        <div class="chat-popup-header" style="background: linear-gradient(135deg, #d63384, #e91e63); padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center;">
+            <div class="chat-user-info" style="display: flex; align-items: center; gap: 10px;">
+                <img id="chatUserAvatar" src="@(Session["AvatarURL"] ?? "/images/avatar-default.jpg")" alt="" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
+                <div>
+                    <h6 id="chatUserName" style="margin: 0; font-size: 14px; font-weight: 600;">@Html.Raw(Session["FullName"] ?? "Bạn")</h6>
+                    <small id="chatUserStatus" style="opacity: 0.8; font-size: 11px;">Tin nhắn</small>
+                </div>
+            </div>
+            <div class="chat-controls" style="display: flex; gap: 8px;">
+                <button type="button" class="btn-minimize" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.3s ease;">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <button type="button" class="btn-close-chat" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.3s ease;">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-popup-messages" id="chatPopupMessages" style="height: 320px; overflow-y: auto; padding: 15px; background: #f8f9fa;">
+            <!-- Messages will be loaded here -->
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-popup-input" style="padding: 15px; background: white; border-top: 1px solid #e9ecef;">
+            <form id="chatPopupForm" style="display: flex; gap: 8px;">
+                <input type="hidden" id="chatReceiverId" name="ReceiverID" value="">
+                <input type="text" id="chatMessageInput" name="Content" placeholder="Nhập tin nhắn..." style="flex: 1; padding: 8px 12px; border: 1px solid #e9ecef; border-radius: 20px; outline: none; font-size: 14px;" maxlength="1000">
+                <button type="submit" class="btn-send-message" style="background: linear-gradient(135deg, #d63384, #e91e63); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                    <i class="fa-solid fa-paper-plane" style="font-size: 14px;"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <div id="chatToggle" class="chat-toggle" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, #d63384, #e91e63); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 20px rgba(214, 51, 132, 0.3); transition: all 0.3s ease; z-index: 999;">
+        <i class="fa-solid fa-comments" style="color: white; font-size: 24px;"></i>
+        <span id="chatUnreadBadge" class="chat-unread-badge" style="position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 2px solid white; display: none;">0</span>
+    </div>
 
     <div id="trade-popup-overlay" class="popup-overlay">
         <div id="trade-popup" class="popup-content" data-aos="fade-up">
@@ -282,7 +601,7 @@
             </div>
         </div>
     </div>
-    
+
     <div id="cursor" class="Cursor"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
@@ -295,21 +614,560 @@
             duration: 800, // Thời gian diễn ra animation (miliseconds)
             once: true // Animation chỉ diễn ra 1 lần
         });
-        
+
+        // Cart functionality
+        function updateCartBadge(count) {
+            const cartBadge = document.getElementById('cartBadge');
+            if (cartBadge) {
+                if (count > 0) {
+                    cartBadge.textContent = count > 99 ? '99+' : count;
+                    cartBadge.style.display = 'flex';
+                } else {
+                    cartBadge.style.display = 'none';
+                }
+            }
+        }
+
+        function loadCartSummary() {
+            // Load cart summary on page load if user is logged in
+            if ('@Session["FullName"]' !== '') {
+                fetch('@Url.Action("Summary", "Cart")', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.Success) {
+                        updateCartBadge(data.ItemCount);
+                    }
+                })
+                .catch(error => {
+                    console.log('Cart summary load failed:', error);
+                });
+            }
+        }
+
+
+        function updateNotificationBadge(count) {
+            const notificationBadge = document.getElementById('notificationBadge');
+            if (notificationBadge) {
+                if (count > 0) {
+                    notificationBadge.textContent = count > 99 ? '99+' : count;
+                    notificationBadge.style.display = 'flex';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+            }
+        }
+
+        // Notification dropdown functionality
+        function initializeNotificationDropdown() {
+            const notificationTrigger = document.querySelector('.notification-trigger');
+            const notificationDropdown = document.querySelector('.notification-dropdown-content');
+            const notificationList = document.getElementById('notificationList');
+            const markAllReadBtn = document.querySelector('.btn-mark-all-read');
+
+            if (!notificationTrigger || !notificationDropdown) return;
+
+            // Toggle dropdown
+            notificationTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
+                    notificationDropdown.style.display = 'block';
+                    loadNotificationDropdown();
+                } else {
+                    notificationDropdown.style.display = 'none';
+                }
+            });
+
+            // Mark all as read
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    markAllNotificationsAsRead();
+                });
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!notificationTrigger.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                    notificationDropdown.style.display = 'none';
+                }
+            });
+
+            // Hover effects
+            notificationTrigger.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 6px 20px rgba(214, 51, 132, 0.4)';
+            });
+            
+            notificationTrigger.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 2px 10px rgba(214, 51, 132, 0.3)';
+            });
+        }
+
+        // Load notifications for dropdown
+        function loadNotificationDropdown() {
+            const notificationList = document.getElementById('notificationList');
+            if (!notificationList) return;
+
+            // Show loading
+            notificationList.innerHTML = '<div class="notification-loading" style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải...</div>';
+
+            fetch('@Url.Action("GetRecentNotifications", "Notification")', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.notifications) {
+                    renderNotificationDropdown(data.notifications);
+                } else {
+                    notificationList.innerHTML = '<div class="notification-empty" style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-bell-slash" style="margin-right: 8px;"></i>Chưa có thông báo nào</div>';
+                }
+            })
+            .catch(error => {
+                console.log('Error loading notifications:', error);
+                notificationList.innerHTML = '<div class="notification-error" style="padding: 20px; text-align: center; color: #dc3545;"><i class="fa-solid fa-exclamation-triangle" style="margin-right: 8px;"></i>Có lỗi xảy ra</div>';
+            });
+        }
+
+        // Render notifications in dropdown
+        function renderNotificationDropdown(notifications) {
+            const notificationList = document.getElementById('notificationList');
+            if (!notificationList || !notifications.length) {
+                notificationList.innerHTML = '<div class="notification-empty" style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-bell-slash" style="margin-right: 8px;"></i>Chưa có thông báo nào</div>';
+                return;
+            }
+
+            let html = '';
+            notifications.forEach(notification => {
+                const isUnread = !notification.isRead;
+                const timeAgo = getTimeAgo(notification.createdAt);
+                
+                html += `
+                    <div class="notification-item ${isUnread ? 'unread' : 'read'}" data-notification-id="${notification.notificationID}" style="padding: 12px 20px; border-bottom: 1px solid #f8f9fa; cursor: pointer; transition: background 0.3s ease; ${isUnread ? 'background: #f8f9ff; border-left: 3px solid #d63384;' : 'background: white;'}">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <div class="notification-icon" style="flex-shrink: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: ${getNotificationIconColor(notification.type)}; color: white; font-size: 14px;">
+                                ${getNotificationIcon(notification.type)}
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                                    <h6 style="margin: 0; font-size: 13px; font-weight: 600; color: #2c3e50; line-height: 1.3;">${notification.title}</h6>
+                                    <span style="font-size: 11px; color: #adb5bd; white-space: nowrap; margin-left: 8px;">${timeAgo}</span>
+                                </div>
+                                <p style="margin: 0; font-size: 12px; color: #6c757d; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${notification.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            notificationList.innerHTML = html;
+
+            // Add click handlers for individual notifications
+            notificationList.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const notificationId = this.dataset.notificationId;
+                    markNotificationAsRead(notificationId);
+                    this.classList.remove('unread');
+                    this.classList.add('read');
+                    this.style.background = 'white';
+                    this.style.borderLeft = 'none';
+                });
+            });
+        }
+
+        // Mark single notification as read
+        function markNotificationAsRead(notificationId) {
+            fetch('@Url.Action("MarkAsRead", "Notification")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `notificationId=${notificationId}&__RequestVerificationToken=${document.querySelector('input[name="__RequestVerificationToken"]').value}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateNotificationBadge();
+                }
+            })
+            .catch(error => console.log('Error marking notification as read:', error));
+        }
+
+        // Mark all notifications as read
+        function markAllNotificationsAsRead() {
+            fetch('@Url.Action("MarkAllAsRead", "Notification")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `__RequestVerificationToken=${document.querySelector('input[name="__RequestVerificationToken"]').value}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    document.querySelectorAll('.notification-item').forEach(item => {
+                        item.classList.remove('unread');
+                        item.classList.add('read');
+                        item.style.background = 'white';
+                        item.style.borderLeft = 'none';
+                    });
+                    updateNotificationBadge();
+                }
+            })
+            .catch(error => console.log('Error marking all notifications as read:', error));
+        }
+
+        // Helper functions
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 1: return '<i class="fa-solid fa-hand-holding-heart"></i>';
+                case 2: return '<i class="fa-solid fa-check-circle"></i>';
+                case 3: return '<i class="fa-solid fa-times-circle"></i>';
+                case 4: return '<i class="fa-solid fa-lock"></i>';
+                default: return '<i class="fa-solid fa-bell"></i>';
+            }
+        }
+
+        function getNotificationIconColor(type) {
+            switch (type) {
+                case 1: return '#17a2b8';
+                case 2: return '#28a745';
+                case 3: return '#ffc107';
+                case 4: return '#6c757d';
+                default: return '#17a2b8';
+            }
+        }
+
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((now - date) / 1000);
+
+            if (diffInSeconds < 60) return 'Vừa xong';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
+            if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Set current user avatar in chat header
+        function setCurrentUserAvatarInHeader() {
+            const currentUserAvatar = '@Session["AvatarURL"]' || '/images/avatar-default.jpg';
+            const currentUserName = '@Html.Raw(Session["FullName"])' || 'Bạn';
+            
+            console.log('Setting current user avatar:', currentUserAvatar);
+            console.log('Setting current user name:', currentUserName);
+            
+            document.getElementById('chatUserAvatar').src = currentUserAvatar;
+            document.getElementById('chatUserName').textContent = currentUserName;
+            document.getElementById('chatUserStatus').textContent = 'Tin nhắn';
+        }
+
+        // Chat Popup Functionality
+        function initializeChatPopup() {
+            const chatToggle = document.getElementById('chatToggle');
+            const chatPopup = document.getElementById('chatPopup');
+            const chatCloseBtn = document.querySelector('.btn-close-chat');
+            const chatMinimizeBtn = document.querySelector('.btn-minimize');
+            const chatPopupForm = document.getElementById('chatPopupForm');
+            const chatMessageInput = document.getElementById('chatMessageInput');
+
+            if (!chatToggle || !chatPopup) return;
+
+            // Toggle chat popup
+            chatToggle.addEventListener('click', function() {
+                if (chatPopup.style.display === 'none' || chatPopup.style.display === '') {
+                    chatPopup.style.display = 'block';
+                    chatToggle.style.display = 'none';
+                    
+                    // Set avatar của chủ tài khoản vào header ban đầu
+                    setCurrentUserAvatarInHeader();
+                    
+                    // Load recent conversations or show chat list
+                    loadChatConversations();
+                }
+            });
+
+            // Close chat popup
+            if (chatCloseBtn) {
+                chatCloseBtn.addEventListener('click', function() {
+                    chatPopup.style.display = 'none';
+                    chatToggle.style.display = 'flex';
+                    
+                    // Reset về avatar của chủ tài khoản
+                    setCurrentUserAvatarInHeader();
+                    
+                    // Clear messages và receiver
+                    document.getElementById('chatPopupMessages').innerHTML = '';
+                    document.getElementById('chatReceiverId').value = '';
+                });
+            }
+
+            // Minimize chat popup
+            if (chatMinimizeBtn) {
+                chatMinimizeBtn.addEventListener('click', function() {
+                    chatPopup.style.display = 'none';
+                    chatToggle.style.display = 'flex';
+                });
+            }
+
+            // Send message
+            if (chatPopupForm) {
+                chatPopupForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    sendChatMessage();
+                });
+            }
+
+            // Hover effects
+            chatToggle.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 6px 25px rgba(214, 51, 132, 0.4)';
+            });
+            
+            chatToggle.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 20px rgba(214, 51, 132, 0.3)';
+            });
+        }
+
+        // Load chat conversations
+        function loadChatConversations() {
+            const chatPopupMessages = document.getElementById('chatPopupMessages');
+            if (!chatPopupMessages) return;
+
+            chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải...</div>';
+
+            fetch('@Url.Action("GetConversationSummaries", "Chat")', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.conversations) {
+                    renderChatConversations(data.conversations);
+                } else {
+                    chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-comments" style="margin-right: 8px;"></i>Chưa có cuộc hội thoại nào</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading conversations:', error);
+                chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;"><i class="fa-solid fa-exclamation-triangle" style="margin-right: 8px;"></i>Có lỗi xảy ra khi tải cuộc hội thoại</div>';
+            });
+        }
+
+        // Render chat conversations
+        function renderChatConversations(conversations) {
+            const chatPopupMessages = document.getElementById('chatPopupMessages');
+            if (!chatPopupMessages || !conversations.length) {
+                chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-comments" style="margin-right: 8px;"></i>Chưa có cuộc hội thoại nào</div>';
+                return;
+            }
+
+            let html = '';
+            conversations.forEach(conversation => {
+                html += `
+                    <div class="chat-conversation-item" data-user-id="${conversation.userID}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.3s ease; margin-bottom: 8px;" onclick="openChatConversation(${conversation.userID}, '${conversation.userName}', '${conversation.userAvatar}')">
+                        <img src="${conversation.userAvatar}" alt="${conversation.userName}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <div style="flex: 1; min-width: 0;">
+                            <h6 style="margin: 0; font-size: 14px; font-weight: 600; color: #2c3e50;">${conversation.userName}</h6>
+                            <p style="margin: 0; font-size: 12px; color: #6c757d; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${conversation.lastMessage || 'Chưa có tin nhắn'}</p>
+                        </div>
+                        ${conversation.unreadCount > 0 ? `<span style="background: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center;">${conversation.unreadCount}</span>` : ''}
+                    </div>
+                `;
+            });
+
+            chatPopupMessages.innerHTML = html;
+
+            // Add hover effects
+            chatPopupMessages.querySelectorAll('.chat-conversation-item').forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.background = '#f0f8ff';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.background = 'transparent';
+                });
+            });
+        }
+
+        // Open chat conversation
+        function openChatConversation(userId, userName, userAvatar) {
+            document.getElementById('chatReceiverId').value = userId;
+            
+            // Chuyển header thành thông tin của người đang chat với
+            document.getElementById('chatUserName').textContent = userName;
+            document.getElementById('chatUserAvatar').src = userAvatar;
+            document.getElementById('chatUserStatus').textContent = 'Đang hoạt động';
+            
+            // Load messages for this conversation
+            loadChatMessages(userId);
+        }
+
+        // Load chat messages
+        function loadChatMessages(userId) {
+            const chatPopupMessages = document.getElementById('chatPopupMessages');
+            if (!chatPopupMessages) return;
+
+            chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải...</div>';
+
+            fetch('@Url.Action("GetMessagesSimple", "Chat")?userId=' + userId, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    renderChatMessages(data.messages);
+                } else {
+                    chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;">Có lỗi xảy ra khi tải tin nhắn</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading messages:', error);
+                chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;">Có lỗi xảy ra khi tải tin nhắn</div>';
+            });
+        }
+
+        // Render chat messages
+        function renderChatMessages(messages) {
+            const chatPopupMessages = document.getElementById('chatPopupMessages');
+            if (!chatPopupMessages) return;
+
+            let html = '';
+            messages.forEach(message => {
+                const messageClass = message.isFromCurrentUser ? 'message-sent' : 'message-received';
+                html += `
+                    <div class="chat-message ${messageClass}" style="margin-bottom: 12px; display: flex; ${message.isFromCurrentUser ? 'justify-content: flex-end;' : 'justify-content: flex-start;'}">
+                        <div style="max-width: 70%; padding: 8px 12px; border-radius: 12px; ${message.isFromCurrentUser ? 'background: linear-gradient(135deg, #d63384, #e91e63); color: white;' : 'background: white; color: #2c3e50; border: 1px solid #e9ecef;'}">
+                            <div style="font-size: 14px; line-height: 1.4;">${message.content}</div>
+                            <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">${message.timeDisplay}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            chatPopupMessages.innerHTML = html;
+            chatPopupMessages.scrollTop = chatPopupMessages.scrollHeight;
+        }
+
+        // Send chat message
+        function sendChatMessage() {
+            const form = document.getElementById('chatPopupForm');
+            const messageInput = document.getElementById('chatMessageInput');
+            const receiverId = document.getElementById('chatReceiverId').value;
+            
+            if (!receiverId || !messageInput.value.trim()) return;
+
+            const formData = new FormData(form);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            fetch('@Url.Action("SendMessage", "Chat")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    messageInput.value = '';
+                    // Reload messages
+                    loadChatMessages(receiverId);
+                } else {
+                    console.error('Error sending message:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+            });
+        }
+
+        function loadNotificationSummary() {
+            // Load notification summary on page load if user is logged in
+            if ('@Session["FullName"]' !== '') {
+                // Load notification summary
+                fetch('@Url.Action("GetUnreadCount", "Notification")', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    updateNotificationBadge(data.count);
+                })
+                .catch(error => {
+                    console.log('Notification summary load failed:', error);
+                });
+            }
+        }
+
+        // Cart hover effect
+        function addCartHoverEffect() {
+            const cartLink = document.querySelector('.cart-link');
+            if (cartLink) {
+                cartLink.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px) scale(1.05)';
+                    this.style.boxShadow = '0 4px 20px rgba(214, 51, 132, 0.4)';
+                });
+
+                cartLink.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 2px 10px rgba(214, 51, 132, 0.3)';
+                });
+            }
+        }
+
         // User dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize cart and chat functionality
+            loadCartSummary();
+            loadNotificationSummary();
+            addCartHoverEffect();
+            initializeNotificationDropdown();
+            initializeChatPopup();
+
             const userDropdown = document.querySelector('.user-dropdown');
             const userInfo = document.querySelector('.user-info');
             const dropdownContent = document.querySelector('.user-dropdown-content');
             const chevronIcon = document.querySelector('.user-info i.fa-chevron-down');
-            
+
             if (userDropdown && userInfo && dropdownContent) {
                 let isOpen = false;
-                
+
                 userInfo.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     if (isOpen) {
                         dropdownContent.style.opacity = '0';
                         dropdownContent.style.visibility = 'hidden';
@@ -324,7 +1182,7 @@
                         isOpen = true;
                     }
                 });
-                
+
                 // Close dropdown when clicking outside
                 document.addEventListener('click', function(e) {
                     if (!userDropdown.contains(e.target) && isOpen) {
@@ -339,6 +1197,120 @@
         });
     </script>
 
+    <!-- Global Toast Notification JavaScript -->
+    <script>
+        // Toast Notification Functions
+        function closeToast(button) {
+            const toast = button.parentElement;
+            toast.classList.add('removing');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+
+        // Auto-close toasts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded, checking for toasts...');
+            const toasts = document.querySelectorAll('.toast');
+            console.log('Found toasts:', toasts.length);
+
+            toasts.forEach((toast, index) => {
+                console.log(`Toast ${index}:`, toast);
+                
+                // Only ensure toast is visible, don't override animation
+                toast.style.display = 'flex';
+                toast.style.visibility = 'visible';
+                
+                // Trigger animation after a small delay
+                setTimeout(() => {
+                    toast.classList.add('toast-animate');
+                }, 50);
+                
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        const closeButton = toast.querySelector('.toast-close');
+                        if (closeButton) {
+                            closeToast(closeButton);
+                        }
+                    }
+                }, 5000);
+            });
+        });
+
+        // Function to create toast dynamically (for AJAX calls)
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('globalToastContainer');
+            if (!container) return;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️'
+            };
+
+            const titles = {
+                success: 'Thành công!',
+                error: 'Lỗi!',
+                info: 'Thông báo!'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                    <div class="toast-icon">${icons[type]}</div>
+                    <div class="toast-content">
+                        <div class="toast-title">${titles[type]}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                    <button class="toast-close" onclick="closeToast(this)">&times;</button>
+                `;
+
+            container.appendChild(toast);
+
+            // Trigger animation after a small delay
+            setTimeout(() => {
+                toast.classList.add('toast-animate');
+            }, 50);
+
+            // Auto-close
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    const closeButton = toast.querySelector('.toast-close');
+                    if (closeButton) {
+                        closeToast(closeButton);
+                    }
+                }
+            }, 5000);
+        }
+    </script>
+    <!-- Thêm vào cuối body, trước </body> -->
+    <script>
+    // Debug toast notifications
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== TOAST DEBUG ===');
+        console.log('TempData SuccessMessage:', '@TempData["SuccessMessage"]');
+        console.log('TempData ErrorMessage:', '@TempData["ErrorMessage"]');
+        console.log('TempData InfoMessage:', '@TempData["InfoMessage"]');
+
+        const container = document.getElementById('globalToastContainer');
+        console.log('Toast container:', container);
+
+        const toasts = document.querySelectorAll('.toast');
+        console.log('Found toasts:', toasts.length);
+
+        toasts.forEach((toast, index) => {
+            console.log(`Toast ${index}:`, toast);
+            console.log(`Toast ${index} visible:`, toast.offsetParent !== null);
+        });
+        console.log('==================');
+    });
+    </script>
+    
+    <!-- jQuery Library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     @RenderSection("scripts", required: false)
 </body>
+</html>
+</html>
 </html>

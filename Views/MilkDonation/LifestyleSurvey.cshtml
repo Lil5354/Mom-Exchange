@@ -1,0 +1,28 @@
+﻿@model B_M.Models.LifestyleSurveyViewModel
+@{
+    ViewBag.Title = "Khai báo Y tế cơ bản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}
+
+<div class="lifestyle-survey-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                @Html.Partial("_LifestyleSurveyPartial", Model)
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });</script>
+}

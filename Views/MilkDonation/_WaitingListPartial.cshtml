@@ -1,0 +1,224 @@
+@model List<B_M.Models.MilkDonationRequestViewModel>
+
+<div class="waiting-list-modal-content">
+    <div class="waiting-list-header">
+        <h3><i class="fa-solid fa-users"></i> Danh sách Chờ</h3>
+        <p class="text-muted">Quản lý các yêu cầu nhận sữa cho bài đăng của bạn</p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="requests-list">
+            @foreach (var request in Model)
+            {
+                <div class="request-item" data-request-id="@request.RequestID">
+                    <div class="request-header">
+                        <div class="recipient-info">
+                            <img src="@request.RecipientAvatarUrl" alt="@request.RecipientName" class="recipient-avatar">
+                            <div class="recipient-details">
+                                <h4 class="recipient-name">@request.RecipientName</h4>
+                                <span class="request-time">
+                                    <i class="fa-solid fa-clock"></i>
+                                    @request.TimeAgo
+                                </span>
+                            </div>
+                        </div>
+                        <div class="request-status">
+                            <span class="status-badge @request.StatusClass">
+                                <i class="fa-solid fa-hourglass-half"></i>
+                                @request.StatusText
+                            </span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(request.Note))
+                    {
+                        <div class="request-message">
+                            <div class="message-label">
+                                <i class="fa-solid fa-comment-dots"></i>
+                                Lời nhắn:
+                            </div>
+                            <div class="message-content">
+                                @request.Note
+                            </div>
+                        </div>
+                    }
+
+                    <div class="request-actions">
+                        <button onclick="acceptRequest(@request.RequestID)" class="btn btn-success btn-accept">
+                            <i class="fa-solid fa-check"></i>
+                            <span class="btn-text">Chấp nhận & Chat</span>
+                            <span class="btn-loading" style="display: none;">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                Đang xử lý...
+                            </span>
+                        </button>
+                        <button onclick="declineRequest(@request.RequestID)" class="btn btn-outline-danger btn-decline">
+                            <i class="fa-solid fa-times"></i>
+                            <span class="btn-text">Từ chối</span>
+                            <span class="btn-loading" style="display: none;">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                Đang xử lý...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="waiting-list-info">
+            <div class="info-card">
+                <h5><i class="fa-solid fa-info-circle"></i> Lưu ý quan trọng</h5>
+                <ul>
+                    <li><strong>Chấp nhận 1 = Từ chối tất cả:</strong> Khi bạn chấp nhận một yêu cầu, tất cả yêu cầu khác sẽ tự động bị từ chối.</li>
+                    <li><strong>Đóng bài đăng:</strong> Bài đăng sẽ được đóng sau khi chấp nhận.</li>
+                    <li><strong>Chat tự động:</strong> Hệ thống sẽ mở chat với người được chấp nhận.</li>
+                </ul>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fa-solid fa-inbox"></i>
+            </div>
+            <h4>Chưa có yêu cầu nào</h4>
+            <p>Hiện tại chưa có ai gửi yêu cầu nhận sữa cho bài đăng này.</p>
+        </div>
+    }
+</div>
+
+<script>
+$(document).ready(function() {
+    // Handle accept request
+    window.acceptRequest = function(requestId) {
+        if (!confirm('Bạn có chắc chắn muốn chấp nhận yêu cầu này? Tất cả yêu cầu khác sẽ bị từ chối và bài đăng sẽ được đóng.')) {
+            return;
+        }
+
+        var $btn = $('button[onclick="acceptRequest(' + requestId + ')"]');
+        var $btnText = $btn.find('.btn-text');
+        var $btnLoading = $btn.find('.btn-loading');
+        
+        // Show loading state
+        $btn.prop('disabled', true);
+        $btnText.hide();
+        $btnLoading.show();
+        
+        $.ajax({
+            url: '@Url.Action("AcceptRequest", "MilkDonation")',
+            type: 'POST',
+            data: {
+                requestId: requestId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast('success', response.message || 'Chấp nhận yêu cầu thành công!');
+                    
+                    // Redirect to chat if provided
+                    if (response.redirectUrl) {
+                        setTimeout(function() {
+                            window.location.href = response.redirectUrl;
+                        }, 2000);
+                    } else {
+                        // Close modal and refresh
+                        setTimeout(function() {
+                            closeModal('waitingListModal');
+                            location.reload();
+                        }, 2000);
+                    }
+                } else {
+                    showToast('error', response.message || 'Có lỗi xảy ra khi chấp nhận yêu cầu.');
+                    resetButton($btn, $btnText, $btnLoading);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Accept request error:', error);
+                showToast('error', 'Có lỗi xảy ra khi chấp nhận yêu cầu. Vui lòng thử lại.');
+                resetButton($btn, $btnText, $btnLoading);
+            }
+        });
+    };
+
+    // Handle decline request
+    window.declineRequest = function(requestId) {
+        if (!confirm('Bạn có chắc chắn muốn từ chối yêu cầu này?')) {
+            return;
+        }
+
+        var $btn = $('button[onclick="declineRequest(' + requestId + ')"]');
+        var $btnText = $btn.find('.btn-text');
+        var $btnLoading = $btn.find('.btn-loading');
+        
+        // Show loading state
+        $btn.prop('disabled', true);
+        $btnText.hide();
+        $btnLoading.show();
+        
+        $.ajax({
+            url: '@Url.Action("DeclineRequest", "MilkDonation")',
+            type: 'POST',
+            data: {
+                requestId: requestId,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast('success', response.message || 'Đã từ chối yêu cầu.');
+                    
+                    // Remove the request item from UI
+                    $('div[data-request-id="' + requestId + '"]').fadeOut(300, function() {
+                        $(this).remove();
+                        
+                        // Check if no more requests
+                        if ($('.request-item').length === 0) {
+                            location.reload();
+                        }
+                    });
+                } else {
+                    showToast('error', response.message || 'Có lỗi xảy ra khi từ chối yêu cầu.');
+                    resetButton($btn, $btnText, $btnLoading);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Decline request error:', error);
+                showToast('error', 'Có lỗi xảy ra khi từ chối yêu cầu. Vui lòng thử lại.');
+                resetButton($btn, $btnText, $btnLoading);
+            }
+        });
+    };
+
+    function resetButton($btn, $btnText, $btnLoading) {
+        $btn.prop('disabled', false);
+        $btnText.show();
+        $btnLoading.hide();
+    }
+});
+
+// Toast notification function
+function showToast(type, message) {
+    var toastClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var toastIcon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    var toast = $('<div class="alert ' + toastClass + ' alert-dismissible fade show toast-notification" role="alert">' +
+        '<i class="fa-solid ' + toastIcon + '"></i> ' + message +
+        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+        '</div>');
+    
+    $('body').append(toast);
+    
+    setTimeout(function() {
+        toast.fadeOut(function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+</script>

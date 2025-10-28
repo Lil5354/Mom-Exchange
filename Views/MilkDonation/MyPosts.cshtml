@@ -1,0 +1,202 @@
+@model IEnumerable<B_M.Models.MilkDonationPostViewModel>
+@{
+    ViewBag.Title = "Quản lý tin đăng sữa mẹ";
+}
+
+<div class="my-posts-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="page-header">
+                    <h2><i class="fa-solid fa-list"></i> Quản lý tin đăng sữa mẹ</h2>
+                    <p class="text-muted">Danh sách các bài đăng cho tặng sữa của bạn</p>
+                </div>
+
+                <div class="page-actions">
+                    <a href="@Url.Action("CreatePost", "MilkDonation")" class="btn btn-primary">
+                        <i class="fa-solid fa-plus"></i> Đăng tin mới
+                    </a>
+                    <a href="@Url.Action("Index", "MilkDonation")" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-eye"></i> Xem tất cả tin
+                    </a>
+                </div>
+
+                @if (Model != null && Model.Any())
+                {
+                    <div class="posts-list">
+                        @foreach (var post in Model)
+                        {
+                            <div class="post-item @post.VerificationTierClass" data-post-id="@post.Id">
+                                <div class="post-header">
+                                    <div class="verification-badge">
+                                        @if (post.VerificationTier == 1)
+                                        {
+                                            <span class="badge badge-warning">
+                                                <i class="fa-solid fa-exclamation-triangle"></i>
+                                                @post.VerificationTierBadge
+                                            </span>
+                                        }
+                                        else if (post.VerificationTier == 3)
+                                        {
+                                            <span class="badge badge-success">
+                                                <i class="fa-solid fa-check-circle"></i>
+                                                @post.VerificationTierBadge
+                                            </span>
+                                        }
+                                    </div>
+                                    <div class="post-meta">
+                                        <span class="post-date">
+                                            <i class="fa-solid fa-calendar"></i>
+                                            @post.PostedAt.ToString("dd/MM/yyyy HH:mm")
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="post-content">
+                                    <div class="post-info">
+                                        <h4 class="post-title">
+                                            <i class="fa-solid fa-map-marker-alt"></i>
+                                            @post.Location
+                                        </h4>
+                                        <p class="post-date-expression">
+                                            <i class="fa-solid fa-calendar"></i>
+                                            Ngày vắt: @post.DateOfExpression.ToString("dd/MM/yyyy")
+                                        </p>
+                                        <p class="post-summary">
+                                            <strong>Chế độ ăn:</strong> @(post.DietInfo.Length > 100 ? post.DietInfo.Substring(0, 100) + "..." : post.DietInfo)
+                                        </p>
+                                        <p class="post-summary">
+                                            <strong>Bảo quản:</strong> @(post.StorageInfo.Length > 100 ? post.StorageInfo.Substring(0, 100) + "..." : post.StorageInfo)
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="post-actions">
+                                    <a href="@Url.Action("Details", "MilkDonation", new { id = post.Id })" class="btn btn-outline-primary btn-sm">
+                                        <i class="fa-solid fa-eye"></i> Xem chi tiết
+                                    </a>
+                                    @if (post.Status == 1) // Only show waiting list for open posts
+                                    {
+                                        <button type="button" class="btn btn-info btn-sm waiting-list-btn" data-post-id="@post.Id">
+                                            <i class="fa-solid fa-users"></i> Danh sách chờ
+                                        </button>
+                                    }
+                                    <button type="button" class="btn btn-warning btn-sm hide-post-btn" data-post-id="@post.Id">
+                                        <i class="fa-solid fa-eye-slash"></i> Ẩn tin
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm delete-post-btn" data-post-id="@post.Id">
+                                        <i class="fa-solid fa-trash"></i> Xóa tin
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fa-solid fa-list"></i>
+                        </div>
+                        <h3>Chưa có tin đăng nào</h3>
+                        <p>Bạn chưa đăng tin cho tặng sữa mẹ nào.</p>
+                        <a href="@Url.Action("CreatePost", "MilkDonation")" class="btn btn-primary">
+                            <i class="fa-solid fa-plus"></i> Đăng tin đầu tiên
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Waiting list functionality
+            $('.waiting-list-btn').click(function() {
+                var postId = $(this).data('post-id');
+                window.location.href = '@Url.Action("WaitingList", "MilkDonation")' + '?postId=' + postId;
+            });
+
+            // Hide post functionality
+            $('.hide-post-btn').click(function() {
+                var postId = $(this).data('post-id');
+                var postItem = $(this).closest('.post-item');
+                
+                if (confirm('Bạn có chắc muốn ẩn tin đăng này?')) {
+                    $.ajax({
+                        url: '@Url.Action("HidePost", "MilkDonation")',
+                        type: 'POST',
+                        data: {
+                            postId: postId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                showToast(response.message, 'success');
+                                postItem.fadeOut(300);
+                            } else {
+                                showToast(response.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            showToast('Có lỗi xảy ra khi ẩn tin đăng', 'error');
+                        }
+                    });
+                }
+            });
+
+            // Delete post functionality
+            $('.delete-post-btn').click(function() {
+                var postId = $(this).data('post-id');
+                var postItem = $(this).closest('.post-item');
+                
+                if (confirm('Bạn có chắc muốn xóa tin đăng này? Hành động này không thể hoàn tác.')) {
+                    $.ajax({
+                        url: '@Url.Action("DeletePost", "MilkDonation")',
+                        type: 'POST',
+                        data: {
+                            postId: postId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                showToast(response.message, 'success');
+                                postItem.fadeOut(300);
+                            } else {
+                                showToast(response.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            showToast('Có lỗi xảy ra khi xóa tin đăng', 'error');
+                        }
+                    });
+                }
+            });
+        });
+
+        // Toast notification function
+        function showToast(message, type) {
+            var toastClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            var toastIcon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            var toast = $('<div class="alert ' + toastClass + ' alert-dismissible fade show toast-notification" role="alert">' +
+                '<i class="fa-solid ' + toastIcon + '"></i> ' + message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>');
+            
+            $('body').append(toast);
+            
+            setTimeout(function() {
+                toast.fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        }
+    </script>
+}

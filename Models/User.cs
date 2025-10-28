@@ -11,7 +11,6 @@ namespace B_M.Models
         [StringLength(50)]
         public string UserName { get; set; }
 
-        [Required]
         [EmailAddress]
         [StringLength(255)]
         public string Email { get; set; }
@@ -29,7 +28,19 @@ namespace B_M.Models
 
         public DateTime CreatedAt { get; set; }
 
-        // Navigation property
+        // === CỘT MỚI: THEO YÊU CẦU TẦNG SỮA MẸ ===
+        public int MilkDonationStatus { get; set; } = 0;
+        // 0: NotDonor (Chưa đăng ký cho tặng)
+        // 1: BasicDeclared (Đã hoàn thành khai báo cơ bản - Tầng 1)
+        // 2: PendingVerification (Đã nộp hồ sơ y tế, chờ Admin duyệt)
+        // 3: HealthVerified (Đã xác thực y tế đầy đủ - Tầng 2)
+        // 4: Rejected (Bị từ chối)
+
+        // Google OAuth Integration
+        [StringLength(255)]
+        public string GoogleId { get; set; } // Google OAuth Subject ID
+
+        // Navigation properties
         public UserDetails UserDetails { get; set; }
     }
 }

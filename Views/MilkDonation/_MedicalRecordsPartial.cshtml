@@ -1,0 +1,214 @@
+@model B_M.Models.MedicalRecordsViewModel
+
+<div class="medical-records-modal-content">
+    <div class="records-header">
+        <h3><i class="fa-solid fa-file-medical"></i> Nâng cấp lên Tầng 2 - Xác thực Y tế</h3>
+        <p class="text-muted">Upload hồ sơ y tế để được xác thực đầy đủ và nhận "Thẻ Xanh"</p>
+    </div>
+
+    <div class="current-status mb-4">
+        <div class="status-badge @Model.VerificationStatusClass">
+            <i class="fa-solid fa-info-circle"></i>
+            Trạng thái hiện tại: @Model.VerificationStatusText
+        </div>
+    </div>
+
+    <form id="medicalRecordsForm" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.UserID)
+
+        <div class="form-section">
+            <h4><i class="fa-solid fa-upload"></i> Upload Hồ sơ Y tế</h4>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fa-solid fa-file-medical"></i>
+                    Chọn file hồ sơ y tế
+                </label>
+                <input type="file" name="medicalFile" id="medicalFile" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required />
+                <small class="form-text text-muted">
+                    <i class="fa-solid fa-info-circle"></i>
+                    Chấp nhận: PDF, JPG, PNG, DOC, DOCX (tối đa 10MB)
+                </small>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary-custom btn-lg" id="uploadBtn">
+                    <i class="fa-solid fa-upload"></i>
+                    <span class="btn-text">Upload hồ sơ</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Đang upload...
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        @if (Model.ExistingRecords != null && Model.ExistingRecords.Any())
+        {
+            <div class="form-section">
+                <h4><i class="fa-solid fa-history"></i> Hồ sơ đã upload</h4>
+                <div class="records-list">
+                    @foreach (var record in Model.ExistingRecords.OrderByDescending(r => r.UploadedAt))
+                    {
+                        <div class="record-item">
+                            <div class="record-info">
+                                <div class="record-name">
+                                    <i class="fa-solid fa-file"></i>
+                                    @record.FileName
+                                </div>
+                                <div class="record-meta">
+                                    <span class="upload-date">
+                                        <i class="fa-solid fa-calendar"></i>
+                                        @record.UploadedAt.ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+                                    <span class="record-status @(record.VerificationStatus == 0 ? "status-pending" : record.VerificationStatus == 1 ? "status-approved" : "status-rejected")">
+                                        @switch (record.VerificationStatus)
+                                        {
+                                            case 0:
+                                                <i class="fa-solid fa-clock"></i> <text>Đang chờ duyệt</text>
+                                                break;
+                                            case 1:
+                                                <i class="fa-solid fa-check-circle"></i> <text>Đã được duyệt</text>
+                                                break;
+                                            case 2:
+                                                <i class="fa-solid fa-times-circle"></i> <text>Bị từ chối</text>
+                                                break;
+                                        }
+                                    </span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(record.ReviewNotes))
+                                {
+                                    <div class="review-notes">
+                                        <strong>Ghi chú từ admin:</strong> @record.ReviewNotes
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </form>
+
+    <div class="info-section">
+        <div class="info-grid">
+            <div class="info-item">
+                <h5><i class="fa-solid fa-file-medical"></i> Hồ sơ được chấp nhận</h5>
+                <ul>
+                    <li>Kết quả xét nghiệm máu</li>
+                    <li>Xét nghiệm viêm gan B, C</li>
+                    <li>Xét nghiệm HIV</li>
+                    <li>Giấy khám sức khỏe</li>
+                </ul>
+            </div>
+            <div class="info-item">
+                <h5><i class="fa-solid fa-shield-alt"></i> Quy trình duyệt</h5>
+                <ol>
+                    <li>Upload file hồ sơ</li>
+                    <li>Admin duyệt trong 24-48h</li>
+                    <li>Nhận "Thẻ xanh" khi được duyệt</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Handle form submission
+    $('#medicalRecordsForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        var $uploadBtn = $('#uploadBtn');
+        var $btnText = $uploadBtn.find('.btn-text');
+        var $btnLoading = $uploadBtn.find('.btn-loading');
+        
+        // Show loading state
+        $uploadBtn.prop('disabled', true);
+        $btnText.hide();
+        $btnLoading.show();
+        
+        $.ajax({
+            url: '@Url.Action("UploadMedicalRecord", "MilkDonation")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    showToast('success', response.message || 'Upload hồ sơ y tế thành công!');
+                    
+                    // Close modal after delay
+                    setTimeout(function() {
+                        closeModal('medicalRecordsModal');
+                        // Refresh page to show updated status
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showToast('error', response.message || 'Có lỗi xảy ra khi upload file.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Upload error:', error);
+                showToast('error', 'Có lỗi xảy ra khi upload file. Vui lòng thử lại.');
+            },
+            complete: function() {
+                // Reset button state
+                $uploadBtn.prop('disabled', false);
+                $btnText.show();
+                $btnLoading.hide();
+            }
+        });
+    });
+    
+    // File input validation
+    $('#medicalFile').on('change', function() {
+        var file = this.files[0];
+        if (file) {
+            // Check file size (10MB = 10 * 1024 * 1024 bytes)
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('error', 'File quá lớn. Kích thước tối đa 10MB.');
+                $(this).val('');
+                return;
+            }
+            
+            // Check file extension
+            var allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
+            var fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            if (allowedExtensions.indexOf(fileExtension) === -1) {
+                showToast('error', 'Định dạng file không được hỗ trợ. Chỉ chấp nhận: PDF, JPG, PNG, DOC, DOCX.');
+                $(this).val('');
+                return;
+            }
+        }
+    });
+});
+
+// Toast notification function
+function showToast(type, message) {
+    // Create toast element
+    var toastClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var toastIcon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    var toast = $('<div class="alert ' + toastClass + ' alert-dismissible fade show toast-notification" role="alert">' +
+        '<i class="fa-solid ' + toastIcon + '"></i> ' + message +
+        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+        '</div>');
+    
+    // Add to page
+    $('body').append(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(function() {
+        toast.fadeOut(function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+</script>

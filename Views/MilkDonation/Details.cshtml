@@ -1,94 +1,211 @@
-﻿@model B_M.Models.MilkDonationPost
-
+﻿@model B_M.Models.MilkDonationPostViewModel
 @{
-    ViewBag.Title = "Chi tiết tặng sữa mẹ";
+    ViewBag.Title = "Chi tiết bài đăng sữa mẹ";
 }
 
-<div class="product-detail-container">
-    <div class="product-detail-layout milk-details-layout">
-        <div class="product-gallery" data-aos="fade-right">
-            <div class="main-image">
-                <img src="@Model.DonorAvatarUrl" alt="Avatar của @Model.DonorName">
-            </div>
-            <div class="seller-profile">
-                <div class="seller-details">
-                    <h3>Thông tin người cho</h3>
-                    <p><strong>@Model.DonorName</strong> - @Model.Location</p>
+<div class="milk-donation-details">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="post-detail-card @Model.VerificationTierClass">
+                    <div class="verification-badge">
+                        @if (Model.VerificationTier == 1)
+                        {
+                            <span class="badge badge-warning">
+                                <i class="fa-solid fa-exclamation-triangle"></i>
+                                @Model.VerificationTierBadge
+                            </span>
+                        }
+                        else if (Model.VerificationTier == 3)
+                        {
+                            <span class="badge badge-success">
+                                <i class="fa-solid fa-check-circle"></i>
+                                @Model.VerificationTierBadge
+                            </span>
+                        }
+                    </div>
+
+                    <div class="post-header">
+                        <div class="donor-info">
+                            <img src="@Model.DonorAvatarUrl" alt="@Model.DonorName" class="donor-avatar-large">
+                            <div class="donor-details">
+                                <h2 class="donor-name">@Model.DonorName</h2>
+                                <p class="donor-location">
+                                    <i class="fa-solid fa-map-marker-alt"></i>
+                                    @Model.Location
+                                </p>
+                                <p class="post-date">
+                                    <i class="fa-solid fa-calendar"></i>
+                                    Ngày vắt: @Model.DateOfExpression.ToString("dd/MM/yyyy")
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="verification-warning">
+                        <div class="alert @(Model.VerificationTier == 1 ? "alert-warning" : "alert-success")">
+                            <i class="fa-solid @(Model.VerificationTier == 1 ? "fa-exclamation-triangle" : "fa-check-circle")"></i>
+                            @Model.VerificationWarning
+                        </div>
+                    </div>
+
+                    <div class="post-content">
+                        <div class="info-section">
+                            <h3><i class="fa-solid fa-utensils"></i> Chế độ ăn của mẹ</h3>
+                            <p>@Model.DietInfo</p>
+                        </div>
+
+                        <div class="info-section">
+                            <h3><i class="fa-solid fa-snowflake"></i> Cách bảo quản sữa</h3>
+                            <p>@Model.StorageInfo</p>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <div class="info-section">
+                                <h3><i class="fa-solid fa-sticky-note"></i> Ghi chú thêm</h3>
+                                <p>@Model.Note</p>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="post-footer">
+                        <div class="post-meta">
+                            <span class="posted-at">
+                                <i class="fa-solid fa-clock"></i>
+                                Đăng lúc: @Model.PostedAt.ToString("dd/MM/yyyy HH:mm")
+                            </span>
+                        </div>
+                        
+                        @if (Session["FullName"] != null)
+                        {
+                            <div class="action-buttons">
+                                @if (Model.DonorUserId != Convert.ToInt32(Session["UserID"]))
+                                {
+                                    if (Model.CanSendRequest)
+                                    {
+                                        <button onclick="openCreateRequestModal(@Model.Id)" class="btn btn-primary btn-lg">
+                                            <i class="fa-solid fa-hand-holding-heart"></i> @Model.RequestButtonText
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-secondary btn-lg" disabled>
+                                            <i class="fa-solid fa-check"></i> @Model.RequestButtonText
+                                        </button>
+                                    }
+                                    <a href="@Url.Action("Conversation", "Chat", new { userId = Model.DonorUserId })" class="btn btn-outline-primary">
+                                        <i class="fa-solid fa-comments"></i> Chat với người cho
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="donor-actions">
+                                        <span class="donor-badge">
+                                            <i class="fa-solid fa-user-check"></i> Đây là bài đăng của bạn
+                                        </span>
+                                        <a href="@Url.Action("MyPosts", "MilkDonation")" class="btn btn-outline-primary">
+                                            <i class="fa-solid fa-list"></i> Quản lý tin đăng
+                                        </a>
+                                    </div>
+                                }
+                                <a href="@Url.Action("Index", "MilkDonation")" class="btn btn-outline-secondary">
+                                    <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="action-buttons">
+                                <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg">
+                                    <i class="fa-solid fa-user"></i> Đăng nhập để liên hệ
+                                </a>
+                                <a href="@Url.Action("Index", "MilkDonation")" class="btn btn-outline-secondary">
+                                    <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
+                                </a>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
-            @if (Model.IsHealthVerified)
-            {
-                <div class="verification-info">
-                    <div class="verified-badge large"><i class="fa-solid fa-shield-heart"></i> Đã xác thực sức khỏe</div>
-                    <p>Người cho đã cung cấp các giấy tờ y tế hợp lệ và được MomExchange kiểm duyệt.</p>
+
+            <div class="col-md-4">
+                <div class="sidebar-card">
+                    <h4><i class="fa-solid fa-info-circle"></i> Thông tin quan trọng</h4>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <h5><i class="fa-solid fa-shield-alt"></i> Về hệ thống xác thực</h5>
+                            <p><strong>Thẻ vàng (Tầng 1):</strong> Người cho đã khai báo lối sống cơ bản</p>
+                            <p><strong>Thẻ xanh (Tầng 2):</strong> Người cho đã được xác thực y tế đầy đủ</p>
+                        </div>
+
+                        <div class="info-item">
+                            <h5><i class="fa-solid fa-heart"></i> Nguyên tắc cho tặng</h5>
+                            <ul>
+                                <li>Hoàn toàn phi thương mại</li>
+                                <li>Dựa trên tình yêu thương</li>
+                                <li>Người nhận tự chịu trách nhiệm</li>
+                                <li>Tuân thủ quy định an toàn</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-item">
+                            <h5><i class="fa-solid fa-phone"></i> Liên hệ</h5>
+                            <p>Nhấn nút "Liên hệ" để bắt đầu cuộc trò chuyện với người cho sữa.</p>
+                        </div>
+                    </div>
                 </div>
-            }
-            else
-            {
-                <div class="verification-info not-verified">
-                    <div class="verified-badge large"><i class="fa-solid fa-triangle-exclamation"></i> Chưa xác thực sức khỏe</div>
-                    <p>Người cho chưa cung cấp giấy tờ y tế. Vui lòng tìm hiểu kỹ trước khi nhận.</p>
-                </div>
-            }
+            </div>
         </div>
-
-        <div class="product-info" data-aos="fade-left" data-aos-delay="200">
-            <h1>Thông tin nguồn sữa</h1>
-            <ul class="milk-info-list">
-                <li>
-                    <i class="fa-solid fa-calendar-day"></i>
-                    <div>
-                        <strong>Ngày hút sữa</strong>
-                        <p>@Model.DateOfExpression.ToString("dd/MM/yyyy")</p>
-                    </div>
-                </li>
-                <li>
-                    <i class="fa-solid fa-utensils"></i>
-                    <div>
-                        <strong>Chế độ dinh dưỡng/Thuốc men của mẹ</strong>
-                        <p>@Model.DietInfo</p>
-                    </div>
-                </li>
-                <li>
-                    <i class="fa-solid fa-snowflake"></i>
-                    <div>
-                        <strong>Phương pháp bảo quản</strong>
-                        <p>@Model.StorageInfo</p>
-                    </div>
-                </li>
-                <li>
-                    <i class="fa-regular fa-pen-to-square"></i>
-                    <div>
-                        <strong>Ghi chú thêm</strong>
-                        <p>@Model.Note</p>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="safety-notice" data-aos="fade-up">
-        <h3><i class="fa-solid fa-circle-info"></i> Lưu ý quan trọng về an toàn</h3>
-        <p>MomExchange là nền tảng kết nối. Chúng tôi không chịu trách nhiệm về chất lượng sữa. Vui lòng trao đổi kỹ với người cho và tuân thủ các quy tắc vận chuyển, bảo quản và rã đông an toàn để đảm bảo sức khỏe cho bé.</p>
-    </div>
-
-    <div class="disclaimer-box" data-aos="fade-up">
-        <label class="checkbox-container">
-            <input type="checkbox" id="disclaimer-check"> Tôi đã đọc, hiểu rõ và đồng ý với các điều khoản miễn trừ trách nhiệm của MomExchange.
-            <span class="checkmark"></span>
-        </label>
-        <button id="contact-donor-btn" class="cta-button primary" disabled><i class="fa-regular fa-comments"></i> Liên hệ người cho</button>
     </div>
 </div>
 
-@section scripts {
-    <script>
-    // Bật/tắt nút liên hệ dựa trên checkbox
-    const disclaimerCheckbox = document.getElementById('disclaimer-check');
-    const contactButton = document.getElementById('contact-donor-btn');
+<!-- Modal: Create Request -->
+<div id="createRequestModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content-custom" style="width: 600px; max-width: 95vw;">
+        <div class="modal-header-custom">
+            <h3><i class="fas fa-hand-holding-heart"></i> Gửi Yêu cầu Nhận Sữa</h3>
+            <button type="button" class="modal-close" onclick="closeModal('createRequestModal')">&times;</button>
+        </div>
+        <div class="modal-body-custom" id="createRequestContent">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-3">Đang tải form...</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-    disclaimerCheckbox.addEventListener('change', function () {
-        contactButton.disabled = !this.checked;
-    });
+@section Styles {
+    <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <script>
+        function openCreateRequestModal(postId) {
+            $('#createRequestModal').fadeIn(300);
+            loadCreateRequestForm(postId);
+        }
+
+        function loadCreateRequestForm(postId) {
+            $.ajax({
+                url: '@Url.Action("CreateRequest", "MilkDonation")',
+                type: 'GET',
+                data: { postId: postId },
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(data) {
+                    $('#createRequestContent').html(data);
+                },
+                error: function() {
+                    $('#createRequestContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Có lỗi xảy ra khi tải form.</div>');
+                }
+            });
+        }
+
+        function closeModal(modalId) {
+            $('#' + modalId).fadeOut(300);
+        }
     </script>
 }

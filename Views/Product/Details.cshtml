@@ -1,53 +1,140 @@
-﻿@model B_M.Models.Product
+﻿@model B_M.Models.ProductDetailViewModel
 
 @{
-    ViewBag.Title = Model.Name;
+    ViewBag.Title = Model.ProductName;
 }
 
 <div class="product-detail-container">
     <nav class="breadcrumb" data-aos="fade-down">
         <a href="@Url.Action("Index", "Home")">Trang chủ</a>
         <i class="fa-solid fa-chevron-right"></i>
-        <a href="#">@Model.Category</a>
+        <a href="@Url.Action("Index", "Product", new { categoryId = ViewBag.CategoryID })">@Model.CategoryName</a>
         <i class="fa-solid fa-chevron-right"></i>
-        <span>@Model.Name</span>
+        <span>@Model.ProductName</span>
     </nav>
 
     <div class="product-detail-layout">
         <div class="product-gallery" data-aos="fade-right">
             <div class="main-image">
-                <img id="mainProductImage" src="@Model.ImageUrls.FirstOrDefault()" alt="@Model.Name">
+                <img id="mainProductImage" src="@(Model.PrimaryImageUrl ?? "/images/default-product.png")" alt="@Model.ProductName">
             </div>
-            <div class="thumbnail-images">
-                @foreach (var imageUrl in Model.ImageUrls)
-                {
-                    <img src="@imageUrl" alt="Thumbnail" class="thumbnail" onclick="changeImage(this)">
-                }
-            </div>
+            @if (Model.ImageUrls != null && Model.ImageUrls.Any())
+            {
+                <div class="thumbnail-images">
+                    @foreach (var imageUrl in Model.ImageUrls)
+                    {
+                        <img src="@imageUrl" alt="Thumbnail" class="thumbnail" onclick="changeImage(this)">
+                    }
+                </div>
+            }
         </div>
 
         <div class="product-info" data-aos="fade-left" data-aos-delay="200">
-            <span class="product-category">@Model.Category</span>
-            <h1>@Model.Name</h1>
+            <span class="product-category">@Model.CategoryName</span>
+            <h1>@Model.ProductName</h1>
+
+            @if (Model.IsAffiliateEnabled)
+            {
+                <div class="affiliate-badge">
+                    <i class="fa-solid fa-link"></i>
+                    Affiliate Program - Hoa hồng @Model.AffiliateCommissionRate%
+                </div>
+            }
 
             <div class="seller-profile">
-                <img src="@Model.SellerAvatarUrl" alt="Avatar">
+                <img src="@(Model.SellerAvatar ?? "/images/default-avatar.png")" alt="Avatar">
                 <div class="seller-details">
                     <span>Đăng bởi <strong>@Model.SellerName</strong></span>
                     <div class="seller-rating">
-                        <i class="fa-solid fa-star"></i> @Model.SellerRating (@Model.SellerReviewCount đánh giá)
+                        <i class="fa-solid fa-star"></i> @Model.SellerReputationScore.ToString("F1") (@Model.SellerReputationScore >= 3.0 ? "Đáng tin cậy" : "Mới tham gia")
                     </div>
                 </div>
             </div>
 
-            <div class="product-price">@Model.Price</div>
-
-            <p class="short-description">@Model.ShortDescription</p>
-
-            <div class="action-buttons">
-                <button class="cta-button primary"><i class="fa-regular fa-comments"></i> Nhắn tin cho người bán</button>
-                <button class="cta-button secondary"><i class="fa-solid fa-retweet"></i> Đề nghị trao đổi</button>
+            <div class="product-price">
+                @if (Model.PostingType == "Sell")
+                {
+                    <span class="price">@Model.Price.ToString("N0") ₫</span>
+                }
+                else if (Model.PostingType == "Exchange")
+                {
+                    <span class="exchange-label">Trao đổi</span>
+                }
+                else
+                {
+                    <span class="donate-label">Cho tặng miễn phí</span>
+                }
             </div>
+
+            <div class="product-stats">
+                <div class="stat-item">
+                    <span class="label">Tình trạng:</span>
+                    <span class="value">@Model.ProductCondition</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Địa điểm:</span>
+                    <span class="value">@Model.Location</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Số lượng:</span>
+                    <span class="value">@Model.Quantity</span>
+                </div>
+            </div>
+
+            <p class="short-description">@Html.Raw(Html.Encode(Model.Description).Replace("\n", "<br />"))</p>
+
+            @if (ViewBag.IsOwner == true)
+            {
+                <div class="owner-actions">
+                    <a href="@Url.Action("Edit", "Product", new { id = Model.ProductID })" class="cta-button primary">
+                        <i class="fa-solid fa-edit"></i> Chỉnh sửa sản phẩm
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="action-buttons">
+                    @if (Model.PostingType == "Sell" && Model.Quantity > 0)
+                    {
+                        <div class="cart-section">
+                            @using (Html.BeginForm("Add", "Cart", FormMethod.Post, new { @class = "add-to-cart-form" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("ProductID", Model.ProductID)
+                                
+                                <div class="quantity-selector">
+                                    <label for="quantity">Số lượng:</label>
+                                    <div class="quantity-control">
+                                        <button type="button" class="quantity-btn minus-btn" onclick="changeQuantity(-1)">
+                                            <i class="fa-solid fa-minus"></i>
+                                        </button>
+                                        <input type="number" id="quantity" name="Quantity" value="1" min="1" max="@Model.Quantity" class="quantity-input" />
+                                        <button type="button" class="quantity-btn plus-btn" onclick="changeQuantity(1)">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <small class="stock-info">Còn @Model.Quantity sản phẩm</small>
+                                </div>
+
+                                <button type="submit" class="cta-button primary add-to-cart-btn">
+                                    <i class="fa-solid fa-shopping-cart"></i> Thêm vào giỏ hàng
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    <button class="cta-button secondary message-seller-btn" onclick="messageSeller()">
+                        <i class="fa-regular fa-comments"></i> Nhắn tin cho người bán
+                    </button>
+
+                    @if (Model.PostingType == "Exchange" || Model.PostingType == "Sell")
+                    {
+                        <button class="cta-button tertiary exchange-btn" onclick="proposeBarter()">
+                            <i class="fa-solid fa-retweet"></i> Đề nghị trao đổi
+                        </button>
+                    }
+                </div>
+            }
         </div>
     </div>
 
@@ -58,19 +145,78 @@
         </div>
 
         <div id="Description" class="tab-content" style="display: block;">
-            <h3>Tình trạng sản phẩm</h3>
-            <p>@Model.DetailedDescription</p>
-            <ul>
-                <li><strong>Thương hiệu:</strong> @Model.Brand</li>
-                <li><strong>Tình trạng:</strong> @Model.Condition</li>
-                <li><strong>Khu vực:</strong> @Model.Location</li>
-            </ul>
+            <h3>Chi tiết sản phẩm</h3>
+            <div class="description-content">
+                @Html.Raw(Html.Encode(Model.Description).Replace("\n", "<br />"))
+            </div>
+            
+            <div class="product-details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Tình trạng:</span>
+                    <span class="detail-value">@Model.ProductCondition</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Địa điểm:</span>
+                    <span class="detail-value">@Model.Location</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Loại bài đăng:</span>
+                    <span class="detail-value">
+                        @switch (Model.PostingType)
+                        {
+                            case "Sell": <text>Bán</text>; break;
+                            case "Exchange": <text>Trao đổi</text>; break;
+                            case "Donate": <text>Cho tặng</text>; break;
+                            default: @Model.PostingType; break;
+                        }
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Số lượng có sẵn:</span>
+                    <span class="detail-value">@Model.Quantity</span>
+                </div>
+                @if (Model.IsAffiliateEnabled)
+                {
+                    <div class="detail-item">
+                        <span class="detail-label">Affiliate Commission:</span>
+                        <span class="detail-value affiliate-rate">@Model.AffiliateCommissionRate%</span>
+                    </div>
+                }
+            </div>
         </div>
 
         <div id="SellerInfo" class="tab-content">
             <h3>Về @Model.SellerName</h3>
-            <p>Là một bà mẹ bỉm sữa tại @Model.Location, mình mong muốn thanh lý lại những món đồ chất lượng bé không còn dùng đến cho các mẹ khác có nhu cầu với giá phải chăng.</p>
-            <a href="#">Xem thêm các sản phẩm khác từ @Model.SellerName</a>
+            <div class="seller-info-detailed">
+                <div class="seller-stats">
+                    <div class="stat">
+                        <span class="stat-label">Đánh giá:</span>
+                        <span class="stat-value">
+                            <i class="fa-solid fa-star"></i> 
+                            @Model.SellerReputationScore.ToString("F1")
+                        </span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Trạng thái:</span>
+                        <span class="stat-value">
+                            @(Model.SellerReputationScore >= 3.0 ? "Đáng tin cậy" : "Mới tham gia")
+                        </span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Địa điểm:</span>
+                        <span class="stat-value">@Model.Location</span>
+                    </div>
+                </div>
+                
+                <p>Là một thành viên trong cộng đồng mẹ bỉm sữa tại @Model.Location. Chúng tôi khuyến khích giao tiếp trực tiếp với người bán để hiểu rõ hơn về sản phẩm.</p>
+                
+                <div class="seller-actions">
+                    <a href="@Url.Action("Index", "Product", new { sellerId = ViewBag.SellerID })" class="btn btn-outline-primary">
+                        <i class="fa-solid fa-store"></i>
+                        Xem thêm sản phẩm từ @Model.SellerName
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -81,13 +227,14 @@
 
 @section scripts {
     <script>
+        // Image gallery functionality
         function changeImage(element) {
             document.getElementById('mainProductImage').src = element.src;
             document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
             element.classList.add('active');
         }
-        document.querySelector('.thumbnail').classList.add('active'); // Thêm active cho ảnh đầu tiên
 
+        // Tab functionality
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
             tabcontent = document.getElementsByClassName("tab-content");
@@ -101,5 +248,361 @@
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
         }
+
+        // Quantity control functionality
+        function changeQuantity(delta) {
+            var quantityInput = document.getElementById('quantity');
+            if (!quantityInput) return;
+            
+            var currentValue = parseInt(quantityInput.value) || 1;
+            var newValue = currentValue + delta;
+            var maxValue = parseInt(quantityInput.getAttribute('max'));
+            
+            if (newValue >= 1 && newValue <= maxValue) {
+                quantityInput.value = newValue;
+            }
+        }
+
+        // Cart functionality
+        function addToCartAjax(productId, quantity) {
+            var formData = $('.add-to-cart-form').serialize();
+            
+            $.ajax({
+                url: '@Url.Action("Add", "Cart")',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.Success) {
+                        showMessage('Đã thêm vào giỏ hàng thành công!', 'success');
+                        updateCartBadge(response.ItemCount);
+                    } else {
+                        showMessage(response.Message || 'Có lỗi xảy ra!', 'error');
+                    }
+                },
+                error: function() {
+                    showMessage('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+                }
+            });
+        }
+
+        // Message seller functionality
+        function messageSeller() {
+            // Placeholder for messaging functionality
+            alert('Tính năng nhắn tin sẽ được triển khai trong phiên bản tiếp theo.');
+        }
+
+        // Propose barter functionality
+        function proposeBarter() {
+            // Placeholder for barter functionality
+            alert('Tính năng trao đổi sẽ được triển khai trong phiên bản tiếp theo.');
+        }
+
+        // Update cart badge in navigation
+        function updateCartBadge(count) {
+            var cartBadge = $('.cart-badge, .badge.cart-count');
+            if (cartBadge.length > 0) {
+                if (count > 0) {
+                    cartBadge.text(count).show();
+                } else {
+                    cartBadge.hide();
+                }
+            }
+        }
+
+        // Show message function
+        function showMessage(message, type) {
+            var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            var alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show product-message" role="alert">
+                    <i class="fa-solid ${icon}"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            $('.product-detail-container').prepend(alertHtml);
+            
+            // Auto dismiss after 3 seconds
+            setTimeout(function() {
+                $('.product-message').fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 3000);
+
+            // Scroll to message
+            $('html, body').animate({
+                scrollTop: $('.product-message').offset().top - 100
+            }, 500);
+        }
+
+        // Document ready functionality
+        $(document).ready(function() {
+            // Set first thumbnail as active
+            var firstThumbnail = document.querySelector('.thumbnail');
+            if (firstThumbnail) {
+                firstThumbnail.classList.add('active');
+            }
+
+            // Handle add to cart form submission with AJAX
+            $('.add-to-cart-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                var productId = $('input[name="ProductID"]').val();
+                var quantity = $('#quantity').val();
+                
+                // Validate quantity
+                if (!quantity || quantity < 1) {
+                    showMessage('Vui lòng chọn số lượng hợp lệ.', 'error');
+                    return;
+                }
+
+                // Disable submit button to prevent double submission
+                var submitBtn = $(this).find('button[type="submit"]');
+                var originalText = submitBtn.html();
+                submitBtn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Đang thêm...');
+
+                // Use AJAX
+                addToCartAjax(productId, quantity);
+
+                // Re-enable button after 2 seconds
+                setTimeout(function() {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }, 2000);
+            });
+
+            // Quantity input validation
+            $('#quantity').on('input', function() {
+                var value = parseInt($(this).val());
+                var max = parseInt($(this).attr('max'));
+                
+                if (value > max) {
+                    $(this).val(max);
+                    showMessage(`Chỉ còn ${max} sản phẩm có sẵn.`, 'error');
+                }
+            });
+        });
     </script>
+
+    <style>
+        /* Additional styles for cart functionality */
+        .affiliate-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+
+        .product-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-item .label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .stat-item .value {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .cart-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .quantity-selector {
+            margin-bottom: 20px;
+        }
+
+        .quantity-selector label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #d63384;
+            background: white;
+            color: #d63384;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .quantity-btn:hover {
+            background: #d63384;
+            color: white;
+        }
+
+        .quantity-input {
+            width: 80px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .stock-info {
+            color: #666;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .owner-actions {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .exchange-label, .donate-label {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .exchange-label {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .donate-label {
+            background: #28a745;
+            color: white;
+        }
+
+        .product-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .detail-value.affiliate-rate {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .seller-info-detailed {
+            padding: 20px 0;
+        }
+
+        .seller-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .seller-actions {
+            margin-top: 20px;
+        }
+
+        @@media (max-width: 768px) {
+            .product-stats,
+            .product-details-grid,
+            .seller-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .quantity-control {
+                justify-content: center;
+            }
+
+            .cart-section {
+                padding: 15px;
+            }
+        }
+    </style>
 }

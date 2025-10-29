@@ -1,6 +1,7 @@
 using System;
 using System.Web;
 using System.Web.Mvc;
+using B_M.Models;
 using B_M.Repositories;
 
 namespace B_M.Filters
@@ -45,7 +46,7 @@ namespace B_M.Filters
                 {
                     try
                     {
-                        using (var userRepo = new B_M.Repositories.UserRepository())
+                        using (var userRepo = new UserRepository())
                         {
                             var user = userRepo.GetUserByEmail(email);
                             if (user != null)

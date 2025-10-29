@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using B_M.Models;
-<<<<<<< HEAD
 using B_M.Repositories;
-=======
->>>>>>> Khoa
 
 namespace B_M.Controllers
 {
@@ -14,11 +11,7 @@ namespace B_M.Controllers
     public class NotificationController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
-<<<<<<< HEAD
-        private B_M.Repositories.UserRepository userRepository = new B_M.Repositories.UserRepository();
-=======
         private UserRepository userRepository = new UserRepository();
->>>>>>> Khoa
 
         // GET: Notification
         public ActionResult Index()

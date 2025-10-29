@@ -1,10 +1,7 @@
 // Controllers/ProfileController.cs
 using B_M.Models;
 using B_M.Helpers;
-<<<<<<< HEAD
 using B_M.Repositories;
-=======
->>>>>>> Khoa
 using System;
 using System.Linq;
 using System.Web;
@@ -19,20 +16,12 @@ namespace B_M.Controllers
     [Authorize]
     public class ProfileController : BaseController
     {
-<<<<<<< HEAD
-        private readonly B_M.Repositories.UserRepository userRepository;
-=======
         private readonly UserRepository userRepository;
->>>>>>> Khoa
         private readonly ApplicationDbContext db;
 
         public ProfileController()
         {
-<<<<<<< HEAD
-            userRepository = new B_M.Repositories.UserRepository();
-=======
             userRepository = new UserRepository();
->>>>>>> Khoa
             db = new ApplicationDbContext();
         }
 

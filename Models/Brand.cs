@@ -26,7 +26,7 @@ namespace B_M.Models
         [ForeignKey("UserID")]
         public virtual User User { get; set; }
 
-        public virtual ICollection<ProductB2C> Products { get; set; } = new List<ProductB2C>();
+        // Note: ProductB2C đã được xóa theo yêu cầu chỉ giữ 2 role Admin/User
         public virtual ICollection<BrandCategoryPermission> CategoryPermissions { get; set; } = new List<BrandCategoryPermission>();
     }
 }

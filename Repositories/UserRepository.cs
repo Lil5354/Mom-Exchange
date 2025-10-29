@@ -191,6 +191,99 @@ namespace B_M.Models
             }
         }
 
+        // Admin-specific methods
+        public User GetUserForAdminEdit(int userId)
+        {
+            return _context.Users
+                .Include("UserDetails")
+                .FirstOrDefault(u => u.UserID == userId);
+        }
+
+        public bool UpdateUserStatus(int userId, bool isActive)
+        {
+            try
+            {
+                var user = _context.Users.Find(userId);
+                if (user == null) return false;
+
+                user.IsActive = isActive;
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateUserRole(int userId, byte newRole)
+        {
+            try
+            {
+                var user = _context.Users.Find(userId);
+                if (user == null) return false;
+
+                user.Role = newRole;
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool EmailExistsExcludingUser(string email, int excludeUserId)
+        {
+            return _context.Users
+                .Any(u => u.Email == email && u.UserID != excludeUserId);
+        }
+
+        public bool UsernameExistsExcludingUser(string username, int excludeUserId)
+        {
+            return _context.Users
+                .Any(u => u.UserName == username && u.UserID != excludeUserId);
+        }
+
+        public bool UpdateUserProfile(User user, UserDetails userDetails)
+        {
+            try
+            {
+                var existingUser = _context.Users.Find(user.UserID);
+                if (existingUser == null) return false;
+
+                // Update user properties
+                existingUser.Email = user.Email;
+                existingUser.UserName = user.UserName;
+                existingUser.PhoneNumber = user.PhoneNumber;
+                existingUser.Role = user.Role;
+                existingUser.IsActive = user.IsActive;
+
+                // Update user details
+                var existingDetails = _context.UserDetails.FirstOrDefault(ud => ud.UserID == user.UserID);
+                if (existingDetails != null)
+                {
+                    existingDetails.FullName = userDetails.FullName;
+                    existingDetails.DateOfBirth = userDetails.DateOfBirth;
+                    existingDetails.Gender = userDetails.Gender;
+                    existingDetails.Address = userDetails.Address;
+                    existingDetails.ProfilePictureURL = userDetails.ProfilePictureURL;
+                }
+                else
+                {
+                    userDetails.UserID = user.UserID;
+                    _context.UserDetails.Add(userDetails);
+                }
+
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public void Dispose()
         {
             _context?.Dispose();

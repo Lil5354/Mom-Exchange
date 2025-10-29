@@ -1,23 +1,34 @@
-# Script to update database with Entity Framework migrations
-Write-Host "Updating database with Entity Framework migrations..." -ForegroundColor Yellow
+# Update Database After Merge
+# This script runs the SQL update script to fix the database schema
 
-# Find Package Manager Console command
-$migrationFiles = Get-ChildItem "Migrations" -Filter "*.cs" | Where-Object {$_.Name -match "^\d+_.*\.cs$"} | Sort-Object Name -Descending | Select-Object -First 1
+Write-Host "Updating database after merge..." -ForegroundColor Green
 
-if ($migrationFiles) {
-    Write-Host "Latest migration: $($migrationFiles.Name)" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "To update database, run this command in Visual Studio Package Manager Console:" -ForegroundColor Cyan
-    Write-Host "Update-Database" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Or open Visual Studio and:" -ForegroundColor Cyan
-    Write-Host "1. Tools -> NuGet Package Manager -> Package Manager Console" -ForegroundColor White
-    Write-Host "2. Run: Update-Database" -ForegroundColor White
-} else {
-    Write-Host "No migrations found!" -ForegroundColor Red
+# Read the SQL script
+$sqlScript = Get-Content "Simple_Database_Update.sql" -Raw
+
+# Database connection string (update this to match your actual connection string)
+$connectionString = "Data Source=localhost;Initial Catalog=MomExchange;Integrated Security=True;TrustServerCertificate=True"
+
+try {
+    # Create SQL connection
+    $connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
+    $connection.Open()
+    
+    # Execute the SQL script
+    $command = New-Object System.Data.SqlClient.SqlCommand($sqlScript, $connection)
+    $command.ExecuteNonQuery()
+    
+    Write-Host "Database updated successfully!" -ForegroundColor Green
+    Write-Host "You can now try Google OAuth login again." -ForegroundColor Yellow
+    
+} catch {
+    Write-Host "Error updating database: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Please run the SQL script manually in SQL Server Management Studio" -ForegroundColor Yellow
+} finally {
+    if ($connection.State -eq 'Open') {
+        $connection.Close()
+    }
 }
 
-
-
-
-
+Write-Host "Press any key to continue..."
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

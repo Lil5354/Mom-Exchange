@@ -31,7 +31,7 @@ namespace B_M.Models
 
         public virtual ICollection<Category> SubCategories { get; set; } = new List<Category>();
         public virtual ICollection<PostC2C> PostC2Cs { get; set; } = new List<PostC2C>();
-        public virtual ICollection<ProductB2C> ProductB2Cs { get; set; } = new List<ProductB2C>();
+        // Note: ProductB2C đã được xóa theo yêu cầu chỉ giữ 2 role Admin/User
         public virtual ICollection<BrandCategoryPermission> BrandPermissions { get; set; } = new List<BrandCategoryPermission>();
     }
 }

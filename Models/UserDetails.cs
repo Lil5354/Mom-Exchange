@@ -22,6 +22,8 @@ namespace B_M.Models
 
         // Navigation property
         public User User { get; set; }
+        public object DateOfBirth { get; internal set; }
+        public object Gender { get; internal set; }
     }
 }
 

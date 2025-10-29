@@ -33,6 +33,9 @@ namespace B_M.Models
         public DbSet<MilkDonationRequest> MilkDonationRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
+        // System Settings
+        public DbSet<SystemSettings> SystemSettings { get; set; }
+
         // Communication & Trading
         public DbSet<Message> Messages { get; set; }
         public DbSet<Rating> Ratings { get; set; }
@@ -365,6 +368,33 @@ namespace B_M.Models
                 .WithMany()
                 .HasForeignKey(n => n.UserID)
                 .WillCascadeOnDelete(true);
+
+            // ====== SYSTEM SETTINGS CONFIGURATION ======
+            modelBuilder.Entity<SystemSettings>()
+                .ToTable("SystemSettings")
+                .HasKey(s => s.Id);
+
+            modelBuilder.Entity<SystemSettings>()
+                .Property(s => s.SettingKey)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<SystemSettings>()
+                .Property(s => s.SettingValue)
+                .HasMaxLength(1000);
+
+            modelBuilder.Entity<SystemSettings>()
+                .Property(s => s.SettingType)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            modelBuilder.Entity<SystemSettings>()
+                .Property(s => s.Description)
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<SystemSettings>()
+                .Property(s => s.ModifiedBy)
+                .HasMaxLength(100);
 
             // ====== MESSAGE CONFIGURATION ======
             modelBuilder.Entity<Message>()

@@ -1,9 +1,6 @@
 // Controllers/CartController.cs
 using B_M.Models;
-<<<<<<< HEAD
 using B_M.Repositories;
-=======
->>>>>>> Khoa
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -18,20 +15,12 @@ namespace B_M.Controllers
     public class CartController : Controller
     {
         private readonly ApplicationDbContext db;
-<<<<<<< HEAD
-        private readonly B_M.Repositories.UserRepository userRepository;
-=======
         private readonly UserRepository userRepository;
->>>>>>> Khoa
 
         public CartController()
         {
             db = new ApplicationDbContext();
-<<<<<<< HEAD
-            userRepository = new B_M.Repositories.UserRepository();
-=======
             userRepository = new UserRepository();
->>>>>>> Khoa
         }
 
         protected override void Dispose(bool disposing)
@@ -51,7 +40,6 @@ namespace B_M.Controllers
             return View(cart);
         }
 
-<<<<<<< HEAD
         // GET: Cart/Summary - AJAX endpoint for cart badge
         [AllowAnonymous]
         public JsonResult Summary()
@@ -77,9 +65,6 @@ namespace B_M.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
-
-=======
->>>>>>> Khoa
         // POST: Cart/Add
       
         // POST: Cart/UpdateQuantity
@@ -211,36 +196,12 @@ namespace B_M.Controllers
             Session["Cart"] = cart;
         }
 
+        // Note: TrackAffiliateClick đã được xóa theo yêu cầu chỉ giữ 2 role Admin/User
+        // Affiliate system không còn cần thiết
         private void TrackAffiliateClick(int affiliateUserId, int productId)
         {
-            try
-            {
-                var sessionId = Session.SessionID;
-                
-                // Check if click already tracked for this session
-                var existingClick = db.AffiliateClicks
-                    .FirstOrDefault(ac => ac.AffiliatorUserID == affiliateUserId 
-                                       && ac.ProductID == productId 
-                                       && ac.VisitorSessionID == sessionId);
-
-                if (existingClick == null)
-                {
-                    var click = new AffiliateClick
-                    {
-                        AffiliatorUserID = affiliateUserId,
-                        ProductID = productId,
-                        VisitorSessionID = sessionId,
-                        ClickedAt = DateTime.Now
-                    };
-
-                    db.AffiliateClicks.Add(click);
-                    db.SaveChanges();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"ERROR tracking affiliate click: {ex.Message}");
-            }
+            // Method disabled - Affiliate system removed
+            return;
         }
 
         #endregion

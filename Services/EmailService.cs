@@ -367,7 +367,7 @@ namespace B_M.Services
             </ul>
 
             <div style='text-align: center;'>
-                <a href='https://momexchange.com/login' class='button'>Đăng nhập ngay</a>
+                <a href='https://localhost:44335/Account/Login' class='button'>Đăng nhập ngay</a>
             </div>
 
             <p>Nếu bạn có bất kỳ câu hỏi nào, đừng ngại liên hệ với chúng tôi qua email: <a href='mailto:support@momexchange.com'>support@momexchange.com</a></p>

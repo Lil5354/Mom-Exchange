@@ -13,7 +13,7 @@ namespace B_M.Helpers
 {
     public static class ExcelHelper
     {
-        public static B_M.Models.AdminImportResultViewModel ProcessExcelFile(HttpPostedFileBase file, B_M.Models.AdminImportUsersViewModel model, B_M.Repositories.UserRepository userRepository)
+        public static B_M.Models.AdminImportResultViewModel ProcessExcelFile(HttpPostedFileBase file, B_M.Models.AdminImportUsersViewModel model, UserRepository userRepository)
         {
             var result = new B_M.Models.AdminImportResultViewModel
             {

@@ -14,11 +14,11 @@ namespace B_M.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly B_M.Repositories.UserRepository userRepository;
+        private readonly UserRepository userRepository;
 
         public AccountController()
         {
-            userRepository = new B_M.Repositories.UserRepository();
+            userRepository = new UserRepository();
         }
 
         protected override void Dispose(bool disposing)

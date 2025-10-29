@@ -14,11 +14,11 @@ namespace B_M.Areas.Admin.Controllers
     [AdminAuthorize]
     public class AdminController : Controller
     {
-        private readonly B_M.Repositories.UserRepository userRepository;
+        private readonly UserRepository userRepository;
 
         public AdminController()
         {
-            userRepository = new B_M.Repositories.UserRepository();
+            userRepository = new UserRepository();
         }
 
         protected override void Dispose(bool disposing)
@@ -955,6 +955,13 @@ namespace B_M.Areas.Admin.Controllers
         {
             try
             {
+                // Remove password validation errors if auto-generate is enabled
+                if (model.GenerateRandomPassword)
+                {
+                    ModelState.Remove("Password");
+                    ModelState.Remove("ConfirmPassword");
+                }
+
                 if (!ModelState.IsValid)
                 {
                     return View(model);

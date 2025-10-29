@@ -1,0 +1,102 @@
+@model B_M.Models.PostC2C
+@{
+    ViewBag.Title = Model.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container" style="padding-top:20px;">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card" style="padding: 15px; border-radius:12px;">
+                <h2 style="margin-bottom:10px;">@Model.Title</h2>
+                <div class="text-muted" style="margin-bottom:10px;">
+                    @Model.Category?.CategoryName • @Model.Condition • @Model.ListingTypeText • @Model.CreatedAt.ToString("dd/MM/yyyy")
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="" style="display:flex; gap:8px; overflow-x:auto;">
+                            @if (Model.Images != null && Model.Images.Any())
+                            {
+                                foreach (var img in Model.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.ImageID))
+                                {
+                                    <img src="@img.ImageUrl" alt="@Model.Title" style="height:260px; border-radius:8px; object-fit:cover;" />
+                                }
+                            }
+                            else
+                            {
+                                <img src="/images/avatar-default.jpg" style="height:260px; border-radius:8px;" />
+                            }
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div>
+                    <h4>Mô tả</h4>
+                    <div>@Html.Raw(Html.Encode(Model.Content).Replace("\n", "<br />"))</div>
+                </div>
+                @if ((Model.ListingType == 2 || Model.ListingType == 3) && Model.ExchangePreferences != null && Model.ExchangePreferences.Any())
+                {
+                    <hr />
+                    <div>
+                        <h4>Muốn đổi</h4>
+                        <div class="text-muted">
+                            @string.Join(", ", Model.ExchangePreferences.Select(ep => ep.Category.CategoryName))
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card" style="padding:15px; border-radius:12px;">
+                <div style="font-size:20px; font-weight:700; color:#d63384;">
+                    @if (Model.ListingType == 2 && !Model.Price.HasValue)
+                    {
+                        <text>Trao đổi</text>
+                    }
+                    else
+                    {
+                        <text>@String.Format("{0:N0} đ", Model.Price ?? 0)</text>
+                    }
+                </div>
+                <div style="margin-top:8px; color:#6c757d;">
+                    <i class="fas fa-map-marker-alt"></i> @Model.User?.UserDetails?.Address
+                </div>
+                <hr />
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="@(Model.User?.UserDetails?.ProfilePictureURL ?? "/images/avatar-default.jpg")" style="width:48px; height:48px; border-radius:50%; object-fit:cover;" />
+                    <div>
+                        <div style="font-weight:600;">@(Model.User?.UserDetails?.FullName ?? Model.User?.Email)</div>
+                        <div class="text-muted">Uy tín: @(@Model.User?.UserDetails?.ReputationScore ?? 0)</div>
+                    </div>
+                </div>
+                <div style="margin-top:12px; display:flex; gap:8px;">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        if (!(ViewBag.IsOwner ?? false))
+                        {
+                            <a class="btn btn-primary" href="@Url.Action("Conversation", "Chat", new { userId = Model.UserID })">Chat với người bán</a>
+                        }
+                    }
+                    else
+                    {
+                        <a class="btn btn-outline-primary" href="@Url.Action("Login", "Account")">Đăng nhập để chat</a>
+                    }
+                </div>
+            </div>
+
+            @if (User.Identity.IsAuthenticated && (ViewBag.IsOwner ?? false))
+            {
+                <div class="card" style="padding:15px; border-radius:12px; margin-top:10px;">
+                    <a class="btn btn-outline-secondary" href="@Url.Action("Edit", new { id = Model.PostID })">Chỉnh sửa</a>
+                    @using (Html.BeginForm("Close", "C2C", new { id = Model.PostID }, FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger" style="margin-left:8px;">Đóng tin</button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+

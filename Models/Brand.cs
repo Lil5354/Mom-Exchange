@@ -18,15 +18,5 @@ namespace B_M.Models
         public string LogoUrl { get; set; }
 
         public string Description { get; set; }
-
-        [Required]
-        public int UserID { get; set; } // FK to Users (Role=3)
-
-        // Navigation properties
-        [ForeignKey("UserID")]
-        public virtual User User { get; set; }
-
-        public virtual ICollection<ProductB2C> Products { get; set; } = new List<ProductB2C>();
-        public virtual ICollection<BrandCategoryPermission> CategoryPermissions { get; set; } = new List<BrandCategoryPermission>();
     }
 }

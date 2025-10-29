@@ -15,23 +15,16 @@ namespace B_M.Models
         // Category Management
         public DbSet<Category> Categories { get; set; }
 
-        // Module 3 - B2C Tables
+        // Module 3 - B2C Tables (reduced to Brands lookup)
         public DbSet<Brand> Brands { get; set; }
-        public DbSet<ProductB2C> ProductB2Cs { get; set; }
-        public DbSet<ProductB2CImage> ProductB2CImages { get; set; }
-        public DbSet<BrandCategoryPermission> BrandCategoryPermissions { get; set; }
 
         // Module 3 - C2C Tables
         public DbSet<PostC2C> PostC2Cs { get; set; }
         public DbSet<PostC2CImage> PostC2CImages { get; set; }
+        public DbSet<PostC2CExchangePreference> PostC2CExchangePreferences { get; set; }
 
-        // Order Management
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderDetail> OrderDetails { get; set; }
-
-        // Affiliate System
-        public DbSet<AffiliateClick> AffiliateClicks { get; set; }
-        public DbSet<AffiliateSale> AffiliateSales { get; set; }
+        // Order Management (pruned)
+        // Affiliate System (pruned)
 
         // Milk Donation System
         public DbSet<UserLifestyleSurvey> UserLifestyleSurveys { get; set; }
@@ -157,11 +150,7 @@ namespace B_M.Models
                 .Property(b => b.LogoUrl)
                 .HasMaxLength(1024);
 
-            modelBuilder.Entity<Brand>()
-                .HasRequired(b => b.User)
-                .WithMany()
-                .HasForeignKey(b => b.UserID)
-                .WillCascadeOnDelete(false);
+            // Brand acts as simple lookup (no owner user)
 
             // ====== POST C2C CONFIGURATION ======
             modelBuilder.Entity<PostC2C>()
@@ -218,158 +207,24 @@ namespace B_M.Models
                 .HasForeignKey(pi => pi.PostID)
                 .WillCascadeOnDelete(true);
 
-            // ====== PRODUCT B2C CONFIGURATION ======
-            modelBuilder.Entity<ProductB2C>()
-                .ToTable("Products_B2C")
-                .HasKey(p => p.ProductID);
+            // ====== POST C2C EXCHANGE PREFERENCES CONFIGURATION ======
+            modelBuilder.Entity<PostC2CExchangePreference>()
+                .ToTable("Post_C2C_ExchangePreferences")
+                .HasKey(ep => ep.ExchangePreferenceID);
 
-            modelBuilder.Entity<ProductB2C>()
-                .Property(p => p.ProductName)
-                .IsRequired()
-                .HasMaxLength(255);
-
-            modelBuilder.Entity<ProductB2C>()
-                .Property(p => p.Price)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<ProductB2C>()
-                .Property(p => p.AffiliateCommissionRate)
-                .HasPrecision(5, 2);
-
-            modelBuilder.Entity<ProductB2C>()
-                .HasRequired(p => p.Brand)
-                .WithMany(b => b.Products)
-                .HasForeignKey(p => p.BrandID)
-                .WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<ProductB2C>()
-                .HasRequired(p => p.Category)
-                .WithMany(c => c.ProductB2Cs)
-                .HasForeignKey(p => p.CategoryID)
-                .WillCascadeOnDelete(false);
-
-            // ====== PRODUCT B2C IMAGE CONFIGURATION ======
-            modelBuilder.Entity<ProductB2CImage>()
-                .ToTable("Product_B2C_Images")
-                .HasKey(pi => pi.ImageID);
-
-            modelBuilder.Entity<ProductB2CImage>()
-                .Property(pi => pi.ImageUrl)
-                .IsRequired()
-                .HasMaxLength(1024);
-
-            modelBuilder.Entity<ProductB2CImage>()
-                .HasRequired(pi => pi.Product)
-                .WithMany(p => p.Images)
-                .HasForeignKey(pi => pi.ProductID)
+            modelBuilder.Entity<PostC2CExchangePreference>()
+                .HasRequired(ep => ep.Post)
+                .WithMany(p => p.ExchangePreferences)
+                .HasForeignKey(ep => ep.PostID)
                 .WillCascadeOnDelete(true);
 
-            // ====== BRAND CATEGORY PERMISSION CONFIGURATION ======
-            modelBuilder.Entity<BrandCategoryPermission>()
-                .ToTable("Brand_Category_Permissions")
-                .HasKey(bcp => bcp.BrandCategoryPermissionID);
-
-            modelBuilder.Entity<BrandCategoryPermission>()
-                .HasRequired(bcp => bcp.Brand)
-                .WithMany(b => b.CategoryPermissions)
-                .HasForeignKey(bcp => bcp.BrandID)
-                .WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<BrandCategoryPermission>()
-                .HasRequired(bcp => bcp.Category)
-                .WithMany(c => c.BrandPermissions)
-                .HasForeignKey(bcp => bcp.CategoryID)
-                .WillCascadeOnDelete(false);
-
-            // ====== ORDER CONFIGURATION ======
-            modelBuilder.Entity<Order>()
-                .ToTable("Orders")
-                .HasKey(o => o.OrderID);
-
-            modelBuilder.Entity<Order>()
-                .Property(o => o.TotalAmount)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Order>()
-                .HasRequired(o => o.BuyerUser)
+            modelBuilder.Entity<PostC2CExchangePreference>()
+                .HasRequired(ep => ep.Category)
                 .WithMany()
-                .HasForeignKey(o => o.BuyerUserID)
+                .HasForeignKey(ep => ep.CategoryID)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Order>()
-                .HasRequired(o => o.Brand)
-                .WithMany()
-                .HasForeignKey(o => o.BrandID)
-                .WillCascadeOnDelete(false);
-
-            // ====== ORDER DETAIL CONFIGURATION ======
-            modelBuilder.Entity<OrderDetail>()
-                .ToTable("OrderDetails")
-                .HasKey(od => od.OrderDetailID);
-
-            modelBuilder.Entity<OrderDetail>()
-                .Property(od => od.PriceAtPurchase)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<OrderDetail>()
-                .HasRequired(od => od.Order)
-                .WithMany(o => o.OrderDetails)
-                .HasForeignKey(od => od.OrderID)
-                .WillCascadeOnDelete(true);
-
-            modelBuilder.Entity<OrderDetail>()
-                .HasRequired(od => od.Product)
-                .WithMany(p => p.OrderDetails)
-                .HasForeignKey(od => od.ProductID)
-                .WillCascadeOnDelete(false);
-
-            // ====== AFFILIATE CLICK CONFIGURATION ======
-            modelBuilder.Entity<AffiliateClick>()
-                .ToTable("AffiliateClicks")
-                .HasKey(ac => ac.ClickID);
-
-            modelBuilder.Entity<AffiliateClick>()
-                .HasRequired(ac => ac.AffiliatorUser)
-                .WithMany()
-                .HasForeignKey(ac => ac.AffiliatorUserID)
-                .WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<AffiliateClick>()
-                .HasRequired(ac => ac.Product)
-                .WithMany(p => p.AffiliateClicks)
-                .HasForeignKey(ac => ac.ProductID)
-                .WillCascadeOnDelete(false);
-
-            // ====== AFFILIATE SALE CONFIGURATION ======
-            modelBuilder.Entity<AffiliateSale>()
-                .ToTable("AffiliateSales")
-                .HasKey(asale => asale.AffiliateSaleID);
-
-            modelBuilder.Entity<AffiliateSale>()
-                .Property(asale => asale.OrderTotalAmount)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<AffiliateSale>()
-                .Property(asale => asale.CommissionAmount)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<AffiliateSale>()
-                .HasRequired(asale => asale.AffiliatorUser)
-                .WithMany()
-                .HasForeignKey(asale => asale.AffiliatorUserID)
-                .WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<AffiliateSale>()
-                .HasRequired(asale => asale.BuyerUser)
-                .WithMany()
-                .HasForeignKey(asale => asale.BuyerUserID)
-                .WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<AffiliateSale>()
-                .HasRequired(asale => asale.Order)
-                .WithMany()
-                .HasForeignKey(asale => asale.OrderID)
-                .WillCascadeOnDelete(false);
+            // B2C entities are pruned from this version
 
             // ====== USER LIFESTYLE SURVEY CONFIGURATION ======
             modelBuilder.Entity<UserLifestyleSurvey>()

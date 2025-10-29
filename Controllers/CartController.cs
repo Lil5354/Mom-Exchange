@@ -171,37 +171,7 @@ namespace B_M.Controllers
             Session["Cart"] = cart;
         }
 
-        private void TrackAffiliateClick(int affiliateUserId, int productId)
-        {
-            try
-            {
-                var sessionId = Session.SessionID;
-                
-                // Check if click already tracked for this session
-                var existingClick = db.AffiliateClicks
-                    .FirstOrDefault(ac => ac.AffiliatorUserID == affiliateUserId 
-                                       && ac.ProductID == productId 
-                                       && ac.VisitorSessionID == sessionId);
-
-                if (existingClick == null)
-                {
-                    var click = new AffiliateClick
-                    {
-                        AffiliatorUserID = affiliateUserId,
-                        ProductID = productId,
-                        VisitorSessionID = sessionId,
-                        ClickedAt = DateTime.Now
-                    };
-
-                    db.AffiliateClicks.Add(click);
-                    db.SaveChanges();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"ERROR tracking affiliate click: {ex.Message}");
-            }
-        }
+        // Affiliate tracking removed in two-role refactor
 
         #endregion
     }

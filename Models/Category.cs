@@ -23,7 +23,7 @@ namespace B_M.Models
         public bool IsB2CEnabled { get; set; } = false; // 1 = Admin cho phép Brand bán
 
         [Required]
-        public bool IsC2CEnabled { get; set; } = false; // 1 = Admin cho phép Mẹ bỉm thanh lý
+        public bool IsC2CEnabled { get; set; } = false; // 1 = Admin cho phép Khách hàng thanh lý
 
         // Navigation properties
         [ForeignKey("ParentCategoryID")]
@@ -31,7 +31,5 @@ namespace B_M.Models
 
         public virtual ICollection<Category> SubCategories { get; set; } = new List<Category>();
         public virtual ICollection<PostC2C> PostC2Cs { get; set; } = new List<PostC2C>();
-        public virtual ICollection<ProductB2C> ProductB2Cs { get; set; } = new List<ProductB2C>();
-        public virtual ICollection<BrandCategoryPermission> BrandPermissions { get; set; } = new List<BrandCategoryPermission>();
     }
 }

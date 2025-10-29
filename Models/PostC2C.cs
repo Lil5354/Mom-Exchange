@@ -49,6 +49,7 @@ namespace B_M.Models
         public virtual Category Category { get; set; }
 
         public virtual ICollection<PostC2CImage> Images { get; set; } = new List<PostC2CImage>();
+        public virtual ICollection<PostC2CExchangePreference> ExchangePreferences { get; set; } = new List<PostC2CExchangePreference>();
         public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 
         // Computed properties for UI

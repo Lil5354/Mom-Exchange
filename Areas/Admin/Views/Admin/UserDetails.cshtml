@@ -141,8 +141,7 @@
                         <label style="font-weight: 600; color: #2c3e50;">Thay đổi vai trò:</label>
                         <select id="roleSelect" data-user-id="@Model.UserID" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px;">
                             <option value="1" @(Model.Role == 1 ? "selected" : "")>Quản trị viên</option>
-                            <option value="2" @(Model.Role == 2 ? "selected" : "")>Mẹ bỉm</option>
-                            <option value="3" @(Model.Role == 3 ? "selected" : "")>Nhãn hàng</option>
+                            <option value="2" @(Model.Role == 2 ? "selected" : "")>Khách hàng</option>
                         </select>
                     </div>
                 </div>
@@ -293,7 +292,6 @@
         {
             case 1: return "badge-danger";
             case 2: return "badge-warning";
-            case 3: return "badge-info";
             default: return "badge-secondary";
         }
     }

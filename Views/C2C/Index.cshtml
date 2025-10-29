@@ -1,0 +1,132 @@
+@model IEnumerable<B_M.Models.C2CPostCardViewModel>
+@{
+    ViewBag.Title = "Chợ C2C";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/Content/c2c-marketplace.css" rel="stylesheet" />
+}
+
+<div class="container" style="padding: 20px 0;">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card" style="padding: 15px; border-radius: 12px;">
+                <h4 style="color:#d63384;">Bộ lọc</h4>
+                @using (Html.BeginForm("Index", "C2C", FormMethod.Get))
+                {
+                    <div class="form-group">
+                        <label>Hình thức</label>
+                        <select name="filter" class="form-control">
+                            <option value="">Tất cả</option>
+                            <option value="sell" @(string.Equals(ViewBag.Filter as string, "sell") ? "selected" : "")>Thanh lý (bán)</option>
+                            <option value="exchange" @(string.Equals(ViewBag.Filter as string, "exchange") ? "selected" : "")>Trao đổi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Danh mục</label>
+                        @Html.DropDownList("categoryId", (IEnumerable<SelectListItem>)ViewBag.Categories, "Tất cả danh mục", new { @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        <label>Tình trạng</label>
+                        @Html.DropDownList("condition", (IEnumerable<SelectListItem>)ViewBag.ConditionOptions, "Tất cả", new { @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        <label>Tỉnh/Thành</label>
+                        @Html.DropDownList("province", (IEnumerable<SelectListItem>)ViewBag.Provinces, "Tất cả", new { @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        <label>Giá từ</label>
+                        <input type="number" name="minPrice" step="1000" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Giá đến</label>
+                        <input type="number" name="maxPrice" step="1000" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Từ khóa</label>
+                        <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="Tìm theo tiêu đề, nội dung" />
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%">Áp dụng</button>
+                }
+                <hr />
+                <a href="@Url.Action("Create", "C2C")" class="btn btn-gradient" style="background: linear-gradient(135deg, #d63384, #e91e63); color: #fff; width:100%">+ Đăng tin</a>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
+                <h3 style="margin:0;">Danh sách tin đăng (@(ViewBag.TotalCount ?? 0))</h3>
+                <div class="btn-group" role="group" aria-label="Filter">
+                    <a href="@Url.Action("Index", new { filter = (string)null })" class="btn btn-outline-secondary @(string.IsNullOrEmpty(ViewBag.Filter as string) ? "active" : "")">Tất cả</a>
+                    <a href="@Url.Action("Index", new { filter = "sell" })" class="btn btn-outline-secondary @(string.Equals(ViewBag.Filter as string, "sell") ? "active" : "")">Thanh lý</a>
+                    <a href="@Url.Action("Index", new { filter = "exchange" })" class="btn btn-outline-secondary @(string.Equals(ViewBag.Filter as string, "exchange") ? "active" : "")">Trao đổi</a>
+                </div>
+            </div>
+            @if (Model != null && Model.Any())
+            {
+                <div class="row">
+                    @foreach (var item in Model)
+                    {
+                        <div class="col-md-4" style="margin-bottom: 20px;">
+                            <div class="card" style="border-radius: 12px; overflow:hidden;">
+                                <a href="@Url.Action("Details", new { id = item.PostID })">
+                                    <img src="@item.PrimaryImageUrl" alt="@item.Title" style="width:100%; height:180px; object-fit:cover;" />
+                                </a>
+                                <div class="card-body" style="padding: 12px;">
+                                    <h5 style="margin:0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.Title</h5>
+                                    <div style="color:#6c757d; font-size:13px; margin-bottom:6px;">@item.Condition • @item.ListingTypeText</div>
+                                    <div style="font-weight:700; color:#d63384; margin-bottom:6px;">
+                                        @if (item.ListingType == 2 && !item.Price.HasValue)
+                                        {
+                                            <text>Trao đổi</text>
+                                        }
+                                        else
+                                        {
+                                            <text>@String.Format("{0:N0} đ", item.Price ?? 0)</text>
+                                        }
+                                    </div>
+                                    <div style="font-size:12px; color:#6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <i class="fas fa-map-marker-alt"></i> @item.Location
+                                    </div>
+                                    <div style="font-size:12px; color:#6c757d; margin-top:4px; display:@(((item.ListingType == 2 || item.ListingType == 3) && item.ExchangeCategoryNames != null && item.ExchangeCategoryNames.Any()) ? "block" : "none");">
+                                        <i class="fas fa-right-left"></i> Muốn đổi: @string.Join(", ", item.ExchangeCategoryNames ?? Enumerable.Empty<string>())
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center" style="margin-top:8px;">
+                                        <a href="@Url.Action("Details", new { id = item.PostID })" class="btn btn-outline-primary btn-sm">Xem</a>
+                                        <a href="@Url.Action("Conversation", "Chat", new { userId = item.SellerUserID })" class="btn btn-primary btn-sm">Chat</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">Chưa có tin đăng nào phù hợp.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        var filterSelect = document.querySelector('select[name="filter"]');
+        var minPrice = document.querySelector('input[name="minPrice"]');
+        var maxPrice = document.querySelector('input[name="maxPrice"]');
+        function togglePrice() {
+            if (!filterSelect || !minPrice || !maxPrice) return;
+            var isExchange = filterSelect.value === 'exchange';
+            minPrice.disabled = isExchange;
+            maxPrice.disabled = isExchange;
+            minPrice.parentElement.style.opacity = isExchange ? 0.5 : 1;
+            maxPrice.parentElement.style.opacity = isExchange ? 0.5 : 1;
+        }
+        if (filterSelect) {
+            filterSelect.addEventListener('change', togglePrice);
+            togglePrice();
+        }
+    })();
+</script>
+
+

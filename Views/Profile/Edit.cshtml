@@ -80,10 +80,53 @@
                                     @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
                                 </div>
 
+                                @Html.HiddenFor(model => model.Address)
                                 <div class="form-group">
-                                    <label class="form-label"><i class="fas fa-map-marker-alt"></i> Địa chỉ</label>
-                                    @Html.TextAreaFor(model => model.Address, new { @class = "form-control", @rows = "3", @placeholder = "Nhập địa chỉ của bạn" })
+                                    <label class="form-label"><i class="fas fa-map-marker-alt"></i> Tỉnh/Thành</label>
+                                    <select id="provinceSelect" class="form-control" name="ProvinceSelect">
+                                        <option value="">-- Chọn Tỉnh/Thành --</option>
+                                        <option>TP Hà Nội</option>
+                                        <option>TP Huế</option>
+                                        <option>Quảng Ninh</option>
+                                        <option>Cao Bằng</option>
+                                        <option>Lạng Sơn</option>
+                                        <option>Lai Châu</option>
+                                        <option>Điện Biên</option>
+                                        <option>Sơn La</option>
+                                        <option>Thanh Hóa</option>
+                                        <option>Nghệ An</option>
+                                        <option>Hà Tĩnh</option>
+                                        <option>Tuyên Quang</option>
+                                        <option>Lào Cai</option>
+                                        <option>Thái Nguyên</option>
+                                        <option>Phú Thọ</option>
+                                        <option>Bắc Ninh</option>
+                                        <option>Hưng Yên</option>
+                                        <option>TP Hải Phòng</option>
+                                        <option>Ninh Bình</option>
+                                        <option>Quảng Trị</option>
+                                        <option>TP Đà Nẵng</option>
+                                        <option>Quảng Ngãi</option>
+                                        <option>Gia Lai</option>
+                                        <option>Khánh Hòa</option>
+                                        <option>Lâm Đồng</option>
+                                        <option>Đắk Lắk</option>
+                                        <option>TPHCM</option>
+                                        <option>Đồng Nai</option>
+                                        <option>Tây Ninh</option>
+                                        <option>TP Cần Thơ</option>
+                                        <option>Vĩnh Long</option>
+                                        <option>Đồng Tháp</option>
+                                        <option>Cà Mau</option>
+                                        <option>An Giang</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-home"></i> Địa chỉ cụ thể</label>
+                                    <input id="detailedAddress" type="text" class="form-control" name="DetailedAddressInput" placeholder="Số nhà, đường, phường/xã, quận/huyện" />
                                     @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+                                    <small class="form-text text-muted">Địa chỉ sẽ được lưu theo định dạng: "[Chi tiết], [Tỉnh/Thành]"</small>
                                 </div>
                             </div>
                         </div>
@@ -462,4 +505,29 @@
     document.querySelector('.avatar-container').addEventListener('click', function () {
         document.getElementById('profileImageInput').click();
     });
+
+    // Address: split and combine province + detailed address
+    (function () {
+        var existing = '@(Model.Address ?? "")';
+        if (existing && existing.indexOf(',') > -1) {
+            var parts = existing.split(',');
+            var province = parts[parts.length - 1].trim();
+            var detailed = parts.slice(0, parts.length - 1).join(',').trim();
+            document.getElementById('provinceSelect').value = province;
+            document.getElementById('detailedAddress').value = detailed;
+        }
+
+        var form = document.querySelector('form.profile-form');
+        if (form) {
+            form.addEventListener('submit', function () {
+                var p = document.getElementById('provinceSelect').value;
+                var d = document.getElementById('detailedAddress').value;
+                var combined = (d ? d.trim() : '').replace(/\s+,/g, ',');
+                if (p) {
+                    combined = combined ? (combined + ', ' + p) : p;
+                }
+                document.getElementById('Address').value = combined;
+            });
+        }
+    })();
 </script>

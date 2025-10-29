@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
+
     <style>
         /* Header hover effects */
         .nav-links a:hover {
@@ -20,74 +20,74 @@
             color: #d63384 !important;
             transform: translateY(-2px);
         }
-        
+
         .header-top-links a:hover {
             color: #d63384 !important;
         }
-        
+
         .header-top-promo a:hover {
             color: #e91e63 !important;
         }
-        
+
         /* Dropdown hover effect */
         .nav-item-dropdown:hover .dropdown-content {
             opacity: 1 !important;
             visibility: visible !important;
             transform: translateY(0) !important;
         }
-        
+
         .dropdown-content a:hover {
             background: linear-gradient(135deg, #fce4ec, #f8e8f0) !important;
             color: #d63384 !important;
         }
-        
+
         /* Button hover effects */
         .btn-gradient:hover {
             transform: translateY(-2px) !important;
             box-shadow: 0 4px 15px rgba(214, 51, 132, 0.4) !important;
         }
-        
+
         /* User info hover */
         .user-info:hover {
             background: linear-gradient(135deg, #f8e8f0, #fce4ec) !important;
             transform: translateY(-1px);
         }
-        
+
         /* User dropdown */
         .user-dropdown:hover .user-dropdown-content {
             opacity: 1 !important;
             visibility: visible !important;
             transform: translateY(0) !important;
         }
-        
+
         .user-dropdown:hover .user-info i.fa-chevron-down {
             transform: rotate(180deg);
         }
-        
+
         .user-dropdown-content a:hover {
             background: linear-gradient(135deg, #fce4ec, #f8e8f0) !important;
             color: #d63384 !important;
         }
-        
+
         /* Responsive */
         @@media (max-width: 768px) {
             .nav-links {
                 flex-direction: column !important;
                 gap: 10px !important;
             }
-            
+
             .header-top-links {
                 flex-direction: column !important;
                 gap: 10px !important;
             }
-            
+
             .col-md-4 {
                 text-align: center !important;
                 margin-bottom: 10px;
             }
         }
     </style>
-    
+
     @RenderSection("Styles", required: false)
 
     <!-- Global Toast Notification Styles -->
@@ -122,21 +122,21 @@
             transform: translateX(100%);
         }
 
-        /* Toast Animation Trigger */
-        .toast.toast-animate {
-            animation: slideInRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
+            /* Toast Animation Trigger */
+            .toast.toast-animate {
+                animation: slideInRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            }
 
-        .toast::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: linear-gradient(45deg, #d63384, #e91e63);
-            border-radius: 0 2px 2px 0;
-        }
+            .toast::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                background: linear-gradient(45deg, #d63384, #e91e63);
+                border-radius: 0 2px 2px 0;
+            }
 
         /* Toast Success */
         .toast-success {
@@ -200,11 +200,11 @@
             opacity: 0.7;
         }
 
-        .toast-close:hover {
-            background-color: rgba(214, 51, 132, 0.1);
-            opacity: 1;
-            transform: scale(1.1);
-        }
+            .toast-close:hover {
+                background-color: rgba(214, 51, 132, 0.1);
+                opacity: 1;
+                transform: scale(1.1);
+            }
 
         /* Animations */
         @@keyframes slideInRight {
@@ -212,10 +212,12 @@
                 transform: translateX(100%) scale(0.8);
                 opacity: 0;
             }
+
             50% {
                 transform: translateX(-5%) scale(1.05);
                 opacity: 0.8;
             }
+
             100% {
                 transform: translateX(0) scale(1);
                 opacity: 1;
@@ -227,6 +229,7 @@
                 transform: translateX(0);
                 opacity: 1;
             }
+
             to {
                 transform: translateX(100%);
                 opacity: 0;
@@ -243,9 +246,9 @@
             box-shadow: 0 12px 40px rgba(214, 51, 132, 0.2);
         }
 
-        .toast:hover .toast-close {
-            opacity: 1;
-        }
+            .toast:hover .toast-close {
+                opacity: 1;
+            }
 
         /* Responsive */
         @@media (max-width: 480px) {
@@ -255,11 +258,11 @@
                 left: 10px;
                 max-width: none;
             }
-            
+
             .toast {
                 padding: 14px;
             }
-            
+
             .toast-icon {
                 font-size: 20px;
                 margin-right: 10px;
@@ -343,8 +346,7 @@
                 <div class="row align-items-center" style="margin: 0;">
                     <div class="col-md-4" style="padding: 0;">
                         <div class="nav-links" style="display: flex; gap: 15px; align-items: center; flex-wrap: nowrap;">
-                            <a href="@Url.Action("Index", "Clearance")" style="color: #333; text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 20px; transition: all 0.3s ease; position: relative; white-space: nowrap;">Thanh lý</a>
-                            <a href="@Url.Action("Index", "Trade")" style="color: #333; text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 20px; transition: all 0.3s ease; position: relative; white-space: nowrap;">Trao đổi</a>
+                            <a href="@Url.Action("Index", "C2C")" style="color: #333; text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 20px; transition: all 0.3s ease; position: relative; white-space: nowrap;">Thanh lý & Trao đổi</a>
                             <div class="nav-item-dropdown" style="position: relative;">
                                 <a href="@Url.Action("Index", "Brand")" style="color: #333; text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 20px; transition: all 0.3s ease; position: relative; white-space: nowrap;">Nhãn hàng <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 5px;"></i></a>
                                 <div class="dropdown-content" style="position: absolute; top: 100%; left: 0; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; padding: 10px 0; min-width: 200px; z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease;">
@@ -371,7 +373,7 @@
                                         <i class="fa-solid fa-bell" style="color: white; font-size: 18px;"></i>
                                         <span class="notification-badge" id="notificationBadge" style="position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 2px solid white; display: none;">0</span>
                                     </div>
-                                    
+
                                     <!-- Notification Dropdown Content -->
                                     <div class="notification-dropdown-content" id="notificationDropdownContent" style="position: absolute; top: 100%; right: 0; width: 350px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #e9ecef; z-index: 1000; display: none; overflow: hidden;">
                                         <!-- Header -->
@@ -387,7 +389,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Notification List -->
                                         <div class="notification-list" id="notificationList" style="max-height: 300px; overflow-y: auto;">
                                             <!-- Notifications will be loaded here via AJAX -->
@@ -396,7 +398,7 @@
                                                 Đang tải...
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Footer -->
                                         <div class="notification-footer" style="padding: 12px 20px; border-top: 1px solid #f8f9fa; background: #f8f9fa;">
                                             <a href="@Url.Action("Index", "Notification")" style="display: block; text-align: center; color: #d63384; text-decoration: none; font-size: 14px; font-weight: 500;">
@@ -453,6 +455,10 @@
                                         <a href="@Url.Action("MyPosts", "MilkDonation")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
                                             <i class="fa-solid fa-hand-holding-heart" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Quản lý tin sữa
+                                        </a>
+                                        <a href="@Url.Action("MyPosts", "C2C")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
+                                            <i class="fa-solid fa-store" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
+                                            Quản lý tin C2C
                                         </a>
                                         @if (Session["Role"] != null && (byte)Session["Role"] == 1)
                                         {
@@ -702,7 +708,7 @@
                 this.style.transform = 'translateY(-2px)';
                 this.style.boxShadow = '0 6px 20px rgba(214, 51, 132, 0.4)';
             });
-            
+
             notificationTrigger.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
                 this.style.boxShadow = '0 2px 10px rgba(214, 51, 132, 0.3)';
@@ -749,7 +755,7 @@
             notifications.forEach(notification => {
                 const isUnread = !notification.isRead;
                 const timeAgo = getTimeAgo(notification.createdAt);
-                
+
                 html += `
                     <div class="notification-item ${isUnread ? 'unread' : 'read'}" data-notification-id="${notification.notificationID}" style="padding: 12px 20px; border-bottom: 1px solid #f8f9fa; cursor: pointer; transition: background 0.3s ease; ${isUnread ? 'background: #f8f9ff; border-left: 3px solid #d63384;' : 'background: white;'}">
                         <div style="display: flex; align-items: flex-start; gap: 12px;">
@@ -863,10 +869,10 @@
         function setCurrentUserAvatarInHeader() {
             const currentUserAvatar = '@Session["AvatarURL"]' || '/images/avatar-default.jpg';
             const currentUserName = '@Html.Raw(Session["FullName"])' || 'Bạn';
-            
+
             console.log('Setting current user avatar:', currentUserAvatar);
             console.log('Setting current user name:', currentUserName);
-            
+
             document.getElementById('chatUserAvatar').src = currentUserAvatar;
             document.getElementById('chatUserName').textContent = currentUserName;
             document.getElementById('chatUserStatus').textContent = 'Tin nhắn';
@@ -888,10 +894,10 @@
                 if (chatPopup.style.display === 'none' || chatPopup.style.display === '') {
                     chatPopup.style.display = 'block';
                     chatToggle.style.display = 'none';
-                    
+
                     // Set avatar của chủ tài khoản vào header ban đầu
                     setCurrentUserAvatarInHeader();
-                    
+
                     // Load recent conversations or show chat list
                     loadChatConversations();
                 }
@@ -902,10 +908,10 @@
                 chatCloseBtn.addEventListener('click', function() {
                     chatPopup.style.display = 'none';
                     chatToggle.style.display = 'flex';
-                    
+
                     // Reset về avatar của chủ tài khoản
                     setCurrentUserAvatarInHeader();
-                    
+
                     // Clear messages và receiver
                     document.getElementById('chatPopupMessages').innerHTML = '';
                     document.getElementById('chatReceiverId').value = '';
@@ -933,7 +939,7 @@
                 this.style.transform = 'translateY(-2px)';
                 this.style.boxShadow = '0 6px 25px rgba(214, 51, 132, 0.4)';
             });
-            
+
             chatToggle.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
                 this.style.boxShadow = '0 4px 20px rgba(214, 51, 132, 0.3)';
@@ -1011,12 +1017,12 @@
         // Open chat conversation
         function openChatConversation(userId, userName, userAvatar) {
             document.getElementById('chatReceiverId').value = userId;
-            
+
             // Chuyển header thành thông tin của người đang chat với
             document.getElementById('chatUserName').textContent = userName;
             document.getElementById('chatUserAvatar').src = userAvatar;
             document.getElementById('chatUserStatus').textContent = 'Đang hoạt động';
-            
+
             // Load messages for this conversation
             loadChatMessages(userId);
         }
@@ -1081,7 +1087,7 @@
             const form = document.getElementById('chatPopupForm');
             const messageInput = document.getElementById('chatMessageInput');
             const receiverId = document.getElementById('chatReceiverId').value;
-            
+
             if (!receiverId || !messageInput.value.trim()) return;
 
             const formData = new FormData(form);
@@ -1216,16 +1222,16 @@
 
             toasts.forEach((toast, index) => {
                 console.log(`Toast ${index}:`, toast);
-                
+
                 // Only ensure toast is visible, don't override animation
                 toast.style.display = 'flex';
                 toast.style.visibility = 'visible';
-                
+
                 // Trigger animation after a small delay
                 setTimeout(() => {
                     toast.classList.add('toast-animate');
                 }, 50);
-                
+
                 setTimeout(() => {
                     if (document.body.contains(toast)) {
                         const closeButton = toast.querySelector('.toast-close');
@@ -1257,13 +1263,13 @@
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             toast.innerHTML = `
-                    <div class="toast-icon">${icons[type]}</div>
-                    <div class="toast-content">
-                        <div class="toast-title">${titles[type]}</div>
-                        <div class="toast-message">${message}</div>
-                    </div>
-                    <button class="toast-close" onclick="closeToast(this)">&times;</button>
-                `;
+                        <div class="toast-icon">${icons[type]}</div>
+                        <div class="toast-content">
+                            <div class="toast-title">${titles[type]}</div>
+                            <div class="toast-message">${message}</div>
+                        </div>
+                        <button class="toast-close" onclick="closeToast(this)">&times;</button>
+                    `;
 
             container.appendChild(toast);
 
@@ -1305,10 +1311,10 @@
         console.log('==================');
     });
     </script>
-    
+
     <!-- jQuery Library -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
     @RenderSection("scripts", required: false)
 </body>
 </html>

@@ -241,7 +241,7 @@ namespace B_M.Areas.Admin.Controllers
                 }
 
                 // Kiểm tra role hợp lệ
-                if (NewRole < 1 || NewRole > 3)
+                if (NewRole < 1 || NewRole > 2)
                 {
                     return Json(new { success = false, message = "Quyền không hợp lệ." });
                 }
@@ -375,8 +375,7 @@ namespace B_M.Areas.Admin.Controllers
                     TotalUsers = stats.TotalUsers,
                     ActiveUsers = stats.ActiveUsers,
                     AdminUsers = stats.AdminUsers,
-                    MomUsers = stats.MomUsers,
-                    BrandUsers = stats.BrandUsers,
+                    ClientUsers = stats.ClientUsers,
                     NewUsersThisMonth = stats.NewUsersThisMonth,
                     RecentUsers = stats.RecentUsers
                 };
@@ -479,12 +478,11 @@ namespace B_M.Areas.Admin.Controllers
             var users = userRepository.GetAllUsers();
             return new
             {
-                labels = new[] { "Quản trị viên", "Mẹ bỉm", "Nhãn hàng" },
+                labels = new[] { "Quản trị viên", "Khách hàng" },
                 series = new[] 
                 {
                     users.Count(u => u.Role == 1),
-                    users.Count(u => u.Role == 2),
-                    users.Count(u => u.Role == 3)
+                    users.Count(u => u.Role == 2)
                 }
             };
         }
@@ -632,8 +630,7 @@ namespace B_M.Areas.Admin.Controllers
                     TotalUsers = 100,
                     ActiveUsers = 80,
                     AdminUsers = 5,
-                    MomUsers = 70,
-                    BrandUsers = 25,
+                    ClientUsers = 95,
                     NewUsersThisMonth = 10,
                     RecentUsers = new List<User>()
                 };
@@ -659,8 +656,7 @@ namespace B_M.Areas.Admin.Controllers
                 var result = $"DATABASE TEST SUCCESS!<br/>" +
                            $"Found {users.Count} users<br/>" +
                            $"Active users: {users.Count(u => u.IsActive)}<br/>" +
-                           $"Mom users: {users.Count(u => u.Role == 2)}<br/>" +
-                           $"Brand users: {users.Count(u => u.Role == 3)}<br/>" +
+                           $"Client users: {users.Count(u => u.Role == 2)}<br/>" +
                            $"Time: {DateTime.Now}";
                 
                 return Content(result);
@@ -686,8 +682,7 @@ namespace B_M.Areas.Admin.Controllers
                            $"Total Users: {stats.TotalUsers}<br/>" +
                            $"Active Users: {stats.ActiveUsers}<br/>" +
                            $"Admin Users: {stats.AdminUsers}<br/>" +
-                           $"Mom Users: {stats.MomUsers}<br/>" +
-                           $"Brand Users: {stats.BrandUsers}<br/>" +
+                           $"Client Users: {stats.ClientUsers}<br/>" +
                            $"New This Month: {stats.NewUsersThisMonth}<br/>" +
                            $"Time: {DateTime.Now}";
                 
@@ -765,8 +760,7 @@ namespace B_M.Areas.Admin.Controllers
                 TotalUsers = users.Count,
                 ActiveUsers = users.Count(u => u.IsActive),
                 AdminUsers = users.Count(u => u.Role == 1),
-                MomUsers = users.Count(u => u.Role == 2),
-                BrandUsers = users.Count(u => u.Role == 3),
+                ClientUsers = users.Count(u => u.Role == 2),
                 NewUsersThisMonth = users.Count(u => u.CreatedAt >= DateTime.Now.AddMonths(-1)),
                 RecentUsers = users.OrderByDescending(u => u.CreatedAt).Take(5).ToList()
             };
@@ -778,8 +772,7 @@ namespace B_M.Areas.Admin.Controllers
             switch (role)
             {
                 case 1: return "Quản trị viên";
-                case 2: return "Mẹ bỉm";
-                case 3: return "Nhãn hàng";
+                case 2: return "Khách hàng";
                 default: return "Không xác định";
             }
         }
@@ -790,7 +783,6 @@ namespace B_M.Areas.Admin.Controllers
             {
                 case 1: return "badge-danger";
                 case 2: return "badge-warning";
-                case 3: return "badge-info";
                 default: return "badge-secondary";
             }
         }

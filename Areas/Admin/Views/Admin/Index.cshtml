@@ -206,21 +206,11 @@
 
     <div class="compact-stat-card">
         <div class="compact-stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
-            <i class="fas fa-baby"></i>
+            <i class="fas fa-user"></i>
         </div>
         <div class="compact-stat-content">
-            <div class="compact-stat-number">@Model.MomUsers</div>
-            <div class="compact-stat-label">Mẹ bỉm</div>
-        </div>
-    </div>
-
-    <div class="compact-stat-card">
-        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
-            <i class="fas fa-store"></i>
-        </div>
-        <div class="compact-stat-content">
-            <div class="compact-stat-number">@Model.BrandUsers</div>
-            <div class="compact-stat-label">Nhãn hàng</div>
+            <div class="compact-stat-number">@Model.ClientUsers</div>
+            <div class="compact-stat-label">Khách hàng</div>
         </div>
     </div>
 
@@ -283,12 +273,8 @@
                                                 roleClass = "badge-danger";
                                                 break;
                                             case 2:
-                                                roleName = "Mẹ bỉm";
+                                                roleName = "Khách hàng";
                                                 roleClass = "badge-warning";
-                                                break;
-                                            case 3:
-                                                roleName = "Nhãn hàng";
-                                                roleClass = "badge-info";
                                                 break;
                                             default:
                                                 roleName = "N/A";

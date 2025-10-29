@@ -300,8 +300,7 @@ namespace B_M.Helpers
             switch (role)
             {
                 case 1: return "Quản trị viên";
-                case 2: return "Mẹ bỉm";
-                case 3: return "Nhãn hàng";
+                case 2: return "Khách hàng";
                 default: return "Không xác định";
             }
         }
@@ -343,8 +342,7 @@ namespace B_M.Helpers
                     new { Email = "doanvanf@gmail.com", Username = "doanvanf", FullName = "Đoàn Văn F", Phone = "0956789012", Address = "369 Đường MNO, Quận 10, Hà Nội", Role = "2" },
                     new { Email = "ngothig@gmail.com", Username = "ngothig", FullName = "Ngô Thị G", Phone = "0967890123", Address = "741 Đường PQR, Quận Tân Bình, TP.HCM", Role = "2" },
                     new { Email = "buivanh@gmail.com", Username = "buivanh", FullName = "Bùi Văn H", Phone = "0978901234", Address = "852 Đường STU, Quận Bình Thạnh, TP.HCM", Role = "2" },
-                    new { Email = "hoangthii@gmail.com", Username = "hoangthii", FullName = "Hoàng Thị I", Phone = "0989012345", Address = "963 Đường VWX, Quận Phú Nhuận, TP.HCM", Role = "2" },
-                    new { Email = "brand.vinamilk@gmail.com", Username = "vinamilk", FullName = "Vinamilk Brand Account", Phone = "0281234567", Address = "Số 10, Đường Tân Trào, Quận 7, TP.HCM", Role = "3" }
+                    new { Email = "hoangthii@gmail.com", Username = "hoangthii", FullName = "Hoàng Thị I", Phone = "0989012345", Address = "963 Đường VWX, Quận Phú Nhuận, TP.HCM", Role = "2" }
                 };
 
                 int row = 2;
@@ -395,7 +393,7 @@ namespace B_M.Helpers
                 notesSheet.Cells[8, 2].Value = "Địa chỉ của người dùng.";
                 
                 notesSheet.Cells[9, 1].Value = "Role (Tùy chọn):";
-                notesSheet.Cells[9, 2].Value = "Vai trò: 1 = Quản trị viên, 2 = Mẹ bỉm, 3 = Nhãn hàng. Mặc định là 2 (Mẹ bỉm).";
+                notesSheet.Cells[9, 2].Value = "Vai trò: 1 = Quản trị viên, 2 = Khách hàng. Mặc định là 2 (Khách hàng).";
                 
                 notesSheet.Cells[11, 1].Value = "LƯU Ý:";
                 notesSheet.Cells[11, 1].Style.Font.Bold = true;

@@ -251,6 +251,32 @@ namespace B_M.Controllers
                 db.Messages.Add(message);
                 db.SaveChanges();
 
+                // Trigger a lightweight notification to receiver for new conversation or inactive period
+                try
+                {
+                    var lastMsg = db.Messages
+                        .Where(m => (m.SenderID == message.SenderID && m.ReceiverID == message.ReceiverID) ||
+                                    (m.SenderID == message.ReceiverID && m.ReceiverID == message.SenderID))
+                        .OrderByDescending(m => m.SentAt)
+                        .FirstOrDefault();
+
+                    bool shouldNotify = lastMsg == null || (DateTime.Now - lastMsg.SentAt).TotalMinutes > 30;
+                    if (shouldNotify)
+                    {
+                        db.Notifications.Add(new Notification
+                        {
+                            UserID = model.ReceiverID,
+                            Title = "Tin nhắn mới",
+                            Message = (currentUser.UserDetails?.FullName ?? currentUser.Email) + " vừa nhắn tin cho bạn.",
+                            Type = 1, // generic info
+                            CreatedAt = DateTime.Now,
+                            IsRead = false
+                        });
+                        db.SaveChanges();
+                    }
+                }
+                catch { /* ignore notification errors */ }
+
                 return Json(new { 
                     success = true, 
                     message = "Gửi tin nhắn thành công.",

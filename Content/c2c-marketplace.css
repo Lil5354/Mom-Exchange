@@ -1,0 +1,16 @@
+.c2c-card .card-body h5 {
+    font-weight: 600;
+}
+
+.c2c-card .price {
+    color: #d63384;
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .c2c-filters .btn-group {
+        margin-top: 8px;
+    }
+}
+
+

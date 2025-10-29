@@ -1,0 +1,59 @@
+@model IEnumerable<B_M.Models.PostC2C>
+@{
+    ViewBag.Title = "Tin đăng của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container" style="padding-top:20px;">
+    <div class="d-flex justify-content-between align-items-center" style="margin-bottom:10px;">
+        <h3 style="margin:0;">Tin đăng của tôi</h3>
+        <a href="@Url.Action("Create")" class="btn btn-primary">+ Đăng tin</a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tiêu đề</th>
+                    <th>Hình thức</th>
+                    <th>Giá</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày đăng</th>
+                    <th style="width:160px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td><a href="@Url.Action("Details", new { id = p.PostID })">@p.Title</a></td>
+                        <td>@p.ListingTypeText</td>
+                        <td>
+                            @if (p.ListingType == 2 && !p.Price.HasValue) { <text>Trao đổi</text>; } else { <text>@String.Format("{0:N0} đ", p.Price ?? 0)</text>; }
+                        </td>
+                        <td>@p.StatusText</td>
+                        <td>@p.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <a href="@Url.Action("Edit", new { id = p.PostID })" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            @if (p.Status == 1)
+                            {
+                                using (Html.BeginForm("Close", "C2C", new { id = p.PostID }, FormMethod.Post, new { style = "display:inline;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Đóng</button>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-info">Bạn chưa có tin đăng nào.</div>
+    }
+</div>
+
+

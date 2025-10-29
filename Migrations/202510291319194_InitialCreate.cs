@@ -8,73 +8,6 @@
         public override void Up()
         {
             CreateTable(
-                "dbo.AffiliateClicks",
-                c => new
-                    {
-                        ClickID = c.Long(nullable: false, identity: true),
-                        AffiliatorUserID = c.Int(nullable: false),
-                        ProductID = c.Long(nullable: false),
-                        VisitorSessionID = c.String(nullable: false, maxLength: 255),
-                        ClickedAt = c.DateTime(nullable: false),
-                    })
-                .PrimaryKey(t => t.ClickID)
-                .ForeignKey("dbo.Users", t => t.AffiliatorUserID)
-                .ForeignKey("dbo.Products_B2C", t => t.ProductID)
-                .Index(t => t.AffiliatorUserID)
-                .Index(t => t.ProductID);
-            
-            CreateTable(
-                "dbo.Users",
-                c => new
-                    {
-                        UserID = c.Int(nullable: false, identity: true),
-                        UserName = c.String(maxLength: 50),
-                        Email = c.String(maxLength: 255),
-                        PhoneNumber = c.String(maxLength: 20),
-                        PasswordHash = c.String(nullable: false),
-                        Role = c.Byte(nullable: false),
-                        IsActive = c.Boolean(nullable: false),
-                        CreatedAt = c.DateTime(nullable: false, precision: 7, storeType: "datetime2"),
-                        MilkDonationStatus = c.Int(nullable: false),
-                        GoogleId = c.String(maxLength: 255),
-                    })
-                .PrimaryKey(t => t.UserID);
-            
-            CreateTable(
-                "dbo.UserDetails",
-                c => new
-                    {
-                        UserID = c.Int(nullable: false),
-                        FullName = c.String(nullable: false, maxLength: 100),
-                        ProfilePictureURL = c.String(maxLength: 500),
-                        Address = c.String(maxLength: 500),
-                        ReputationScore = c.Double(nullable: false),
-                    })
-                .PrimaryKey(t => t.UserID)
-                .ForeignKey("dbo.Users", t => t.UserID, cascadeDelete: true)
-                .Index(t => t.UserID);
-            
-            CreateTable(
-                "dbo.Products_B2C",
-                c => new
-                    {
-                        ProductID = c.Long(nullable: false, identity: true),
-                        BrandID = c.Int(nullable: false),
-                        CategoryID = c.Int(nullable: false),
-                        ProductName = c.String(nullable: false, maxLength: 255),
-                        Description = c.String(),
-                        Price = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        StockQuantity = c.Int(nullable: false),
-                        IsAffiliateEnabled = c.Boolean(nullable: false),
-                        AffiliateCommissionRate = c.Decimal(precision: 5, scale: 2),
-                    })
-                .PrimaryKey(t => t.ProductID)
-                .ForeignKey("dbo.Brands", t => t.BrandID)
-                .ForeignKey("dbo.Categories", t => t.CategoryID)
-                .Index(t => t.BrandID)
-                .Index(t => t.CategoryID);
-            
-            CreateTable(
                 "dbo.Brands",
                 c => new
                     {
@@ -82,25 +15,8 @@
                         BrandName = c.String(nullable: false, maxLength: 255),
                         LogoUrl = c.String(maxLength: 1024),
                         Description = c.String(),
-                        UserID = c.Int(nullable: false),
                     })
-                .PrimaryKey(t => t.BrandID)
-                .ForeignKey("dbo.Users", t => t.UserID)
-                .Index(t => t.UserID);
-            
-            CreateTable(
-                "dbo.Brand_Category_Permissions",
-                c => new
-                    {
-                        BrandCategoryPermissionID = c.Long(nullable: false, identity: true),
-                        BrandID = c.Int(nullable: false),
-                        CategoryID = c.Int(nullable: false),
-                    })
-                .PrimaryKey(t => t.BrandCategoryPermissionID)
-                .ForeignKey("dbo.Brands", t => t.BrandID)
-                .ForeignKey("dbo.Categories", t => t.CategoryID)
-                .Index(t => t.BrandID)
-                .Index(t => t.CategoryID);
+                .PrimaryKey(t => t.BrandID);
             
             CreateTable(
                 "dbo.Categories",
@@ -139,6 +55,20 @@
                 .Index(t => t.CategoryID);
             
             CreateTable(
+                "dbo.Post_C2C_ExchangePreferences",
+                c => new
+                    {
+                        ExchangePreferenceID = c.Long(nullable: false, identity: true),
+                        PostID = c.Long(nullable: false),
+                        CategoryID = c.Int(nullable: false),
+                    })
+                .PrimaryKey(t => t.ExchangePreferenceID)
+                .ForeignKey("dbo.Categories", t => t.CategoryID)
+                .ForeignKey("dbo.Posts_C2C", t => t.PostID, cascadeDelete: true)
+                .Index(t => t.PostID)
+                .Index(t => t.CategoryID);
+            
+            CreateTable(
                 "dbo.Post_C2C_Images",
                 c => new
                     {
@@ -172,71 +102,35 @@
                 .Index(t => t.PostID);
             
             CreateTable(
-                "dbo.Product_B2C_Images",
+                "dbo.Users",
                 c => new
                     {
-                        ImageID = c.Long(nullable: false, identity: true),
-                        ProductID = c.Long(nullable: false),
-                        ImageUrl = c.String(nullable: false, maxLength: 1024),
-                        IsPrimary = c.Boolean(nullable: false),
+                        UserID = c.Int(nullable: false, identity: true),
+                        UserName = c.String(maxLength: 50),
+                        Email = c.String(maxLength: 255),
+                        PhoneNumber = c.String(maxLength: 20),
+                        PasswordHash = c.String(nullable: false),
+                        Role = c.Byte(nullable: false),
+                        IsActive = c.Boolean(nullable: false),
+                        CreatedAt = c.DateTime(nullable: false, precision: 7, storeType: "datetime2"),
+                        MilkDonationStatus = c.Int(nullable: false),
+                        GoogleId = c.String(maxLength: 255),
                     })
-                .PrimaryKey(t => t.ImageID)
-                .ForeignKey("dbo.Products_B2C", t => t.ProductID, cascadeDelete: true)
-                .Index(t => t.ProductID);
+                .PrimaryKey(t => t.UserID);
             
             CreateTable(
-                "dbo.OrderDetails",
+                "dbo.UserDetails",
                 c => new
                     {
-                        OrderDetailID = c.Long(nullable: false, identity: true),
-                        OrderID = c.Long(nullable: false),
-                        ProductID = c.Long(nullable: false),
-                        Quantity = c.Int(nullable: false),
-                        PriceAtPurchase = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        UserID = c.Int(nullable: false),
+                        FullName = c.String(nullable: false, maxLength: 100),
+                        ProfilePictureURL = c.String(maxLength: 500),
+                        Address = c.String(maxLength: 500),
+                        ReputationScore = c.Double(nullable: false),
                     })
-                .PrimaryKey(t => t.OrderDetailID)
-                .ForeignKey("dbo.Orders", t => t.OrderID, cascadeDelete: true)
-                .ForeignKey("dbo.Products_B2C", t => t.ProductID)
-                .Index(t => t.OrderID)
-                .Index(t => t.ProductID);
-            
-            CreateTable(
-                "dbo.Orders",
-                c => new
-                    {
-                        OrderID = c.Long(nullable: false, identity: true),
-                        BuyerUserID = c.Int(nullable: false),
-                        BrandID = c.Int(nullable: false),
-                        OrderDate = c.DateTime(nullable: false),
-                        TotalAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        OrderStatus = c.Int(nullable: false),
-                    })
-                .PrimaryKey(t => t.OrderID)
-                .ForeignKey("dbo.Brands", t => t.BrandID)
-                .ForeignKey("dbo.Users", t => t.BuyerUserID)
-                .Index(t => t.BuyerUserID)
-                .Index(t => t.BrandID);
-            
-            CreateTable(
-                "dbo.AffiliateSales",
-                c => new
-                    {
-                        AffiliateSaleID = c.Long(nullable: false, identity: true),
-                        OrderID = c.Long(nullable: false),
-                        AffiliatorUserID = c.Int(nullable: false),
-                        BuyerUserID = c.Int(nullable: false),
-                        OrderTotalAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        CommissionAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        Status = c.Int(nullable: false),
-                        CreatedAt = c.DateTime(nullable: false),
-                    })
-                .PrimaryKey(t => t.AffiliateSaleID)
-                .ForeignKey("dbo.Users", t => t.AffiliatorUserID)
-                .ForeignKey("dbo.Users", t => t.BuyerUserID)
-                .ForeignKey("dbo.Orders", t => t.OrderID)
-                .Index(t => t.OrderID)
-                .Index(t => t.AffiliatorUserID)
-                .Index(t => t.BuyerUserID);
+                .PrimaryKey(t => t.UserID)
+                .ForeignKey("dbo.Users", t => t.UserID, cascadeDelete: true)
+                .Index(t => t.UserID);
             
             CreateTable(
                 "dbo.Messages",
@@ -302,12 +196,28 @@
                         Type = c.Int(nullable: false),
                         IsRead = c.Boolean(nullable: false),
                         CreatedAt = c.DateTime(nullable: false),
+                        ReadAt = c.DateTime(),
                         RelatedPostID = c.Long(),
                         RelatedRequestID = c.Long(),
                     })
                 .PrimaryKey(t => t.NotificationID)
                 .ForeignKey("dbo.Users", t => t.UserID, cascadeDelete: true)
                 .Index(t => t.UserID);
+            
+            CreateTable(
+                "dbo.SystemSettings",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        SettingKey = c.String(nullable: false, maxLength: 100),
+                        SettingValue = c.String(maxLength: 1000),
+                        SettingType = c.String(nullable: false, maxLength: 50),
+                        Description = c.String(maxLength: 500),
+                        LastModified = c.DateTime(nullable: false),
+                        ModifiedBy = c.String(maxLength: 100),
+                        IsActive = c.Boolean(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id);
             
             CreateTable(
                 "dbo.UserLifestyleSurveys",
@@ -360,29 +270,16 @@
             DropForeignKey("dbo.MilkDonationPosts", "UserID", "dbo.Users");
             DropForeignKey("dbo.Messages", "SenderID", "dbo.Users");
             DropForeignKey("dbo.Messages", "ReceiverID", "dbo.Users");
-            DropForeignKey("dbo.AffiliateSales", "OrderID", "dbo.Orders");
-            DropForeignKey("dbo.AffiliateSales", "BuyerUserID", "dbo.Users");
-            DropForeignKey("dbo.AffiliateSales", "AffiliatorUserID", "dbo.Users");
-            DropForeignKey("dbo.AffiliateClicks", "ProductID", "dbo.Products_B2C");
-            DropForeignKey("dbo.OrderDetails", "ProductID", "dbo.Products_B2C");
-            DropForeignKey("dbo.OrderDetails", "OrderID", "dbo.Orders");
-            DropForeignKey("dbo.Orders", "BuyerUserID", "dbo.Users");
-            DropForeignKey("dbo.Orders", "BrandID", "dbo.Brands");
-            DropForeignKey("dbo.Product_B2C_Images", "ProductID", "dbo.Products_B2C");
-            DropForeignKey("dbo.Products_B2C", "CategoryID", "dbo.Categories");
-            DropForeignKey("dbo.Products_B2C", "BrandID", "dbo.Brands");
-            DropForeignKey("dbo.Brands", "UserID", "dbo.Users");
-            DropForeignKey("dbo.Brand_Category_Permissions", "CategoryID", "dbo.Categories");
             DropForeignKey("dbo.Posts_C2C", "UserID", "dbo.Users");
             DropForeignKey("dbo.Ratings", "RaterUserID", "dbo.Users");
             DropForeignKey("dbo.Ratings", "RatedUserID", "dbo.Users");
+            DropForeignKey("dbo.UserDetails", "UserID", "dbo.Users");
             DropForeignKey("dbo.Ratings", "PostID", "dbo.Posts_C2C");
             DropForeignKey("dbo.Post_C2C_Images", "PostID", "dbo.Posts_C2C");
+            DropForeignKey("dbo.Post_C2C_ExchangePreferences", "PostID", "dbo.Posts_C2C");
+            DropForeignKey("dbo.Post_C2C_ExchangePreferences", "CategoryID", "dbo.Categories");
             DropForeignKey("dbo.Posts_C2C", "CategoryID", "dbo.Categories");
             DropForeignKey("dbo.Categories", "ParentCategoryID", "dbo.Categories");
-            DropForeignKey("dbo.Brand_Category_Permissions", "BrandID", "dbo.Brands");
-            DropForeignKey("dbo.AffiliateClicks", "AffiliatorUserID", "dbo.Users");
-            DropForeignKey("dbo.UserDetails", "UserID", "dbo.Users");
             DropIndex("dbo.UserMedicalRecords", new[] { "AdminReviewerID" });
             DropIndex("dbo.UserMedicalRecords", new[] { "UserID" });
             DropIndex("dbo.UserLifestyleSurveys", new[] { "UserID" });
@@ -393,49 +290,31 @@
             DropIndex("dbo.MilkDonationPosts", new[] { "UserID" });
             DropIndex("dbo.Messages", new[] { "ReceiverID" });
             DropIndex("dbo.Messages", new[] { "SenderID" });
-            DropIndex("dbo.AffiliateSales", new[] { "BuyerUserID" });
-            DropIndex("dbo.AffiliateSales", new[] { "AffiliatorUserID" });
-            DropIndex("dbo.AffiliateSales", new[] { "OrderID" });
-            DropIndex("dbo.Orders", new[] { "BrandID" });
-            DropIndex("dbo.Orders", new[] { "BuyerUserID" });
-            DropIndex("dbo.OrderDetails", new[] { "ProductID" });
-            DropIndex("dbo.OrderDetails", new[] { "OrderID" });
-            DropIndex("dbo.Product_B2C_Images", new[] { "ProductID" });
+            DropIndex("dbo.UserDetails", new[] { "UserID" });
             DropIndex("dbo.Ratings", new[] { "PostID" });
             DropIndex("dbo.Ratings", new[] { "RatedUserID" });
             DropIndex("dbo.Ratings", new[] { "RaterUserID" });
             DropIndex("dbo.Post_C2C_Images", new[] { "PostID" });
+            DropIndex("dbo.Post_C2C_ExchangePreferences", new[] { "CategoryID" });
+            DropIndex("dbo.Post_C2C_ExchangePreferences", new[] { "PostID" });
             DropIndex("dbo.Posts_C2C", new[] { "CategoryID" });
             DropIndex("dbo.Posts_C2C", new[] { "UserID" });
             DropIndex("dbo.Categories", new[] { "ParentCategoryID" });
-            DropIndex("dbo.Brand_Category_Permissions", new[] { "CategoryID" });
-            DropIndex("dbo.Brand_Category_Permissions", new[] { "BrandID" });
-            DropIndex("dbo.Brands", new[] { "UserID" });
-            DropIndex("dbo.Products_B2C", new[] { "CategoryID" });
-            DropIndex("dbo.Products_B2C", new[] { "BrandID" });
-            DropIndex("dbo.UserDetails", new[] { "UserID" });
-            DropIndex("dbo.AffiliateClicks", new[] { "ProductID" });
-            DropIndex("dbo.AffiliateClicks", new[] { "AffiliatorUserID" });
             DropTable("dbo.UserMedicalRecords");
             DropTable("dbo.UserLifestyleSurveys");
+            DropTable("dbo.SystemSettings");
             DropTable("dbo.Notifications");
             DropTable("dbo.MilkDonationRequests");
             DropTable("dbo.MilkDonationPosts");
             DropTable("dbo.Messages");
-            DropTable("dbo.AffiliateSales");
-            DropTable("dbo.Orders");
-            DropTable("dbo.OrderDetails");
-            DropTable("dbo.Product_B2C_Images");
-            DropTable("dbo.Ratings");
-            DropTable("dbo.Post_C2C_Images");
-            DropTable("dbo.Posts_C2C");
-            DropTable("dbo.Categories");
-            DropTable("dbo.Brand_Category_Permissions");
-            DropTable("dbo.Brands");
-            DropTable("dbo.Products_B2C");
             DropTable("dbo.UserDetails");
             DropTable("dbo.Users");
-            DropTable("dbo.AffiliateClicks");
+            DropTable("dbo.Ratings");
+            DropTable("dbo.Post_C2C_Images");
+            DropTable("dbo.Post_C2C_ExchangePreferences");
+            DropTable("dbo.Posts_C2C");
+            DropTable("dbo.Categories");
+            DropTable("dbo.Brands");
         }
     }
 }

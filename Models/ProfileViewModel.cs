@@ -25,7 +25,7 @@ namespace B_M.Models
                 switch (MilkDonationStatus)
                 {
                     case 0: return "Chưa đăng ký tặng sữa";
-                    case 1: return "Chờ duyệt Tầng 1";
+                    case 1: return "Tầng 1";
                     case 2: return "Đã duyệt Tầng 1 (Health Verified)";
                     case 3: return "Đã duyệt Tầng 2 (Community Donor)";
                     case 4: return "Bị từ chối";
@@ -91,7 +91,7 @@ namespace B_M.Models
                 switch (MilkDonationStatus)
                 {
                     case 0: return "Chưa đăng ký";
-                    case 1: return "Chờ duyệt Tầng 1";
+                    case 1: return "Tầng 1";
                     case 2: return "Tầng 1 - Health Verified";
                     case 3: return "Tầng 2 - Community Donor";
                     case 4: return "Bị từ chối";

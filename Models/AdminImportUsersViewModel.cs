@@ -11,8 +11,8 @@ namespace B_M.Models
         public HttpPostedFileBase ExcelFile { get; set; }
 
         [Required(ErrorMessage = "Vai trò mặc định là bắt buộc")]
-        [Range(1, 3, ErrorMessage = "Vai trò không hợp lệ")]
-        public byte DefaultRole { get; set; } = 2; // Default to Mom
+        [Range(1, 2, ErrorMessage = "Vai trò không hợp lệ")]
+        public byte DefaultRole { get; set; } = 2; // Default to Client
 
         public bool IsActive { get; set; } = true;
 
@@ -32,8 +32,7 @@ namespace B_M.Models
                 switch (DefaultRole)
                 {
                     case 1: return "Quản trị viên";
-                    case 2: return "Mẹ bỉm";
-                    case 3: return "Nhãn hàng";
+                    case 2: return "Khách hàng";
                     default: return "Không xác định";
                 }
             }

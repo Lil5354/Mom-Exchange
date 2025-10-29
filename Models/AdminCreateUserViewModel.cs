@@ -33,7 +33,7 @@ namespace B_M.Models
         public string ConfirmPassword { get; set; }
 
         [Required(ErrorMessage = "Vai trò là bắt buộc")]
-        [Range(1, 3, ErrorMessage = "Vai trò không hợp lệ")]
+        [Range(1, 2, ErrorMessage = "Vai trò không hợp lệ")]
         public byte Role { get; set; }
 
         public bool IsActive { get; set; } = true;
@@ -50,8 +50,7 @@ namespace B_M.Models
                 switch (Role)
                 {
                     case 1: return "Quản trị viên";
-                    case 2: return "Mẹ bỉm";
-                    case 3: return "Nhãn hàng";
+                    case 2: return "Khách hàng";
                     default: return "Không xác định";
                 }
             }

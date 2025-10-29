@@ -38,8 +38,7 @@
                         <select name="roleFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
                             <option value="">Tất cả vai trò</option>
                             <option value="1" @(Model.RoleFilter == "1" ? "selected" : "")>Quản trị viên</option>
-                            <option value="2" @(Model.RoleFilter == "2" ? "selected" : "")>Mẹ bỉm</option>
-                            <option value="3" @(Model.RoleFilter == "3" ? "selected" : "")>Nhãn hàng</option>
+                            <option value="2" @(Model.RoleFilter == "2" ? "selected" : "")>Khách hàng</option>
                         </select>
                     </div>
                     <div>
@@ -197,12 +196,8 @@
                                                 roleClass = "badge-danger";
                                                 break;
                                             case 2:
-                                                roleName = "Mẹ bỉm";
+                                                roleName = "Khách hàng";
                                                 roleClass = "badge-warning";
-                                                break;
-                                            case 3:
-                                                roleName = "Nhãn hàng";
-                                                roleClass = "badge-info";
                                                 break;
                                             default:
                                                 roleName = "Không xác định";
@@ -234,8 +229,7 @@
                                         <select data-user-id="@user.UserID" 
                                                 style="padding: 5px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;">
                                             <option value="1" @(user.Role == 1 ? "selected" : "")>Quản trị viên</option>
-                                            <option value="2" @(user.Role == 2 ? "selected" : "")>Mẹ bỉm</option>
-                                            <option value="3" @(user.Role == 3 ? "selected" : "")>Nhãn hàng</option>
+                                            <option value="2" @(user.Role == 2 ? "selected" : "")>Khách hàng</option>
                                         </select>
                                         
                                         <a href="@Url.Action("UserDetails", "Admin", new { area = "Admin", id = user.UserID })" 

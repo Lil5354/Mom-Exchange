@@ -157,6 +157,7 @@
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MilkDonationController.cs" />
+    <Compile Include="Controllers\C2CController.cs" />
     <Compile Include="Controllers\NotificationApiController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />
@@ -169,13 +170,9 @@
     <Compile Include="Helpers\PasswordGenerator.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Filters\AdminAuthorizeAttribute.cs" />
-    <Compile Include="Migrations\202510280518124_InitialCreate.cs" />
-    <Compile Include="Migrations\202510280518124_InitialCreate.Designer.cs">
-      <DependentUpon>202510280518124_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202510280716316_FixNotificationReadAt.cs" />
-    <Compile Include="Migrations\202510280716316_FixNotificationReadAt.Designer.cs">
-      <DependentUpon>202510280716316_FixNotificationReadAt.cs</DependentUpon>
+    <Compile Include="Migrations\202510291319194_InitialCreate.cs" />
+    <Compile Include="Migrations\202510291319194_InitialCreate.Designer.cs">
+      <DependentUpon>202510291319194_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\AdminCreateUserViewModel.cs" />
     <Compile Include="Models\AdminDashboardViewModel.cs" />
@@ -185,18 +182,14 @@
     <Compile Include="Models\AdminUserEditViewModel.cs" />
     <Compile Include="Models\AdminUsersViewModel.cs" />
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Models\AffiliateClick.cs" />
-    <Compile Include="Models\AffiliateSale.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\ApplicationSetting.cs" />
     <Compile Include="Models\BackupSettingsViewModel.cs" />
     <Compile Include="Models\Brand.cs" />
-    <Compile Include="Models\BrandDetailViewModel.cs" />
-    <Compile Include="Models\BrandCategoryPermission.cs" />
+    <Compile Include="Models\PostC2CExchangePreference.cs" />
+    <Compile Include="Models\C2CViewModels.cs" />
     <Compile Include="Models\PostC2C.cs" />
     <Compile Include="Models\PostC2CImage.cs" />
-    <Compile Include="Models\ProductB2C.cs" />
-    <Compile Include="Models\ProductB2CImage.cs" />
     <Compile Include="Models\CartViewModel.cs" />
     <Compile Include="Models\Category.cs" />
     <Compile Include="Models\CategoryViewModel.cs" />
@@ -215,8 +208,6 @@
     <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Models\MilkDonationViewModel.cs" />
     <Compile Include="Models\MonitoringSettingsViewModel.cs" />
-    <Compile Include="Models\Order.cs" />
-    <Compile Include="Models\OrderDetail.cs" />
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\ProductViewModel.cs" />
     <Compile Include="Models\ProfileViewModel.cs" />
@@ -245,6 +236,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\account-style.css" />
+    <Content Include="Content\c2c-marketplace.css" />
     <Content Include="Content\milk-donation-style.css" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -321,6 +313,11 @@
     <Content Include="Views\Chat\Index.cshtml" />
     <Content Include="Views\Chat\Conversation.cshtml" />
     <Content Include="Views\Brand\Index.cshtml" />
+    <Content Include="Views\C2C\Index.cshtml" />
+    <Content Include="Views\C2C\Create.cshtml" />
+    <Content Include="Views\C2C\Edit.cshtml" />
+    <Content Include="Views\C2C\Details.cshtml" />
+    <Content Include="Views\C2C\MyPosts.cshtml" />
     <Content Include="Views\Clearance\Index.cshtml" />
     <Content Include="Views\Trade\Index.cshtml" />
     <Content Include="Views\Brand\Details.cshtml" />
@@ -374,11 +371,8 @@
     <Content Include="Scripts\jquery-3.7.0.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202510280518124_InitialCreate.resx">
-      <DependentUpon>202510280518124_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202510280716316_FixNotificationReadAt.resx">
-      <DependentUpon>202510280716316_FixNotificationReadAt.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202510291319194_InitialCreate.resx">
+      <DependentUpon>202510291319194_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

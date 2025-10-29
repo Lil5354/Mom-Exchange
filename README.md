@@ -2,7 +2,7 @@
 
 Nền tảng trao đổi và mua bán đồ dùng cho mẹ và bé - được xây dựng với ASP.NET MVC và **Entity Framework Code First**.
 FIX LỖI LOCALHOST, SET SSL FOR URL, ĐỔI ĐƯỜNG DẪN TRỎ TỚI THƯ MỤC SAU ĐÓ RUN POWERSHELL AS ADMINISTRATOR
-cd "D:\Douments\GitHub\Mom-Exchange-Web"
+cd "D:\Douments\GitHub\Mom-Exchange"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\setup-ssl.ps1
 ## 📋 Tổng quan

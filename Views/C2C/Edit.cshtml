@@ -1,0 +1,97 @@
+@model B_M.Models.C2CCreateViewModel
+@{
+    ViewBag.Title = "Chỉnh sửa tin C2C";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var id = ViewContext.RouteData.Values["id"]; 
+}
+
+<div class="container" style="padding-top:20px;">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card" style="padding:20px; border-radius:12px;">
+                <h3 style="color:#d63384;">Chỉnh sửa tin</h3>
+                @using (Html.BeginForm("Edit", "C2C", new { id = id }, FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="form-group">
+                        <label>Danh mục <span style="color:red">*</span></label>
+                        @Html.DropDownListFor(m => m.CategoryID, (IEnumerable<SelectListItem>)ViewBag.Categories, "-- Chọn danh mục --", new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(m => m.CategoryID, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <label>Tiêu đề <span style="color:red">*</span></label>
+                        @Html.TextBoxFor(m => m.Title, new { @class = "form-control", maxlength = 255, required = "required" })
+                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <label>Nội dung <span style="color:red">*</span></label>
+                        @Html.TextAreaFor(m => m.Content, 6, 0, new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(m => m.Content, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <label>Tình trạng <span style="color:red">*</span></label>
+                        @Html.DropDownListFor(m => m.Condition, (IEnumerable<SelectListItem>)ViewBag.ConditionOptions, "-- Chọn tình trạng --", new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(m => m.Condition, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <label>Hình thức đăng <span style="color:red">*</span></label>
+                        <div class="d-flex" style="gap:10px;">
+                            <label class="radio-inline"><input type="radio" name="ListingType" value="1" @(Model.ListingType == 1 ? "checked" : "") /> Chỉ bán</label>
+                            <label class="radio-inline"><input type="radio" name="ListingType" value="2" @(Model.ListingType == 2 ? "checked" : "") /> Chỉ trao đổi</label>
+                            <label class="radio-inline"><input type="radio" name="ListingType" value="3" @(Model.ListingType == 3 ? "checked" : "") /> Bán hoặc trao đổi</label>
+                        </div>
+                    </div>
+                    <div class="form-group" id="priceGroup">
+                        <label>Giá (đ) <span style="color:red">*</span></label>
+                        @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number", step = "1000", min = "0" })
+                        @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group" id="exchangePrefs" style="display:none;">
+                        <label>Danh mục muốn đổi (chọn 2-5)</label>
+                        <div class="row">
+                            @foreach (var c in (IEnumerable<SelectListItem>)ViewBag.Categories)
+                            {
+                                var checkedAttr = (Model.ExchangeCategoryIDs != null && Model.ExchangeCategoryIDs.Contains(int.Parse(c.Value))) ? "checked" : "";
+                                <div class="col-md-6">
+                                    <label style="font-weight:400;">
+                                        <input type="checkbox" name="ExchangeCategoryIDs" value="@c.Value" @checkedAttr /> @c.Text
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+                        <a href="@Url.Action("Details", new { id = id })" class="btn btn-secondary">Hủy</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleFields() {
+        var type = document.querySelector('input[name="ListingType"]:checked');
+        var priceGroup = document.getElementById('priceGroup');
+        var exchangeGroup = document.getElementById('exchangePrefs');
+        if (!type) return;
+        if (type.value === '2') {
+            priceGroup.style.display = 'none';
+            exchangeGroup.style.display = 'block';
+        } else if (type.value === '1') {
+            priceGroup.style.display = 'block';
+            exchangeGroup.style.display = 'none';
+        } else {
+            priceGroup.style.display = 'block';
+            exchangeGroup.style.display = 'block';
+        }
+    }
+    document.querySelectorAll('input[name="ListingType"]').forEach(function (r) {
+        r.addEventListener('change', toggleFields);
+    });
+    document.addEventListener('DOMContentLoaded', toggleFields);
+</script>
+
+

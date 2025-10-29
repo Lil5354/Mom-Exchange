@@ -4,7 +4,7 @@
   <Import Project="packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '''' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>
     </ProductVersion>
@@ -162,6 +162,10 @@
     <Compile Include="Controllers\ProfileController.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
+    <Compile Include="Areas\Admin\Controllers\BrandsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\CategoryController.cs" />
+    <Compile Include="Areas\Admin\Controllers\MilkDonationController.cs" />
+    <Compile Include="Areas\Admin\Controllers\MedicalRecordsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -178,7 +182,10 @@
       <DependentUpon>202510280716316_FixNotificationReadAt.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\AdminCreateUserViewModel.cs" />
+    <Compile Include="Models\AdminBrandViewModel.cs" />
+    <Compile Include="Models\AdminCategoryViewModel.cs" />
     <Compile Include="Models\AdminDashboardViewModel.cs" />
+    <Compile Include="Models\AdminMilkDonationViewModel.cs" />
     <Compile Include="Models\AdminImportUsersViewModel.cs" />
     <Compile Include="Models\AdminPostsViewModel.cs" />
     <Compile Include="Models\AdminReportsViewModel.cs" />
@@ -339,6 +346,18 @@
     <Content Include="Areas\Admin\Views\Admin\Posts.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\Reports.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\Settings.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\_CategoryTreeNode.cshtml" />
+    <Content Include="Areas\Admin\Views\Brands\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Brands\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Brands\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Brands\Permissions.cshtml" />
+    <Content Include="Areas\Admin\Views\MilkDonation\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\MilkDonation\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\MedicalRecords\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\MedicalRecords\Details.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Views\MilkDonation\LifestyleSurvey.cshtml" />
   </ItemGroup>

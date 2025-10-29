@@ -1191,5 +1191,29 @@ namespace B_M.Areas.Admin.Controllers
             }
         }
 
+        // GET: Admin/CheckRole - Kiểm tra quyền hiện tại
+        [AllowAnonymous]
+        public ActionResult CheckRole()
+        {
+            var userEmail = User.Identity.Name;
+            var sessionRole = Session["Role"];
+            var sessionActive = Session["IsActive"];
+            
+            var result = $@"
+📧 Email đăng nhập: {userEmail ?? "Chưa đăng nhập"}
+🔑 Session Role: {sessionRole ?? "null"} 
+📊 Role meaning: {(sessionRole != null && (byte)sessionRole == 1 ? "✅ Admin (có quyền)" : "❌ Không phải Admin")}
+🟢 Is Active: {sessionActive ?? "null"}
+
+💡 Cần có: Role = 1 và IsActive = True để truy cập Admin area
+
+🔗 Test URLs:
+- Admin Category: /Admin/Category
+- Admin Category Test: /Admin/Category/Test
+";
+            
+            return Content(result, "text/plain");
+        }
+
     }
 }

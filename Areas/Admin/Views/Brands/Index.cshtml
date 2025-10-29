@@ -1,0 +1,402 @@
+@model B_M.Models.AdminBrandsViewModel
+@{
+    ViewBag.Title = "Quản lý Nhãn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border-left: 4px solid;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card.total { border-left-color: #3b82f6; }
+    .stat-card.active { border-left-color: #10b981; }
+    .stat-card.users { border-left-color: #f59e0b; }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 5px;
+        background: linear-gradient(135deg, #1e293b, #475569);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .brands-table {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table {
+        margin: 0;
+    }
+
+    .table th {
+        background: #f8fafc;
+        border-top: none;
+        font-weight: 600;
+        color: #374151;
+        padding: 15px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .table td {
+        padding: 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .brand-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 2px solid #e5e7eb;
+    }
+
+    .brand-info h6 {
+        margin: 0 0 5px 0;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .brand-info small {
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .user-details h6 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .user-details small {
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #10b981;
+    }
+
+    .badge-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+    }
+
+    .badge-info {
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1px solid #3b82f6;
+    }
+
+    .btn-group .btn {
+        margin: 0 2px;
+        padding: 8px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+
+    .btn-sm {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state h4 {
+        margin-bottom: 10px;
+        color: #374151;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+    }
+</style>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-number">@Model.TotalBrands</div>
+        <div class="stat-label">
+            <i class="fas fa-store"></i> Tổng nhãn hàng
+        </div>
+    </div>
+    <div class="stat-card active">
+        <div class="stat-number">@Model.ActiveBrands</div>
+        <div class="stat-label">
+            <i class="fas fa-check-circle"></i> Đang hoạt động
+        </div>
+    </div>
+    <div class="stat-card users">
+        <div class="stat-number">@Model.BrandUsers</div>
+        <div class="stat-label">
+            <i class="fas fa-users"></i> Tài khoản Brand
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5>
+            <i class="fas fa-store"></i> Danh sách Nhãn hàng
+        </h5>
+        <a href="@Url.Action("Create")" class="btn-admin">
+            <i class="fas fa-plus"></i> Thêm nhãn hàng
+        </a>
+    </div>
+    
+    <div class="admin-card-body">
+        @if (Model.Brands.Any())
+        {
+            <div class="brands-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Logo</th>
+                            <th>Thông tin nhãn hàng</th>
+                            <th>Người dùng</th>
+                            <th>Trạng thái</th>
+                            <th>Thống kê</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var brand in Model.Brands)
+                        {
+                            <tr id="brand-@brand.BrandID">
+                                <td>
+                                    @if (!string.IsNullOrEmpty(brand.LogoUrl))
+                                    {
+                                        <img src="@brand.LogoUrl" alt="@brand.BrandName" class="brand-logo" 
+                                             onerror="this.src='/images/avatar-default.jpg'" />
+                                    }
+                                    else
+                                    {
+                                        <div class="brand-logo" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-store" style="color: #6b7280;"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="brand-info">
+                                        <h6>@brand.BrandName</h6>
+                                        @if (!string.IsNullOrEmpty(brand.Description))
+                                        {
+                                            <small>@(brand.Description.Length > 100 ? brand.Description.Substring(0, 100) + "..." : brand.Description)</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">Chưa có mô tả</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <div class="user-avatar">
+                                            @(brand.UserFullName?.Substring(0, 1).ToUpper() ?? "?")
+                                        </div>
+                                        <div class="user-details">
+                                            <h6>@brand.UserFullName</h6>
+                                            <small>@brand.UserEmail</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (brand.IsUserActive)
+                                    {
+                                        <span class="badge badge-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Bị khóa</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div style="font-size: 12px;">
+                                        <div><strong>@brand.CategoryPermissionCount</strong> danh mục</div>
+                                        <div><strong>@brand.ProductCount</strong> sản phẩm</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="@Url.Action("Edit", new { id = brand.BrandID })" 
+                                           class="btn btn-warning btn-sm" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="@Url.Action("Permissions", new { id = brand.BrandID })" 
+                                           class="btn btn-info btn-sm" title="Phân quyền danh mục">
+                                            <i class="fas fa-key"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger btn-sm" 
+                                                onclick="deleteBrand(@brand.BrandID, '@Html.Raw(brand.BrandName.Replace("'", "\\'"))')" 
+                                                title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-store"></i>
+                <h4>Chưa có nhãn hàng nào</h4>
+                <p>Nhấn nút "Thêm nhãn hàng" để tạo nhãn hàng đầu tiên</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function deleteBrand(id, name) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa nhãn hàng "${name}"?\n\nLưu ý: Không thể xóa nếu đã có sản phẩm hoặc đơn hàng.`)) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("Delete")',
+                type: 'POST',
+                data: { id: id },
+                success: function (response) {
+                    if (response.success) {
+                        // Show success message
+                        var alertHtml = '<div class="alert alert-success">' +
+                            '<i class="fas fa-check-circle"></i> ' + response.message +
+                            '</div>';
+                        $('.admin-content').prepend(alertHtml);
+
+                        // Remove the brand element
+                        $('#brand-' + id).fadeOut(400, function() {
+                            $(this).remove();
+                        });
+
+                        // Auto-hide alert after 3 seconds
+                        setTimeout(function() {
+                            $('.alert-success').fadeOut();
+                        }, 3000);
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                },
+                error: function () {
+                    alert('Có lỗi xảy ra khi xóa nhãn hàng. Vui lòng thử lại!');
+                }
+            });
+        }
+    </script>
+}
+
+

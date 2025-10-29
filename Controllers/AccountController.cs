@@ -274,6 +274,83 @@ namespace B_M.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // GET: /Account/ReloadSession - Reload session từ database
+        [AllowAnonymous]
+        public ActionResult ReloadSession()
+        {
+            try
+            {
+                // Lấy email từ OWIN authentication
+                var email = User.Identity.Name;
+                
+                if (string.IsNullOrEmpty(email))
+                {
+                    return Content("❌ Chưa đăng nhập. Vui lòng đăng nhập trước.");
+                }
+
+                // Lấy user từ database
+                var user = userRepository.GetUserByEmail(email);
+                
+                if (user == null)
+                {
+                    return Content($"❌ Không tìm thấy user với email: {email}");
+                }
+
+                // Clear session cũ
+                Session.Clear();
+
+                // Reload session từ database
+                Session["UserID"] = user.UserID;
+                Session["UserEmail"] = user.Email;
+                Session["FullName"] = user.UserDetails?.FullName ?? "User";
+                Session["Role"] = user.Role;
+                Session["IsActive"] = user.IsActive;
+
+                // Determine role text using traditional switch
+                string roleText;
+                switch (user.Role)
+                {
+                    case 1:
+                        roleText = "✅ Admin (CÓ QUYỀN truy cập trang quản lý)";
+                        break;
+                    case 2:
+                        roleText = "🟡 Mẹ bỉm (KHÔNG có quyền admin)";
+                        break;
+                    case 3:
+                        roleText = "🔵 Nhãn hàng (KHÔNG có quyền admin)";
+                        break;
+                    default:
+                        roleText = "⚫ Không xác định";
+                        break;
+                }
+
+                var result = $@"
+✅ ĐÃ RELOAD SESSION THÀNH CÔNG!
+
+📧 Email: {user.Email}
+👤 Họ tên: {user.UserDetails?.FullName ?? "Chưa cập nhật"}
+🔑 Role: {user.Role} - {roleText}
+🟢 Trạng thái: {(user.IsActive ? "Active ✅" : "Inactive ❌")}
+
+🔗 Bước tiếp theo:
+{(user.Role == 1 ? 
+    "✅ Bạn có quyền Admin! Truy cập: /Admin/Category" : 
+    "❌ Bạn chưa có quyền Admin. Cần cấp quyền trong database.")}
+
+📋 Test URLs:
+- Kiểm tra quyền: /Admin/CheckRole
+- Test route: /Admin/Category/Test
+- Trang admin: /Admin/Category
+";
+                
+                return Content(result, "text/plain");
+            }
+            catch (Exception ex)
+            {
+                return Content($"❌ Lỗi: {ex.Message}\n\nStack trace:\n{ex.StackTrace}", "text/plain");
+            }
+        }
+
         // POST: /Account/ExternalLogin
         [HttpPost]
         [AllowAnonymous]

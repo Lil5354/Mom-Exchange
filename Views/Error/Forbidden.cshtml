@@ -1,0 +1,185 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Truy cập bị từ chối";
+}
+
+<style>
+    .forbidden-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        padding: 40px 20px;
+    }
+
+    .forbidden-content {
+        text-align: center;
+        max-width: 600px;
+        background: white;
+        padding: 60px 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(245, 158, 11, 0.2);
+    }
+
+    .forbidden-icon {
+        font-size: 100px;
+        color: #f59e0b;
+        margin-bottom: 30px;
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+
+    .forbidden-title {
+        font-size: 42px;
+        font-weight: 800;
+        color: #d97706;
+        margin-bottom: 20px;
+    }
+
+    .forbidden-message {
+        font-size: 18px;
+        color: #78716c;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .forbidden-info {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        padding: 20px;
+        border-radius: 12px;
+        margin: 20px 0;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .forbidden-info i {
+        color: #f59e0b;
+        margin-right: 10px;
+    }
+
+    .forbidden-info strong {
+        color: #92400e;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #ec4899, #db2777);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+    }
+
+    .btn-secondary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+<div class="forbidden-container">
+    <div class="forbidden-content">
+        <div class="forbidden-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        
+        <h1 class="forbidden-title">403</h1>
+        <h2 style="color: #92400e; margin-bottom: 20px;">Truy cập bị từ chối</h2>
+        
+        <p class="forbidden-message">
+            Xin lỗi, bạn không có quyền truy cập vào khu vực này. 
+            Chỉ <strong>Quản trị viên (Admin)</strong> mới có thể truy cập trang quản lý.
+        </p>
+
+        <div class="forbidden-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Lưu ý:</strong> 
+            Nếu bạn nghĩ đây là nhầm lẫn, vui lòng liên hệ với quản trị viên để được cấp quyền.
+        </div>
+
+        <div class="action-buttons">
+            <a href="@Url.Action("Index", "Home")" class="btn-primary-custom">
+                <i class="fas fa-home"></i>
+                Về trang chủ
+            </a>
+            <a href="javascript:history.back()" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại
+            </a>
+        </div>
+
+        @if (Session["Role"] != null)
+        {
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #fde68a;">
+                <small style="color: #78716c;">
+                    <i class="fas fa-user-circle"></i> 
+                    Tài khoản hiện tại: <strong>@Session["FullName"]</strong>
+                    <br />
+                    <i class="fas fa-id-badge"></i> 
+                    Vai trò: 
+                    <strong>
+                        @switch ((byte)Session["Role"])
+                        {
+                            case 1:
+                                <span style="color: #dc2626;">Quản trị viên</span>
+                                break;
+                            case 2:
+                                <span style="color: #f59e0b;">Mẹ bỉm</span>
+                                break;
+                            case 3:
+                                <span style="color: #3b82f6;">Nhãn hàng</span>
+                                break;
+                            default:
+                                <span>Không xác định</span>
+                                break;
+                        }
+                    </strong>
+                </small>
+            </div>
+        }
+    </div>
+</div>
+
+
+
+
+

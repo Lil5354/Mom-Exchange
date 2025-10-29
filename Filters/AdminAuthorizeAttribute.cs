@@ -107,6 +107,7 @@ namespace B_M.Filters
                 filterContext.Result = new RedirectToRouteResult(
                     new System.Web.Routing.RouteValueDictionary
                     {
+                        { "area", "" },
                         { "controller", "Error" },
                         { "action", "Forbidden" }
                     });

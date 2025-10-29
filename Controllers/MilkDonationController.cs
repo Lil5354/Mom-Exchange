@@ -1,4 +1,4 @@
-﻿// Controllers/MilkDonationController.cs
+// Controllers/MilkDonationController.cs
 using B_M.Models;
 using B_M.Repositories;
 using System;
@@ -52,7 +52,7 @@ namespace B_M.Controllers
                     // Parse content để lấy thông tin chi tiết
                     var content = milkPost.Content ?? "";
                     var lines = content.Split('\n');
-                    
+
                     var location = ExtractValueFromContent(lines, "Địa điểm:");
                     var dateStr = ExtractValueFromContent(lines, "Ngày vắt:");
                     var dietInfo = ExtractValueFromContent(lines, "Chế độ ăn:");
@@ -60,7 +60,7 @@ namespace B_M.Controllers
                     var note = ExtractValueFromContent(lines, "Ghi chú:");
 
                     DateTime.TryParseExact(dateStr, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime expressionDate);
-                    
+
                     posts.Add(new MilkDonationPostViewModel
                     {
                         Id = (int)milkPost.PostID,
@@ -89,8 +89,8 @@ namespace B_M.Controllers
             catch (Exception ex)
             {
                 // Fallback to sample data on error
-            var posts = GetSamplePosts();
-            return View(posts);
+                var posts = GetSamplePosts();
+                return View(posts);
             }
         }
 
@@ -102,7 +102,7 @@ namespace B_M.Controllers
                 // Lấy user hiện tại để kiểm tra request status
                 var userIdentity = User.Identity.Name;
                 var currentUser = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (currentUser == null)
                 {
                     return RedirectToAction("Login", "Account");
@@ -118,7 +118,7 @@ namespace B_M.Controllers
                 {
                     var content = post.Content ?? "";
                     var lines = content.Split('\n');
-                    
+
                     var location = ExtractValueFromContent(lines, "Địa điểm:");
                     var dateStr = ExtractValueFromContent(lines, "Ngày vắt:");
                     var dietInfo = ExtractValueFromContent(lines, "Chế độ ăn:");
@@ -126,11 +126,11 @@ namespace B_M.Controllers
                     var note = ExtractValueFromContent(lines, "Ghi chú:");
 
                     DateTime.TryParseExact(dateStr, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime expressionDate);
-                    
+
                     // Kiểm tra xem user hiện tại đã gửi request chưa
                     var existingRequest = db.MilkDonationRequests
                         .FirstOrDefault(r => r.PostID == id && r.RecipientUserID == currentUser.UserID);
-                    
+
                     var viewModel = new MilkDonationPostViewModel
                     {
                         Id = (int)post.PostID,
@@ -165,10 +165,10 @@ namespace B_M.Controllers
                 // Fallback to sample data on error
                 var samplePost = GetSamplePosts().FirstOrDefault(p => p.Id == id);
                 if (samplePost == null)
-            {
+                {
                     TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
                     return RedirectToAction("Index");
-            }
+                }
                 return View(samplePost);
             }
         }
@@ -233,7 +233,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null)
                 {
                     if (Request.IsAjaxRequest())
@@ -298,7 +298,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null)
                 {
                     ModelState.AddModelError("", "Không tìm thấy thông tin người dùng.");
@@ -320,7 +320,7 @@ namespace B_M.Controllers
                     user.MilkDonationStatus = 4;
                     userRepository.UpdateUser(user);
                     db.SaveChanges();
-                    
+
                     if (Request.IsAjaxRequest())
                     {
                         return Json(new { success = false, message = "Rất tiếc, bạn không đủ điều kiện tham gia cho tặng sữa mẹ do không đáp ứng các cam kết an toàn cần thiết." });
@@ -343,21 +343,21 @@ namespace B_M.Controllers
                 };
 
                 db.UserLifestyleSurveys.Add(survey);
-                
+
                 // Cập nhật trạng thái user thành BasicDeclared (Tầng 1) - KHÔNG cần chờ duyệt
                 if (user.MilkDonationStatus == 0)
                 {
                     user.MilkDonationStatus = 1; // BasicDeclared - Tầng 1 đã hoàn thành
                     userRepository.UpdateUser(user);
                 }
-                
+
                 db.SaveChanges();
 
                 if (Request.IsAjaxRequest())
                 {
                     return Json(new { success = true, message = "Hoàn thành khai báo y tế cơ bản! Bạn đã trở thành Người cho tặng Tầng 1." });
                 }
-                
+
                 TempData["SuccessMessage"] = "Hoàn thành khảo sát lối sống thành công! Bạn đã đạt Tầng 1 và có thể đăng bài tặng sữa ngay. Muốn nâng cấp lên Tầng 2, hãy upload hồ sơ y tế.";
                 return RedirectToAction("CreatePost");
             }
@@ -377,7 +377,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null)
                 {
                     if (Request.IsAjaxRequest())
@@ -448,7 +448,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null)
                 {
                     TempData["ErrorMessage"] = "Không tìm thấy thông tin người dùng.";
@@ -458,7 +458,7 @@ namespace B_M.Controllers
                 // Validate file
                 string[] allowedExtensions = { ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx" };
                 string fileExtension = Path.GetExtension(medicalFile.FileName).ToLower();
-                
+
                 if (!allowedExtensions.Contains(fileExtension))
                 {
                     if (Request.IsAjaxRequest())
@@ -483,7 +483,7 @@ namespace B_M.Controllers
                 // Save file
                 string fileName = $"medical_{user.UserID}_{DateTime.Now:yyyyMMddHHmmss}{fileExtension}";
                 string uploadPath = Server.MapPath("~/App_Data/MedicalRecords/");
-                
+
                 if (!Directory.Exists(uploadPath))
                 {
                     Directory.CreateDirectory(uploadPath);
@@ -503,7 +503,7 @@ namespace B_M.Controllers
                 };
 
                 db.UserMedicalRecords.Add(record);
-                
+
                 // Cập nhật trạng thái user thành PendingVerification nếu chưa
                 if (user.MilkDonationStatus < 2)
                 {
@@ -541,7 +541,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account");
@@ -586,7 +586,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null || user.MilkDonationStatus == 0 || user.MilkDonationStatus == 4)
                 {
                     TempData["ErrorMessage"] = "Bạn cần hoàn thành khai báo lối sống trước khi đăng bài tặng sữa.";
@@ -638,7 +638,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account");
@@ -654,7 +654,7 @@ namespace B_M.Controllers
                 {
                     var content = post.Content ?? "";
                     var lines = content.Split('\n');
-                    
+
                     var location = ExtractValueFromContent(lines, "Địa điểm:");
                     var dateStr = ExtractValueFromContent(lines, "Ngày vắt:");
                     var dietInfo = ExtractValueFromContent(lines, "Chế độ ăn:");
@@ -662,7 +662,7 @@ namespace B_M.Controllers
                     var note = ExtractValueFromContent(lines, "Ghi chú:");
 
                     DateTime.TryParseExact(dateStr, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime expressionDate);
-                    
+
                     posts.Add(new MilkDonationPostViewModel
                     {
                         Id = (int)post.PostID,
@@ -700,7 +700,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null)
                 {
                     return Json(new { success = false, message = "Không tìm thấy thông tin người dùng." });
@@ -734,7 +734,7 @@ namespace B_M.Controllers
                 // Lấy user từ Identity.Name - có thể là email hoặc username
                 var userIdentity = User.Identity.Name;
                 var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (user == null)
                 {
                     return Json(new { success = false, message = "Không tìm thấy thông tin người dùng." });
@@ -765,7 +765,7 @@ namespace B_M.Controllers
             {
                 var userIdentity = User.Identity.Name;
                 var currentUser = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (currentUser == null)
                 {
                     return RedirectToAction("Login", "Account");
@@ -844,7 +844,7 @@ namespace B_M.Controllers
             {
                 var userIdentity = User.Identity.Name;
                 var currentUser = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (currentUser == null)
                 {
                     if (Request.IsAjaxRequest())
@@ -897,7 +897,7 @@ namespace B_M.Controllers
                     db.SaveChanges();
 
                     // Send notification to donor
-                    SendNotification(model.DonorUserID, "Yêu cầu nhận sữa mới", 
+                    SendNotification(model.DonorUserID, "Yêu cầu nhận sữa mới",
                         "Bạn có yêu cầu nhận sữa mới từ " + (currentUser.UserDetails?.FullName ?? currentUser.UserName) + ".", 1, model.PostID, request.RequestID);
 
                     if (Request.IsAjaxRequest())
@@ -933,7 +933,7 @@ namespace B_M.Controllers
             {
                 var userIdentity = User.Identity.Name;
                 var currentUser = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (currentUser == null)
                 {
                     return RedirectToAction("Login", "Account");
@@ -1015,7 +1015,7 @@ namespace B_M.Controllers
             {
                 var userIdentity = User.Identity.Name;
                 var currentUser = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (currentUser == null)
                 {
                     if (Request.IsAjaxRequest())
@@ -1088,19 +1088,20 @@ namespace B_M.Controllers
                         transaction.Commit();
 
                         // Send notifications
-                        SendNotification(request.RecipientUserID, "Yêu cầu được chấp nhận", 
+                        SendNotification(request.RecipientUserID, "Yêu cầu được chấp nhận",
                             "Yêu cầu nhận sữa của bạn đã được chấp nhận! Người cho sẽ liên hệ với bạn qua chat.", 2, request.PostID, request.RequestID);
-                        
+
                         foreach (var otherRequest in otherRequests)
                         {
-                            SendNotification(otherRequest.RecipientUserID, "Yêu cầu bị từ chối", 
+                            SendNotification(otherRequest.RecipientUserID, "Yêu cầu bị từ chối",
                                 "Rất tiếc, người cho đã tặng sữa cho một mẹ khác. Chúc bạn may mắn lần sau.", 3, request.PostID, otherRequest.RequestID);
                         }
 
                         if (Request.IsAjaxRequest())
                         {
-                            return Json(new { 
-                                success = true, 
+                            return Json(new
+                            {
+                                success = true,
                                 message = "Chấp nhận yêu cầu thành công! Bài đăng đã được đóng và chat sẽ được mở.",
                                 redirectUrl = Url.Action("Conversation", "Chat", new { userId = request.RecipientUserID })
                             });
@@ -1136,7 +1137,7 @@ namespace B_M.Controllers
             {
                 var userIdentity = User.Identity.Name;
                 var currentUser = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
-                
+
                 if (currentUser == null)
                 {
                     if (Request.IsAjaxRequest())
@@ -1240,4 +1241,4 @@ namespace B_M.Controllers
             return "";
         }
     }
-}
+}   

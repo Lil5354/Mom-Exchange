@@ -1,0 +1,425 @@
+@model B_M.Models.AdminBrandViewModel
+@{
+    ViewBag.Title = "Chỉnh sửa Nhãn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .form-card {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #374151;
+    }
+
+    .required::after {
+        content: " *";
+        color: #dc2626;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-help {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 5px;
+    }
+
+    .btn-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        text-decoration: none;
+        color: #374151;
+    }
+
+    .text-danger {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+    }
+
+    .brand-info {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .brand-info h6 {
+        margin: 0 0 10px 0;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .brand-info p {
+        margin: 5px 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .logo-preview {
+        display: none;
+        margin-top: 10px;
+        padding: 10px;
+        border: 2px dashed #e5e7eb;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .logo-preview img {
+        max-width: 200px;
+        max-height: 100px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .current-logo {
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .current-logo img {
+        max-width: 150px;
+        max-height: 75px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 2px solid #e5e7eb;
+    }
+
+    .user-search-result {
+        background: #f8fafc;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .user-details h6 {
+        margin: 0;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .user-details small {
+        color: #64748b;
+    }
+
+    .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-left: auto;
+    }
+
+    .badge-success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #10b981;
+    }
+</style>
+
+<div class="admin-card form-card">
+    <div class="admin-card-header">
+        <h5>
+            <i class="fas fa-edit"></i>
+            Chỉnh sửa Nhãn hàng
+        </h5>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+    
+    <div class="admin-card-body">
+        <div class="brand-info">
+            <h6><i class="fas fa-info-circle"></i> Thông tin nhãn hàng</h6>
+            <p><strong>ID:</strong> #@Model.BrandID</p>
+            <p><strong>Ngày tạo:</strong> <span id="createdDate">Đang tải...</span></p>
+        </div>
+
+        @if (ViewData.ModelState.Any(x => x.Value.Errors.Count > 0))
+        {
+            <div class="alert alert-danger">
+                <strong>Có lỗi xảy ra:</strong>
+                <ul style="margin: 5px 0 0 20px;">
+                    @foreach (var modelError in ViewData.ModelState.SelectMany(x => x.Value.Errors))
+                    {
+                        <li>@modelError.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @using (Html.BeginForm("Edit", "Brands", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.BrandID)
+
+            <div class="form-group">
+                <label class="required">Tên nhãn hàng</label>
+                @Html.TextBoxFor(m => m.BrandName, new { 
+                    @class = "form-control", 
+                    placeholder = "Nhập tên nhãn hàng",
+                    autofocus = "autofocus"
+                })
+                @Html.ValidationMessageFor(m => m.BrandName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label>Mô tả nhãn hàng</label>
+                @Html.TextAreaFor(m => m.Description, new { 
+                    @class = "form-control", 
+                    rows = 4,
+                    placeholder = "Mô tả về nhãn hàng, sản phẩm chính, giá trị thương hiệu..."
+                })
+                <div class="form-help">
+                    <i class="fas fa-lightbulb"></i>
+                    Mô tả chi tiết sẽ giúp khách hàng hiểu rõ hơn về nhãn hàng
+                </div>
+                @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label>URL Logo</label>
+                @Html.TextBoxFor(m => m.LogoUrl, new { 
+                    @class = "form-control", 
+                    placeholder = "https://example.com/logo.png",
+                    onblur = "previewLogo(this.value)"
+                })
+                <div class="form-help">
+                    <i class="fas fa-image"></i>
+                    URL đến hình ảnh logo của nhãn hàng (định dạng: jpg, png, gif)
+                </div>
+                @Html.ValidationMessageFor(m => m.LogoUrl, "", new { @class = "text-danger" })
+                
+                @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                {
+                    <div class="current-logo">
+                        <p style="margin-bottom: 5px; font-size: 12px; color: #64748b;">
+                            <strong>Logo hiện tại:</strong>
+                        </p>
+                        <img src="@Model.LogoUrl" alt="Current Logo" onerror="this.src='/images/avatar-default.jpg'" />
+                    </div>
+                }
+                
+                <div class="logo-preview" id="logoPreview">
+                    <p style="margin-bottom: 10px;"><strong>Xem trước logo mới:</strong></p>
+                    <img id="previewImage" src="" alt="Logo preview" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="required">Tài khoản người dùng</label>
+                @Html.DropDownListFor(m => m.UserID, (SelectList)ViewBag.AllBrandUsers,
+                    "-- Chọn tài khoản có quyền Brand --", 
+                    new { @class = "form-control", onchange = "loadUserInfo(this.value)" })
+                <div class="form-help">
+                    <i class="fas fa-user"></i>
+                    Có thể thay đổi tài khoản liên kết (chỉ tài khoản Role = Brand)
+                </div>
+                @Html.ValidationMessageFor(m => m.UserID, "", new { @class = "text-danger" })
+                
+                <div class="user-search-result" id="userInfo">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">@(Model.UserFullName?.Substring(0, 1).ToUpper() ?? "?")</div>
+                        <div class="user-details">
+                            <h6 id="userFullName">@Model.UserFullName</h6>
+                            <small id="userEmail">@Model.UserEmail</small>
+                        </div>
+                        <span class="badge badge-success">Brand User</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Cập nhật nhãn hàng
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy bỏ
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function previewLogo(url) {
+            var preview = document.getElementById('logoPreview');
+            var image = document.getElementById('previewImage');
+            
+            if (url && url.trim() !== '' && url !== '@Model.LogoUrl') {
+                image.src = url;
+                image.onload = function() {
+                    preview.style.display = 'block';
+                };
+                image.onerror = function() {
+                    preview.style.display = 'none';
+                    alert('Không thể tải hình ảnh từ URL này. Vui lòng kiểm tra lại.');
+                };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function loadUserInfo(userId) {
+            var userInfo = document.getElementById('userInfo');
+            
+            if (!userId || userId === '') {
+                userInfo.style.display = 'none';
+                return;
+            }
+
+            // Find user info from dropdown options
+            var select = document.getElementById('UserID');
+            var selectedOption = select.options[select.selectedIndex];
+            
+            if (selectedOption && selectedOption.text !== '-- Chọn tài khoản có quyền Brand --') {
+                var userText = selectedOption.text;
+                
+                // Parse user info (format: "Full Name (email@domain.com)")
+                var match = userText.match(/^(.+?)\s*\((.+?)\)$/);
+                
+                if (match) {
+                    var fullName = match[1].trim();
+                    var email = match[2].trim();
+                    
+                    document.getElementById('userFullName').textContent = fullName;
+                    document.getElementById('userEmail').textContent = email;
+                    document.getElementById('userAvatar').textContent = fullName.charAt(0).toUpperCase();
+                    userInfo.style.display = 'block';
+                } else {
+                    userInfo.style.display = 'none';
+                }
+            } else {
+                userInfo.style.display = 'none';
+            }
+        }
+
+        // Initialize on page load
+        $(document).ready(function() {
+            // Show current user info
+            var currentUserId = $('#UserID').val();
+            if (currentUserId) {
+                $('#userInfo').show();
+            }
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var brandName = document.getElementById('BrandName').value.trim();
+            var userId = document.getElementById('UserID').value;
+
+            if (!brandName) {
+                alert('Vui lòng nhập tên nhãn hàng!');
+                document.getElementById('BrandName').focus();
+                e.preventDefault();
+                return false;
+            }
+
+            if (!userId || userId === '') {
+                alert('Vui lòng chọn tài khoản người dùng!');
+                document.getElementById('UserID').focus();
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+}
+
+

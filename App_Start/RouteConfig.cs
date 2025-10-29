@@ -28,7 +28,8 @@ namespace B_M
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional },
+                namespaces: new[] { "B_M.Controllers" } // Exclude Admin area namespace
             );
         }
     }

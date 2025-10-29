@@ -40,6 +40,32 @@ namespace B_M.Controllers
             return View(cart);
         }
 
+        // GET: Cart/Summary - AJAX endpoint for cart badge
+        [AllowAnonymous]
+        public JsonResult Summary()
+        {
+            try
+            {
+                var cart = GetCart();
+                return Json(new
+                {
+                    Success = true,
+                    ItemCount = cart.TotalItems,
+                    TotalAmount = cart.TotalAmount
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ERROR in Cart Summary: {ex.Message}");
+                return Json(new
+                {
+                    Success = false,
+                    ItemCount = 0,
+                    TotalAmount = 0
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         // POST: Cart/Add
       
         // POST: Cart/UpdateQuantity

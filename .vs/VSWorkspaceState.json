@@ -4,8 +4,8 @@
     "\\Areas",
     "\\Areas\\Admin",
     "\\Areas\\Admin\\Controllers",
-    "\\Models"
+    "\\Migrations"
   ],
-  "SelectedNode": "\\B\u0026M.sln",
+  "SelectedNode": "\\Migrations\\202510280518124_InitialCreate.cs",
   "PreviewInSolutionExplorer": false
 }

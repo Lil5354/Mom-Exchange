@@ -1,4 +1,5 @@
-﻿// Models/Product.cs
+﻿
+// Models/Product.cs
 using System.Collections.Generic;
 
 namespace B_M.Models // Namespace của bạn có thể khác

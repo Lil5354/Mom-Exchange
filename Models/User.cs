@@ -21,7 +21,7 @@ namespace B_M.Models
         [Required]
         public string PasswordHash { get; set; }
 
-        // Role: 1 = Admin, 2 = Mom, 3 = Brand
+        // Role: 1 = Admin, 2 = User (Client)
         public byte Role { get; set; }
 
         public bool IsActive { get; set; }

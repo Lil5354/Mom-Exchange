@@ -240,8 +240,8 @@ namespace B_M.Areas.Admin.Controllers
                     return Json(new { success = false, message = "Bạn không thể thay đổi quyền của chính mình." });
                 }
 
-                // Kiểm tra role hợp lệ
-                if (NewRole < 1 || NewRole > 3)
+                // Kiểm tra role hợp lệ (chỉ còn Admin=1 và User=2)
+                if (NewRole < 1 || NewRole > 2)
                 {
                     return Json(new { success = false, message = "Quyền không hợp lệ." });
                 }
@@ -479,12 +479,11 @@ namespace B_M.Areas.Admin.Controllers
             var users = userRepository.GetAllUsers();
             return new
             {
-                labels = new[] { "Quản trị viên", "Mẹ bỉm", "Nhãn hàng" },
+                labels = new[] { "Quản trị viên", "Người dùng" },
                 series = new[] 
                 {
                     users.Count(u => u.Role == 1),
-                    users.Count(u => u.Role == 2),
-                    users.Count(u => u.Role == 3)
+                    users.Count(u => u.Role == 2)
                 }
             };
         }
@@ -659,8 +658,8 @@ namespace B_M.Areas.Admin.Controllers
                 var result = $"DATABASE TEST SUCCESS!<br/>" +
                            $"Found {users.Count} users<br/>" +
                            $"Active users: {users.Count(u => u.IsActive)}<br/>" +
-                           $"Mom users: {users.Count(u => u.Role == 2)}<br/>" +
-                           $"Brand users: {users.Count(u => u.Role == 3)}<br/>" +
+                           $"Admin users: {users.Count(u => u.Role == 1)}<br/>" +
+                           $"Regular users: {users.Count(u => u.Role == 2)}<br/>" +
                            $"Time: {DateTime.Now}";
                 
                 return Content(result);
@@ -765,8 +764,8 @@ namespace B_M.Areas.Admin.Controllers
                 TotalUsers = users.Count,
                 ActiveUsers = users.Count(u => u.IsActive),
                 AdminUsers = users.Count(u => u.Role == 1),
-                MomUsers = users.Count(u => u.Role == 2),
-                BrandUsers = users.Count(u => u.Role == 3),
+                MomUsers = users.Count(u => u.Role == 2), // Giờ đây là User thay vì Mom
+                BrandUsers = 0, // Không còn Brand role, set về 0
                 NewUsersThisMonth = users.Count(u => u.CreatedAt >= DateTime.Now.AddMonths(-1)),
                 RecentUsers = users.OrderByDescending(u => u.CreatedAt).Take(5).ToList()
             };
@@ -778,8 +777,7 @@ namespace B_M.Areas.Admin.Controllers
             switch (role)
             {
                 case 1: return "Quản trị viên";
-                case 2: return "Mẹ bỉm";
-                case 3: return "Nhãn hàng";
+                case 2: return "Người dùng";
                 default: return "Không xác định";
             }
         }
@@ -789,8 +787,7 @@ namespace B_M.Areas.Admin.Controllers
             switch (role)
             {
                 case 1: return "badge-danger";
-                case 2: return "badge-warning";
-                case 3: return "badge-info";
+                case 2: return "badge-primary";
                 default: return "badge-secondary";
             }
         }
@@ -936,7 +933,7 @@ namespace B_M.Areas.Admin.Controllers
             {
                 var viewModel = new B_M.Models.AdminCreateUserViewModel
                 {
-                    Role = 2, // Default to Mom
+                    Role = 2, // Default to User
                     IsActive = true,
                     SendEmailNotification = false,
                     GenerateRandomPassword = false
@@ -1076,7 +1073,7 @@ namespace B_M.Areas.Admin.Controllers
             {
                 var viewModel = new B_M.Models.AdminImportUsersViewModel
                 {
-                    DefaultRole = 2, // Default to Mom
+                    DefaultRole = 2, // Default to User
                     IsActive = true,
                     SendEmailNotification = false,
                     GenerateRandomPassword = true,

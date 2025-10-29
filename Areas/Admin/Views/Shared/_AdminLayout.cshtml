@@ -759,9 +759,6 @@
                 <a href="@Url.Action("Index", "Category", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Category" ? "active" : "")">
                     <i class="fas fa-folder-tree"></i> Quản lý Danh mục
                 </a>
-                <a href="@Url.Action("Index", "Brands", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Brands" ? "active" : "")">
-                    <i class="fas fa-store"></i> Quản lý Nhãn hàng
-                </a>
                 <a href="@Url.Action("Index", "MedicalRecords", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "MedicalRecords" ? "active" : "")">
                     <i class="fas fa-file-medical"></i> Duyệt Xác Thực Tầng 2
                 </a>

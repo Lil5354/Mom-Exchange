@@ -266,10 +266,10 @@ namespace B_M.Areas.Admin.Controllers
                     return Json(new { success = false, message = "Không thể xóa danh mục có danh mục con!" });
                 }
 
-                // Check if has products or posts
-                if (db.ProductB2Cs.Any(p => p.CategoryID == id) || db.PostC2Cs.Any(p => p.CategoryID == id))
+                // Check if has posts (ProductB2C đã được xóa)
+                if (db.PostC2Cs.Any(p => p.CategoryID == id))
                 {
-                    return Json(new { success = false, message = "Không thể xóa danh mục đã có sản phẩm hoặc bài đăng!" });
+                    return Json(new { success = false, message = "Không thể xóa danh mục đã có bài đăng!" });
                 }
 
                 // Remove related permissions first

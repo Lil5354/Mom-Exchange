@@ -1,0 +1,259 @@
+@model B_M.Models.AdminMilkPostDetailViewModel
+@{
+    ViewBag.Title = "Chi Tiết Bài Đăng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-main-content">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="fas fa-file-alt text-primary"></i> Chi Tiết Bài Đăng
+                </h1>
+                <div class="page-actions">
+                    <a href="@Url.Action("Index", "MedicalRecords", new { area = "Admin" })" 
+                       class="btn btn-outline-secondary mr-2">
+                        <i class="fas fa-file-medical"></i> Quay lại Duyệt Xác Thực
+                    </a>
+                    <a href="@Url.Action("Index", "MilkDonation", new { Area = "Admin" })" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+            </div>
+        }
+
+        <div class="row">
+            <!-- Left: Donor Info -->
+            <div class="col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <i class="fas fa-user"></i> Thông Tin Người Đăng
+                    </div>
+                    <div class="admin-card-body text-center">
+                        <img src="@(Model.DonorAvatarUrl ?? "/images/avatar-default.jpg")" 
+                             alt="Avatar" 
+                             class="rounded-circle mb-3"
+                             style="width: 100px; height: 100px; object-fit: cover;">
+                        <h5 class="mb-1">@Model.DonorName</h5>
+                        <p class="text-muted mb-3">@Model.DonorEmail</p>
+                        
+                        <span class="badge @Model.VerificationTierClass mb-2">@Model.VerificationTierText</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Post Details -->
+            <div class="col-lg-8">
+                <!-- Post Info -->
+                <div class="admin-card mb-4">
+                    <div class="admin-card-header">
+                        <i class="fas fa-baby"></i> Chi Tiết Sữa Mẹ
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Địa điểm:</strong><br/>
+                                <i class="fas fa-map-marker-alt text-danger"></i> @Model.Location
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Ngày vắt:</strong><br/>
+                                <i class="fas fa-calendar text-primary"></i> @Model.DateOfExpression.ToString("dd/MM/yyyy")
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Tầng xác thực:</strong><br/>
+                                <span class="badge @Model.VerificationTierClass">@Model.VerificationTierText</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Trạng thái:</strong><br/>
+                                <span class="badge @Model.StatusClass">@Model.StatusText</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <strong>Chế độ ăn:</strong><br/>
+                            <p class="mb-0 text-secondary">@Model.DietInfo</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Cách bảo quản:</strong><br/>
+                            <p class="mb-0 text-secondary">@Model.StorageInfo</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <div class="mb-3">
+                                <strong>Ghi chú:</strong><br/>
+                                <p class="mb-0 text-secondary">@Model.Note</p>
+                            </div>
+                        }
+                        <hr>
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Đăng ngày: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="admin-card">
+                    <div class="admin-card-header bg-primary text-white">
+                        <i class="fas fa-clipboard-check"></i> Thao Tác
+                    </div>
+                    <div class="admin-card-body">
+                        @if (Model.Status == 2)
+                        {
+                            <button onclick="approvePost(@Model.PostID)" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle"></i> Duyệt Bài Đăng
+                            </button>
+                        }
+                        else
+                        {
+                            <button onclick="hidePost(@Model.PostID)" class="btn btn-warning btn-lg mr-2">
+                                <i class="fas fa-eye-slash"></i> Ẩn Bài Đăng
+                            </button>
+                        }
+                        <button onclick="deletePost(@Model.PostID)" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash"></i> Xóa Bài Đăng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+function approvePost(postId) {
+    if (!confirm('Duyệt bài đăng này?')) return;
+    
+    $.ajax({
+        url: '@Url.Action("ApprovePost", "MilkDonation", new { Area = "Admin" })',
+        type: 'POST',
+        data: { postId: postId },
+        success: function(response) {
+            if (response.success) {
+                alert('✅ ' + response.message);
+                location.reload();
+            } else {
+                alert('❌ ' + response.message);
+            }
+        },
+        error: function() {
+            alert('❌ Lỗi xảy ra');
+        }
+    });
+}
+
+function hidePost(postId) {
+    var reason = prompt('Lý do ẩn bài đăng:');
+    if (!reason) return;
+    
+    if (!confirm('Ẩn bài đăng này?')) return;
+    
+    $.ajax({
+        url: '@Url.Action("HidePost", "MilkDonation", new { Area = "Admin" })',
+        type: 'POST',
+        data: { postId: postId, reason: reason },
+        success: function(response) {
+            if (response.success) {
+                alert('✅ ' + response.message);
+                location.reload();
+            } else {
+                alert('❌ ' + response.message);
+            }
+        },
+        error: function() {
+            alert('❌ Lỗi xảy ra');
+        }
+    });
+}
+
+function deletePost(postId) {
+    var reason = prompt('Lý do xóa bài đăng:');
+    if (!reason) return;
+    
+    if (!confirm('⚠️ XÓA VĨNH VIỄN bài đăng này?')) return;
+    
+    $.ajax({
+        url: '@Url.Action("DeletePost", "MilkDonation", new { Area = "Admin" })',
+        type: 'POST',
+        data: { postId: postId, reason: reason },
+        success: function(response) {
+            if (response.success) {
+                alert('✅ ' + response.message);
+                window.location.href = '@Url.Action("Index", "MilkDonation", new { Area = "Admin" })';
+            } else {
+                alert('❌ ' + response.message);
+            }
+        },
+        error: function() {
+            alert('❌ Lỗi xảy ra');
+        }
+    });
+}
+</script>
+}
+
+<style>
+    .page-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .badge {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    .badge.tier-basic {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge.tier-verified {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge.tier-none {
+        background-color: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        color: #dc2626;
+    }
+
+    .btn-lg {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+</style>

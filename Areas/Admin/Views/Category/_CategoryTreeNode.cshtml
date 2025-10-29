@@ -1,0 +1,80 @@
+@model B_M.Models.CategoryTreeNode
+
+<div class="tree-node level-@Model.Level" id="category-@Model.CategoryID">
+    <div class="tree-item level-@Model.Level">
+        @if (Model.Children.Any())
+        {
+            <i class="fas fa-chevron-right toggle-icon"></i>
+        }
+        else
+        {
+            <span style="width: 20px;"></span>
+        }
+
+        <div class="category-icon" style="background: linear-gradient(135deg, 
+            @switch(Model.Level)
+            {
+                case 0: <text>#3b82f6, #2563eb</text>
+                    break;
+                case 1: <text>#10b981, #059669</text>
+                    break;
+                default: <text>#f59e0b, #d97706</text>
+                    break;
+            });">
+            <i class="fas @switch(Model.Level)
+            {
+                case 0: <text>fa-folder</text>
+                    break;
+                case 1: <text>fa-folder-open</text>
+                    break;
+                default: <text>fa-file-alt</text>
+                    break;
+            }"></i>
+        </div>
+
+        <div class="category-content">
+            <div class="category-name">@Model.CategoryName</div>
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="category-desc">@Model.Description</div>
+            }
+        </div>
+
+        <div class="category-badges">
+            @if (Model.IsB2CEnabled)
+            {
+                <span class="badge b2c">B2C</span>
+            }
+            @if (Model.IsC2CEnabled)
+            {
+                <span class="badge c2c">C2C</span>
+            }
+            @if (Model.Children.Count > 0)
+            {
+                <span class="badge count">@Model.Children.Count con</span>
+            }
+        </div>
+
+        <div class="tree-actions">
+            <a href="@Url.Action("Edit", new { id = Model.CategoryID })" class="btn-sm btn-edit" title="Chỉnh sửa">
+                <i class="fas fa-edit"></i>
+            </a>
+            <a href="@Url.Action("Create", new { parentId = Model.CategoryID })" class="btn-sm btn-add" title="Thêm danh mục con">
+                <i class="fas fa-plus"></i>
+            </a>
+            <button type="button" class="btn-sm btn-delete" onclick="deleteCategory(@Model.CategoryID, '@Html.Raw(Model.CategoryName.Replace("'", "\\'"))')" title="Xóa">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    @if (Model.Children.Any())
+    {
+        <div class="tree-children" style="display: none;">
+            @foreach (var subCategory in Model.Children)
+            {
+                @Html.Partial("_CategoryTreeNode", subCategory)
+            }
+        </div>
+    }
+</div>

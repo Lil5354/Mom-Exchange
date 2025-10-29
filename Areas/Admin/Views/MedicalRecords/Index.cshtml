@@ -1,0 +1,259 @@
+@model B_M.Models.AdminMedicalRecordsListViewModel
+@{
+    ViewBag.Title = "Duyệt Xác Thực Tầng 2";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-main-content">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="fas fa-file-medical text-primary"></i> Duyệt Xác Thực Tầng 2 - Hồ Sơ Y Tế
+                </h1>
+                <div class="page-actions">
+                    <a href="@Url.Action("Index", "MilkDonation", new { area = "Admin" })" 
+                       class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-baby"></i> Quản Lý Bài Đăng
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+            </div>
+        }
+
+        <!-- Filters -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <i class="fas fa-filter"></i> Lọc Hồ Sơ
+            </div>
+            <div class="admin-card-body">
+                <form method="get" class="form-inline">
+                    <div class="form-group mr-3">
+                        <label class="mr-2">Trạng thái:</label>
+                        <select name="statusFilter" class="form-control" onchange="this.form.submit()">
+                            <option value="">Tất cả</option>
+                            <option value="0" @(Model.StatusFilter == 0 ? "selected" : "")>Đang chờ duyệt</option>
+                            <option value="1" @(Model.StatusFilter == 1 ? "selected" : "")>Đã được duyệt</option>
+                            <option value="2" @(Model.StatusFilter == 2 ? "selected" : "")>Bị từ chối</option>
+                        </select>
+                    </div>
+                    <a href="@Url.Action("Index", "MedicalRecords", new { Area = "Admin" })" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> Reset
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Records List -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                Danh Sách Hồ Sơ (@Model.TotalRecords)
+            </div>
+            <div class="admin-card-body">
+                @if (Model.Records != null && Model.Records.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="50">ID</th>
+                                    <th>Người nộp</th>
+                                    <th>Tên file</th>
+                                    <th width="120">Ngày nộp</th>
+                                    <th width="150">Trạng thái hồ sơ</th>
+                                    <th width="150">Trạng thái user</th>
+                                    <th width="120">Người duyệt</th>
+                                    <th width="150" class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var record in Model.Records)
+                                {
+                                    <tr>
+                                        <td>@record.RecordID</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@(record.UserAvatarUrl ?? "/images/avatar-default.jpg")" 
+                                                     alt="Avatar" 
+                                                     class="rounded-circle mr-2"
+                                                     style="width: 40px; height: 40px; object-fit: cover;">
+                                                <div>
+                                                    <strong>@record.UserName</strong><br/>
+                                                    <small class="text-muted">@record.UserEmail</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-file-pdf text-danger"></i>
+                                            @record.FileName
+                                        </td>
+                                        <td>@record.UploadedAt.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <span class="badge @record.VerificationStatusClass">@record.VerificationStatusText</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge @switch(record.UserMilkDonationStatus)
+                                            {
+                                                case 1: <text>badge-warning</text>
+                                                    break;
+                                                case 2: <text>badge-info</text>
+                                                    break;
+                                                case 3: <text>badge-success</text>
+                                                    break;
+                                                case 4: <text>badge-danger</text>
+                                                    break;
+                                                default: <text>badge-secondary</text>
+                                                    break;
+                                            }">@record.UserMilkDonationStatusText</span>
+                                        </td>
+                                        <td>
+                                            @if (record.AdminReviewerID.HasValue)
+                                            {
+                                                @record.AdminReviewerName
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa có</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("Details", "MedicalRecords", new { Area = "Admin", id = record.RecordID })" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> Xem
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    @if (Model.TotalPages > 1)
+                    {
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", "MedicalRecords", new { Area = "Admin", page = Model.CurrentPage - 1, statusFilter = Model.StatusFilter })">
+                                        <i class="fas fa-chevron-left"></i> Trước
+                                    </a>
+                                </li>
+
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Index", "MedicalRecords", new { Area = "Admin", page = i, statusFilter = Model.StatusFilter })">@i</a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", "MedicalRecords", new { Area = "Admin", page = Model.CurrentPage + 1, statusFilter = Model.StatusFilter })">
+                                        Sau <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                        <h5>Không có hồ sơ nào</h5>
+                        <p class="mb-0">Chưa có hồ sơ y tế nào trong hệ thống.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .form-inline {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+
+    .form-control {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 8px 12px;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        background-color: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .table td {
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        color: #dc2626;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        color: #1d4ed8;
+    }
+</style>

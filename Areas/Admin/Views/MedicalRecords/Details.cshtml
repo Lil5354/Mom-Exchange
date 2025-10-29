@@ -1,0 +1,331 @@
+@model B_M.Models.AdminMedicalRecordDetailViewModel
+@{
+    ViewBag.Title = "Chi Tiết Hồ Sơ Y Tế";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-main-content">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="fas fa-file-medical text-primary"></i> Chi Tiết Hồ Sơ Y Tế
+                </h1>
+                <div class="page-actions">
+                    <a href="@Url.Action("Index", "MilkDonation", new { area = "Admin" })" 
+                       class="btn btn-outline-primary mr-2">
+                        <i class="fas fa-baby"></i> Quản Lý Bài Đăng
+                    </a>
+                    <a href="@Url.Action("Index", "MedicalRecords", new { Area = "Admin" })" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+            </div>
+        }
+
+        <div class="row">
+            <!-- Left: User Info -->
+            <div class="col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <i class="fas fa-user"></i> Thông Tin Người Nộp
+                    </div>
+                    <div class="admin-card-body text-center">
+                        <img src="@(Model.UserAvatarUrl ?? "/images/avatar-default.jpg")" 
+                             alt="Avatar" 
+                             class="rounded-circle mb-3"
+                             style="width: 100px; height: 100px; object-fit: cover;">
+                        <h5 class="mb-1">@Model.UserName</h5>
+                        <p class="text-muted mb-3">@Model.UserEmail</p>
+                        
+                        <span class="badge @switch(Model.UserMilkDonationStatus)
+                        {
+                            case 1: <text>badge-warning</text>
+                                break;
+                            case 2: <text>badge-info</text>
+                                break;
+                            case 3: <text>badge-success</text>
+                                break;
+                            case 4: <text>badge-danger</text>
+                                break;
+                            default: <text>badge-secondary</text>
+                                break;
+                        } mb-2">@Model.UserMilkDonationStatusText</span>
+
+                        <hr>
+                        <div class="text-left">
+                            <small class="d-block mb-2">
+                                <i class="fas fa-check-circle text-success"></i> Đã duyệt: <strong>@Model.UserApprovedRecordsCount</strong> hồ sơ
+                            </small>
+                            <small class="d-block mb-2">
+                                <i class="fas fa-clock text-warning"></i> Đang chờ: <strong>@Model.UserPendingRecordsCount</strong> hồ sơ
+                            </small>
+                            <small class="d-block">
+                                <i class="fas fa-info-circle text-info"></i> Cần ít nhất 2 hồ sơ được duyệt để lên Tầng 2
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ReviewNotes))
+                {
+                    <div class="admin-card mt-3">
+                        <div class="admin-card-header bg-primary text-white">
+                            <i class="fas fa-comment-alt"></i> Ghi Chú Từ Admin
+                        </div>
+                        <div class="admin-card-body">
+                            <p class="mb-0">@Model.ReviewNotes</p>
+                            @if (!string.IsNullOrEmpty(Model.AdminReviewerName))
+                            {
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="fas fa-user"></i> @Model.AdminReviewerName
+                                </small>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Right: Record Details -->
+            <div class="col-lg-8">
+                <!-- Record Info -->
+                <div class="admin-card mb-4">
+                    <div class="admin-card-header">
+                        <i class="fas fa-file-medical"></i> Chi Tiết Hồ Sơ
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Tên file:</strong><br/>
+                                <i class="fas fa-file text-danger"></i> @Model.FileName
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Ngày nộp:</strong><br/>
+                                <i class="fas fa-calendar text-primary"></i> @Model.UploadedAt.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Trạng thái:</strong><br/>
+                                <span class="badge @Model.VerificationStatusClass">@Model.VerificationStatusText</span>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <!-- File Display -->
+                        <div class="mb-3">
+                            <strong>Nội dung file:</strong>
+                            <div class="mt-2">
+                                @{
+                                    var fileExt = System.IO.Path.GetExtension(Model.FileName)?.ToLower();
+                                    var isPdf = fileExt == ".pdf";
+                                    var isImage = new[] { ".jpg", ".jpeg", ".png", ".gif" }.Contains(fileExt);
+                                }
+                                
+                                @if (isPdf)
+                                {
+                                    <iframe src="@Url.Action("ViewFile", "MedicalRecords", new { Area = "Admin", id = Model.RecordID })" 
+                                            style="width: 100%; height: 600px; border: 1px solid #ddd;"></iframe>
+                                    <div class="mt-2">
+                                        <a href="@Url.Action("DownloadFile", "MedicalRecords", new { Area = "Admin", id = Model.RecordID })" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-download"></i> Tải xuống
+                                        </a>
+                                    </div>
+                                }
+                                else if (isImage)
+                                {
+                                    <img src="@Url.Action("ViewFile", "MedicalRecords", new { Area = "Admin", id = Model.RecordID })" 
+                                         alt="@Model.FileName" 
+                                         class="img-fluid"
+                                         style="max-height: 600px; border: 1px solid #ddd;">
+                                    <div class="mt-2">
+                                        <a href="@Url.Action("DownloadFile", "MedicalRecords", new { Area = "Admin", id = Model.RecordID })" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-download"></i> Tải xuống
+                                        </a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> File này không thể xem trước. Vui lòng tải xuống để xem.
+                                    </div>
+                                    <a href="@Url.Action("DownloadFile", "MedicalRecords", new { Area = "Admin", id = Model.RecordID })" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-download"></i> Tải xuống file
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                @if (Model.VerificationStatus == 0)
+                {
+                    <div class="admin-card">
+                        <div class="admin-card-header bg-success text-white">
+                            <i class="fas fa-clipboard-check"></i> Thao Tác
+                        </div>
+                        <div class="admin-card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="approveNotes">
+                                        <i class="fas fa-check-circle"></i> Duyệt Hồ Sơ (Ghi chú tùy chọn)
+                                    </label>
+                                    <textarea id="approveNotes" class="form-control" rows="3" placeholder="Nhập ghi chú (nếu có)"></textarea>
+                                    <button onclick="approveRecord(@Model.RecordID)" class="btn btn-success btn-lg mt-2" style="width: 100%;">
+                                        <i class="fas fa-check-circle"></i> Duyệt Hồ Sơ
+                                    </button>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="rejectNotes">
+                                        <i class="fas fa-times-circle"></i> Từ Chối Hồ Sơ (Bắt buộc nhập lý do)
+                                    </label>
+                                    <textarea id="rejectNotes" class="form-control" rows="3" placeholder="Nhập lý do từ chối (bắt buộc)" required></textarea>
+                                    <button onclick="rejectRecord(@Model.RecordID)" class="btn btn-danger btn-lg mt-2" style="width: 100%;">
+                                        <i class="fas fa-times-circle"></i> Từ Chối Hồ Sơ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="admin-card">
+                        <div class="admin-card-header bg-info text-white">
+                            <i class="fas fa-info-circle"></i> Hồ Sơ Đã Được Xử Lý
+                        </div>
+                        <div class="admin-card-body">
+                            <p class="text-center">
+                                <i class="fas fa-check-circle fa-3x text-@(Model.VerificationStatus == 1 ? "success" : "danger") mb-3"></i>
+                                <br/>
+                                Hồ sơ này đã được <strong>@Model.VerificationStatusText.ToLower()</strong>.
+                                @if (Model.VerificationStatus == 1)
+                                {
+                                    <span class="text-success">
+                                        <br/><br/>User này hiện có <strong>@Model.UserApprovedRecordsCount</strong> hồ sơ được duyệt.
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+function approveRecord(recordId) {
+    if (!confirm('Duyệt hồ sơ y tế này?')) return;
+    
+    var notes = $('#approveNotes').val() || '';
+    
+    $.ajax({
+        url: '@Url.Action("ApproveRecord", "MedicalRecords", new { Area = "Admin" })',
+        type: 'POST',
+        data: { recordId: recordId, notes: notes },
+        success: function(response) {
+            if (response.success) {
+                alert('✅ ' + response.message);
+                location.reload();
+            } else {
+                alert('❌ ' + response.message);
+            }
+        },
+        error: function() {
+            alert('❌ Lỗi xảy ra khi duyệt hồ sơ');
+        }
+    });
+}
+
+function rejectRecord(recordId) {
+    var notes = $('#rejectNotes').val().trim();
+    if (!notes) {
+        alert('⚠️ Vui lòng nhập lý do từ chối');
+        return;
+    }
+    
+    if (!confirm('⚠️ TỪ CHỐI hồ sơ y tế này?\n\nLý do: ' + notes)) return;
+    
+    $.ajax({
+        url: '@Url.Action("RejectRecord", "MedicalRecords", new { Area = "Admin" })',
+        type: 'POST',
+        data: { recordId: recordId, notes: notes },
+        success: function(response) {
+            if (response.success) {
+                alert('✅ ' + response.message);
+                location.reload();
+            } else {
+                alert('❌ ' + response.message);
+            }
+        },
+        error: function() {
+            alert('❌ Lỗi xảy ra khi từ chối hồ sơ');
+        }
+    });
+}
+</script>
+}
+
+<style>
+    .page-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .badge {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        color: #dc2626;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        color: #1d4ed8;
+    }
+
+    .form-control {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+    }
+
+    .btn-lg {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+</style>

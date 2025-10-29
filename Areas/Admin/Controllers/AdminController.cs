@@ -755,15 +755,35 @@ namespace B_M.Areas.Admin.Controllers
         {
             var users = userRepository.GetAllUsers();
             
-            return new AdminDashboardViewModel
+            // Get additional statistics using ApplicationDbContext
+            using (var db = new ApplicationDbContext())
             {
-                TotalUsers = users.Count,
-                ActiveUsers = users.Count(u => u.IsActive),
-                AdminUsers = users.Count(u => u.Role == 1),
-                ClientUsers = users.Count(u => u.Role == 2),
-                NewUsersThisMonth = users.Count(u => u.CreatedAt >= DateTime.Now.AddMonths(-1)),
-                RecentUsers = users.OrderByDescending(u => u.CreatedAt).Take(5).ToList()
-            };
+                var milkPosts = db.MilkDonationPosts.ToList();
+                var medicalRecords = db.UserMedicalRecords.ToList();
+                var categories = db.Categories.ToList();
+                
+                return new AdminDashboardViewModel
+                {
+                    TotalUsers = users.Count,
+                    ActiveUsers = users.Count(u => u.IsActive),
+                    AdminUsers = users.Count(u => u.Role == 1),
+                    MomUsers = users.Count(u => u.Role == 2),
+                    ClientUsers = users.Count(u => u.Role == 2), // Same as MomUsers for compatibility
+                    NewUsersThisMonth = users.Count(u => u.CreatedAt >= DateTime.Now.AddMonths(-1)),
+                    RecentUsers = users.OrderByDescending(u => u.CreatedAt).Take(5).ToList(),
+                    
+                    // Milk Donation Statistics
+                    TotalMilkPosts = milkPosts.Count,
+                    ActiveMilkPosts = milkPosts.Count(p => p.Status == 1),
+                    Tier1Users = users.Count(u => u.MilkDonationStatus == 1),
+                    Tier2Users = users.Count(u => u.MilkDonationStatus == 3),
+                    PendingMedicalRecords = medicalRecords.Count(r => r.VerificationStatus == 0),
+                    
+                    // Category Statistics
+                    TotalCategories = categories.Count,
+                    ActiveCategories = categories.Count(c => c.IsB2CEnabled || c.IsC2CEnabled)
+                };
+            }
         }
 
 
@@ -772,7 +792,7 @@ namespace B_M.Areas.Admin.Controllers
             switch (role)
             {
                 case 1: return "Quản trị viên";
-                case 2: return "Khách hàng";
+                case 2: return "Mẹ bỉm";
                 default: return "Không xác định";
             }
         }

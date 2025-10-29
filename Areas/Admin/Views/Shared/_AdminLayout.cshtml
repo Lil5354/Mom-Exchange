@@ -756,6 +756,18 @@
                 <a href="@Url.Action("Reports", "Admin", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "")">
                     <i class="fas fa-chart-bar"></i> Báo cáo
                 </a>
+                <a href="@Url.Action("Index", "Category", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Category" ? "active" : "")">
+                    <i class="fas fa-folder-tree"></i> Quản lý Danh mục
+                </a>
+                <a href="@Url.Action("Index", "MedicalRecords", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "MedicalRecords" ? "active" : "")">
+                    <i class="fas fa-file-medical"></i> Duyệt Xác Thực Tầng 2
+                </a>
+                <a href="@Url.Action("Index", "MilkDonation", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "MilkDonation" ? "active" : "")">
+                    <i class="fas fa-baby"></i> Xét duyệt Sữa Mẹ
+                </a>
+                <a href="@Url.Action("Index", "PostC2C", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "PostC2C" ? "active" : "")">
+                    <i class="fas fa-exchange-alt"></i> Quản lý Bài đăng C2C
+                </a>
                 <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;"></div>
                 <a href="@Url.Action("Index", "Home", new { area = "" })" class="admin-nav-item">
                     <i class="fas fa-home"></i> Về trang chủ

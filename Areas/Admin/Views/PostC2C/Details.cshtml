@@ -1,0 +1,324 @@
+@model B_M.Models.AdminPostC2CDetailViewModel
+@{
+    ViewBag.Title = "Chi tiết Bài đăng C2C";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-content">
+    <div class="admin-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-eye"></i> Chi tiết Bài đăng C2C</h2>
+                <p class="text-muted">ID: @Model.PostID</p>
+            </div>
+            <div>
+                <a href="@Url.Action("Index", "PostC2C")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.Error as string))
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> @ViewBag.Error
+        </div>
+    }
+
+    <div class="row">
+        <!-- Post Information -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Thông tin bài đăng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Tiêu đề:</strong>
+                            <p>@Model.Title</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Danh mục:</strong>
+                            <p>@Model.CategoryName</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Tình trạng:</strong>
+                            <p>@(Model.Condition ?? "Chưa cập nhật")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Giá:</strong>
+                            <p>@Model.PriceText</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Loại tin:</strong>
+                            <p><span class="badge @Model.ListingTypeClass">@Model.ListingTypeText</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Trạng thái:</strong>
+                            <p><span class="badge @Model.StatusClass">@Model.StatusText</span></p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Ngày đăng:</strong>
+                            <p>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Nội dung:</strong>
+                            <div class="border p-3 mt-2" style="background-color: #f8f9fa;">
+                                @Html.Raw(Model.Content?.Replace("\n", "<br>"))
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Images -->
+            @if (Model.Images.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-images"></i> Hình ảnh (@Model.Images.Count ảnh)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var image in Model.Images)
+                            {
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <img src="@image.ImageUrl" class="card-img-top" alt="Product Image" style="height: 200px; object-fit: cover;" onclick="showImageModal('@image.ImageUrl')">
+                                        <div class="card-body p-2">
+                                            <small class="text-muted">@image.FileName</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- User Information & Actions -->
+        <div class="col-lg-4">
+            <!-- User Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-user"></i> Thông tin người đăng</h5>
+                </div>
+                <div class="card-body text-center">
+                    @if (!string.IsNullOrEmpty(Model.UserAvatarUrl))
+                    {
+                        <img src="@Model.UserAvatarUrl" alt="Avatar" class="rounded-circle mb-3" style="width: 80px; height: 80px;">
+                    }
+                    else
+                    {
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user fa-2x text-white"></i>
+                        </div>
+                    }
+                    <h6>@Model.UserName</h6>
+                    <p class="text-muted">@Model.UserEmail</p>
+                    <p><strong>ID:</strong> @Model.UserID</p>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cogs"></i> Thao tác</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Status == 1)
+                    {
+                        <button type="button" class="btn btn-warning btn-block mb-2" onclick="hidePost(@Model.PostID)">
+                            <i class="fas fa-eye-slash"></i> Ẩn bài đăng
+                        </button>
+                    }
+                    else if (Model.Status == 2)
+                    {
+                        <button type="button" class="btn btn-success btn-block mb-2" onclick="approvePost(@Model.PostID)">
+                            <i class="fas fa-eye"></i> Hiện bài đăng
+                        </button>
+                    }
+                    
+                    <button type="button" class="btn btn-danger btn-block" onclick="deletePost(@Model.PostID)">
+                        <i class="fas fa-trash"></i> Xóa bài đăng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem ảnh</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="Product Image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hide Post Modal -->
+<div class="modal fade" id="hidePostModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ẩn bài đăng</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn ẩn bài đăng này?</p>
+                <div class="form-group">
+                    <label for="hideReason">Lý do (tùy chọn):</label>
+                    <textarea id="hideReason" class="form-control" rows="3" placeholder="Nhập lý do ẩn bài đăng..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" onclick="confirmHidePost()">Ẩn bài đăng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Post Modal -->
+<div class="modal fade" id="deletePostModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xóa bài đăng</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!</p>
+                <p>Bạn có chắc chắn muốn xóa bài đăng này?</p>
+                <div class="form-group">
+                    <label for="deleteReason">Lý do (tùy chọn):</label>
+                    <textarea id="deleteReason" class="form-control" rows="3" placeholder="Nhập lý do xóa bài đăng..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeletePost()">Xóa bài đăng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPostId = @Model.PostID;
+
+        function showImageModal(imageUrl) {
+            $('#modalImage').attr('src', imageUrl);
+            $('#imageModal').modal('show');
+        }
+
+        function approvePost(postId) {
+            if (confirm('Bạn có chắc chắn muốn hiện bài đăng này?')) {
+                $.ajax({
+                    url: '@Url.Action("ApprovePost", "PostC2C")',
+                    type: 'POST',
+                    data: { postId: postId },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Hiện bài đăng thành công!');
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi hiện bài đăng.');
+                    }
+                });
+            }
+        }
+
+        function hidePost(postId) {
+            $('#hidePostModal').modal('show');
+        }
+
+        function deletePost(postId) {
+            $('#deletePostModal').modal('show');
+        }
+
+        function confirmHidePost() {
+            const reason = $('#hideReason').val();
+            
+            $.ajax({
+                url: '@Url.Action("HidePost", "PostC2C")',
+                type: 'POST',
+                data: {
+                    postId: currentPostId,
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Ẩn bài đăng thành công!');
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi ẩn bài đăng.');
+                }
+            });
+            
+            $('#hidePostModal').modal('hide');
+        }
+
+        function confirmDeletePost() {
+            const reason = $('#deleteReason').val();
+            
+            $.ajax({
+                url: '@Url.Action("DeletePost", "PostC2C")',
+                type: 'POST',
+                data: {
+                    postId: currentPostId,
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Xóa bài đăng thành công!');
+                        window.location.href = '@Url.Action("Index", "PostC2C")';
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi xóa bài đăng.');
+                }
+            });
+            
+            $('#deletePostModal').modal('hide');
+        }
+    </script>
+}

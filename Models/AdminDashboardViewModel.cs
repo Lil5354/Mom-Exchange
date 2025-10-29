@@ -22,6 +22,10 @@ namespace B_M.Models
         // Category Statistics
         public int TotalCategories { get; set; }
         public int ActiveCategories { get; set; }
+
+        // C2C Post Statistics
+        public int TotalC2CPosts { get; set; }
+        public int ActiveC2CPosts { get; set; }
     }
 }
 

@@ -30,8 +30,6 @@ namespace B_M.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public DateTime? ReadAt { get; set; }
-
         // Related data (optional)
         public long? RelatedPostID { get; set; }
         public long? RelatedRequestID { get; set; }

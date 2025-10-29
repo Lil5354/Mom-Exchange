@@ -1,6 +1,9 @@
 // Controllers/CartController.cs
 using B_M.Models;
+<<<<<<< HEAD
 using B_M.Repositories;
+=======
+>>>>>>> Khoa
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -15,12 +18,20 @@ namespace B_M.Controllers
     public class CartController : Controller
     {
         private readonly ApplicationDbContext db;
+<<<<<<< HEAD
         private readonly B_M.Repositories.UserRepository userRepository;
+=======
+        private readonly UserRepository userRepository;
+>>>>>>> Khoa
 
         public CartController()
         {
             db = new ApplicationDbContext();
+<<<<<<< HEAD
             userRepository = new B_M.Repositories.UserRepository();
+=======
+            userRepository = new UserRepository();
+>>>>>>> Khoa
         }
 
         protected override void Dispose(bool disposing)
@@ -40,6 +51,7 @@ namespace B_M.Controllers
             return View(cart);
         }
 
+<<<<<<< HEAD
         // GET: Cart/Summary - AJAX endpoint for cart badge
         [AllowAnonymous]
         public JsonResult Summary()
@@ -66,6 +78,8 @@ namespace B_M.Controllers
             }
         }
 
+=======
+>>>>>>> Khoa
         // POST: Cart/Add
       
         // POST: Cart/UpdateQuantity

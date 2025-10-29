@@ -24,38 +24,28 @@ namespace B_M
 
         protected void Application_Error()
         {
-            try
+            
+            var exception = Server.GetLastError();
+            var httpException = exception as HttpException;
+            
+            if (httpException != null)
             {
-                var exception = Server.GetLastError();
-                var httpException = exception as HttpException;
+                var statusCode = httpException.GetHttpCode();
                 
-                if (httpException != null)
+                if (statusCode == 404)
                 {
-                    var statusCode = httpException.GetHttpCode();
-                    
-                    // Clear the error from the server
-                    Server.ClearError();
-                    
-                    if (statusCode == 404)
-                    {
-                        Response.Clear();
-                        Response.StatusCode = 404;
-                        Response.Redirect("~/Error/NotFound", false);
-                        return;
-                    }
-                    else if (statusCode == 500)
-                    {
-                        Response.Clear();
-                        Response.StatusCode = 500;
-                        Response.Redirect("~/Error/ServerError", false);
-                        return;
-                    }
+                    Response.Clear();
+                    Response.StatusCode = 404;
+                    Response.Redirect("~/Error/NotFound");
+                }
+                else if (statusCode == 500)
+                {
+                    Response.Clear();
+                    Response.StatusCode = 500;
+                    Response.Redirect("~/Error/ServerError");
                 }
             }
-            catch
-            {
-                // Ignore errors in error handler to prevent infinite loop
-            }
+           
         }
     }
 }

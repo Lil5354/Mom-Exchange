@@ -39,7 +39,6 @@ namespace B_M.Models
         public DbSet<MilkDonationPost> MilkDonationPosts { get; set; }
         public DbSet<MilkDonationRequest> MilkDonationRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<SystemSettings> SystemSettings { get; set; }
 
         // Communication & Trading
         public DbSet<Message> Messages { get; set; }

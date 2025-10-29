@@ -1,16 +1,27 @@
 using B_M.Models;
+<<<<<<< HEAD
 using B_M.Repositories;
+=======
+>>>>>>> Khoa
 using System.Web.Mvc;
 
 namespace B_M.Controllers
 {
     public class BaseController : Controller
     {
+<<<<<<< HEAD
         private readonly B_M.Repositories.UserRepository userRepository;
 
         public BaseController()
         {
             userRepository = new B_M.Repositories.UserRepository();
+=======
+        private readonly UserRepository userRepository;
+
+        public BaseController()
+        {
+            userRepository = new UserRepository();
+>>>>>>> Khoa
         }
 
         protected override void OnActionExecuting(ActionExecutingContext filterContext)

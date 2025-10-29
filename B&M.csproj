@@ -152,6 +152,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+<<<<<<< HEAD
     <Compile Include="Controllers\CartController.cs" />
     <Compile Include="Controllers\ChatController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
@@ -160,6 +161,14 @@
     <Compile Include="Controllers\NotificationApiController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />
+=======
+    <Compile Include="Controllers\ErrorController.cs" />
+    <Compile Include="Controllers\CartController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\MilkDonationController.cs" />
+    <Compile Include="Controllers\ProfileController.cs" />
+    <Compile Include="Controllers\ChatController.cs" />
+>>>>>>> Khoa
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
     <Compile Include="Areas\Admin\Controllers\BrandsController.cs" />
@@ -177,6 +186,7 @@
     <Compile Include="Migrations\202510280518124_InitialCreate.Designer.cs">
       <DependentUpon>202510280518124_InitialCreate.cs</DependentUpon>
     </Compile>
+<<<<<<< HEAD
     <Compile Include="Migrations\202510280716316_FixNotificationReadAt.cs" />
     <Compile Include="Migrations\202510280716316_FixNotificationReadAt.Designer.cs">
       <DependentUpon>202510280716316_FixNotificationReadAt.cs</DependentUpon>
@@ -184,6 +194,8 @@
     <Compile Include="Models\AdminCreateUserViewModel.cs" />
     <Compile Include="Models\AdminBrandViewModel.cs" />
     <Compile Include="Models\AdminCategoryViewModel.cs" />
+=======
+>>>>>>> Khoa
     <Compile Include="Models\AdminDashboardViewModel.cs" />
     <Compile Include="Models\AdminMilkDonationViewModel.cs" />
     <Compile Include="Models\AdminImportUsersViewModel.cs" />
@@ -198,7 +210,10 @@
     <Compile Include="Models\ApplicationSetting.cs" />
     <Compile Include="Models\BackupSettingsViewModel.cs" />
     <Compile Include="Models\Brand.cs" />
+<<<<<<< HEAD
     <Compile Include="Models\BrandDetailViewModel.cs" />
+=======
+>>>>>>> Khoa
     <Compile Include="Models\BrandCategoryPermission.cs" />
     <Compile Include="Models\PostC2C.cs" />
     <Compile Include="Models\PostC2CImage.cs" />
@@ -206,16 +221,21 @@
     <Compile Include="Models\ProductB2CImage.cs" />
     <Compile Include="Models\CartViewModel.cs" />
     <Compile Include="Models\Category.cs" />
+<<<<<<< HEAD
     <Compile Include="Models\CategoryViewModel.cs" />
     <Compile Include="Models\CommunityPost.cs" />
     <Compile Include="Models\CompleteProfileViewModel.cs" />
     <Compile Include="Models\EmailSettingsViewModel.cs" />
     <Compile Include="Models\EmailTemplate.cs" />
+=======
+    <Compile Include="Models\CompleteProfileViewModel.cs" />
+>>>>>>> Khoa
     <Compile Include="Models\LinkGoogleAccountViewModel.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\MilkDonationPost.cs" />
     <Compile Include="Models\Notification.cs" />
+<<<<<<< HEAD
     <Compile Include="Models\NotificationSettingsViewModel.cs" />
     <Compile Include="Models\NotificationTemplate.cs" />
     <Compile Include="Models\NotificationViewModel.cs" />
@@ -225,21 +245,34 @@
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderDetail.cs" />
     <Compile Include="Models\Product.cs" />
+=======
+    <Compile Include="Controllers\NotificationController.cs" />
+    <Compile Include="Models\MilkDonationViewModel.cs" />
+    <Compile Include="Models\Order.cs" />
+    <Compile Include="Models\OrderDetail.cs" />
+>>>>>>> Khoa
     <Compile Include="Models\ProductViewModel.cs" />
     <Compile Include="Models\ProfileViewModel.cs" />
     <Compile Include="Models\Rating.cs" />
     <Compile Include="Models\RegisterViewModel.cs" />
+<<<<<<< HEAD
     <Compile Include="Models\SecuritySettingsViewModel.cs" />
     <Compile Include="Models\SettingsViewModel.cs" />
     <Compile Include="Models\SocialPost.cs" />
     <Compile Include="Models\SystemConfigurationViewModel.cs" />
     <Compile Include="Models\SystemSettings.cs" />
     <Compile Include="Models\TradePost.cs" />
+=======
+>>>>>>> Khoa
     <Compile Include="Models\UnlinkGoogleViewModel.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserDetails.cs" />
     <Compile Include="Models\UserLifestyleSurvey.cs" />
     <Compile Include="Models\UserMedicalRecord.cs" />
+<<<<<<< HEAD
+=======
+    <Compile Include="Models\UserRepository.cs" />
+>>>>>>> Khoa
     <Compile Include="Models\ChatViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\NotificationRepository.cs" />
@@ -396,9 +429,12 @@
     <EmbeddedResource Include="Migrations\202510280518124_InitialCreate.resx">
       <DependentUpon>202510280518124_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
+<<<<<<< HEAD
     <EmbeddedResource Include="Migrations\202510280716316_FixNotificationReadAt.resx">
       <DependentUpon>202510280716316_FixNotificationReadAt.cs</DependentUpon>
     </EmbeddedResource>
+=======
+>>>>>>> Khoa
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

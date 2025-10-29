@@ -1,6 +1,9 @@
 // Controllers/ChatController.cs
 using B_M.Models;
+<<<<<<< HEAD
 using B_M.Repositories;
+=======
+>>>>>>> Khoa
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +15,20 @@ namespace B_M.Controllers
     public class ChatController : Controller
     {
         private readonly ApplicationDbContext db;
+<<<<<<< HEAD
         private readonly B_M.Repositories.UserRepository userRepository;
+=======
+        private readonly UserRepository userRepository;
+>>>>>>> Khoa
 
         public ChatController()
         {
             db = new ApplicationDbContext();
+<<<<<<< HEAD
             userRepository = new B_M.Repositories.UserRepository();
+=======
+            userRepository = new UserRepository();
+>>>>>>> Khoa
         }
 
         protected override void Dispose(bool disposing)

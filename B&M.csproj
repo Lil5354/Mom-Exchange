@@ -150,6 +150,11 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
+    <Compile Include="Areas\Admin\Controllers\CategoryController.cs" />
+    <Compile Include="Areas\Admin\Controllers\MedicalRecordsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\MilkDonationController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\CartController.cs" />
@@ -161,8 +166,6 @@
     <Compile Include="Controllers\NotificationApiController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />
-    <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
-    <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -174,9 +177,12 @@
     <Compile Include="Migrations\202510291319194_InitialCreate.Designer.cs">
       <DependentUpon>202510291319194_InitialCreate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\AdminCategoryViewModel.cs" />
     <Compile Include="Models\AdminCreateUserViewModel.cs" />
     <Compile Include="Models\AdminDashboardViewModel.cs" />
     <Compile Include="Models\AdminImportUsersViewModel.cs" />
+    <Compile Include="Models\AdminMedicalRecordsViewModels.cs" />
+    <Compile Include="Models\AdminMilkDonationViewModels.cs" />
     <Compile Include="Models\AdminPostsViewModel.cs" />
     <Compile Include="Models\AdminReportsViewModel.cs" />
     <Compile Include="Models\AdminUserEditViewModel.cs" />
@@ -264,6 +270,25 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\custom-cursor.js" />
+    <Content Include="Areas\Admin\Views\Admin\CreateUser.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\ImportResult.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\ImportUsers.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\Reports.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\UserDetails.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\Users.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\_CategoryTreeNode.cshtml" />
+    <Content Include="Areas\Admin\Views\MedicalRecords\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\MedicalRecords\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\MilkDonation\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\MilkDonation\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
+    <Content Include="Areas\Admin\Views\_ViewImports.cshtml" />
+    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Admin\web.config" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -327,16 +352,6 @@
     <Content Include="Views\Cart\Index.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Shared\ServerError.cshtml" />
-    <Content Include="Areas\Admin\web.config" />
-    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
-    <Content Include="Areas\Admin\Views\_ViewImports.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\Users.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\UserDetails.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\Posts.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\Reports.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\Settings.cshtml" />
-    <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Views\MilkDonation\LifestyleSurvey.cshtml" />
   </ItemGroup>
   <ItemGroup>

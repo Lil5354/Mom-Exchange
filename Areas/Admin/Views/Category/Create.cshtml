@@ -1,0 +1,373 @@
+@model B_M.Models.AdminCategoryViewModel
+@{
+    ViewBag.Title = Model.ParentCategoryID.HasValue ? "Thêm Danh mục Con" : "Thêm Danh mục Gốc";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .form-card {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #374151;
+    }
+
+    .required::after {
+        content: " *";
+        color: #dc2626;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .permission-section {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 25px;
+    }
+
+    .permission-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .permission-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 15px;
+    }
+
+    .permission-item {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .permission-item:hover {
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .permission-item.checked {
+        border-color: #10b981;
+        background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+    }
+
+    .permission-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .permission-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+    }
+
+    .permission-checkbox {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .permission-label {
+        font-weight: 600;
+        color: #1e293b;
+        cursor: pointer;
+        margin: 0;
+        flex: 1;
+    }
+
+    .permission-desc {
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        border-left: 4px solid #3b82f6;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .btn-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        text-decoration: none;
+        color: #374151;
+    }
+
+    .text-danger {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+    }
+
+    .alert-success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+    }
+</style>
+
+<div class="admin-card form-card">
+    <div class="admin-card-header">
+        <h5>
+            <i class="fas fa-plus-circle"></i>
+            @ViewBag.Title
+        </h5>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+    
+    <div class="admin-card-body">
+        @if (Model.ParentCategoryID.HasValue)
+        {
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <strong>Danh mục cha:</strong> @Model.ParentCategoryName
+            </div>
+        }
+
+        @if (ViewData.ModelState.Any(x => x.Value.Errors.Count > 0))
+        {
+            <div class="alert alert-danger">
+                <strong>Có lỗi xảy ra:</strong>
+                <ul style="margin: 5px 0 0 20px;">
+                    @foreach (var modelError in ViewData.ModelState.SelectMany(x => x.Value.Errors))
+                    {
+                        <li>@modelError.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @using (Html.BeginForm("Create", "Category", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ParentCategoryID)
+
+            <div class="form-group">
+                <label class="required">Tên danh mục</label>
+                @Html.TextBoxFor(m => m.CategoryName, new { 
+                    @class = "form-control", 
+                    placeholder = "Nhập tên danh mục (VD: Đồ chơi, Thời trang...)",
+                    autofocus = "autofocus"
+                })
+                @Html.ValidationMessageFor(m => m.CategoryName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label>Mô tả</label>
+                @Html.TextAreaFor(m => m.Description, new { 
+                    @class = "form-control", 
+                    rows = 3,
+                    placeholder = "Mô tả về danh mục này (tùy chọn)"
+                })
+                @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+            </div>
+
+            if (!Model.ParentCategoryID.HasValue)
+            {
+                <div class="form-group">
+                    <label>Danh mục cha</label>
+                    @Html.DropDownList("ParentCategoryID", (SelectList)ViewBag.ParentCategories,
+                        "-- Danh mục gốc (không có cha) --", new { @class = "form-control" })
+                    <small style="color: #64748b; font-size: 12px; margin-top: 5px; display: block;">
+                        <i class="fas fa-lightbulb"></i>
+                        Để trống nếu đây là danh mục gốc, hoặc chọn danh mục cha nếu muốn tạo danh mục con
+                    </small>
+                </div>
+            }
+
+            <div class="permission-section">
+                <div class="permission-title">
+                    <i class="fas fa-shield-alt"></i>
+                    Phân quyền sử dụng <span style="color: #dc2626;">*</span>
+                </div>
+                <p style="color: #64748b; font-size: 13px; margin-bottom: 20px;">
+                    Chọn ít nhất một loại để kích hoạt danh mục này
+                </p>
+
+                <div class="permission-grid">
+                    <div class="permission-item" id="b2c-item">
+                        <div class="permission-header">
+                            <div class="permission-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            @Html.CheckBoxFor(m => m.IsB2CEnabled, new { @class = "permission-checkbox", id = "b2c-checkbox" })
+                            <label for="IsB2CEnabled" class="permission-label">B2C - Business to Customer</label>
+                        </div>
+                        <div class="permission-desc">
+                            Cho phép các Nhãn hàng (Brand) đăng bán sản phẩm trong danh mục này
+                        </div>
+                    </div>
+
+                    <div class="permission-item" id="c2c-item">
+                        <div class="permission-header">
+                            <div class="permission-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            @Html.CheckBoxFor(m => m.IsC2CEnabled, new { @class = "permission-checkbox", id = "c2c-checkbox" })
+                            <label for="IsC2CEnabled" class="permission-label">C2C - Customer to Customer</label>
+                        </div>
+                        <div class="permission-desc">
+                            Cho phép các Mẹ bỉm đăng bài thanh lý đồ dùng trong danh mục này
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu danh mục
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy bỏ
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Update permission styling based on checkbox state
+            function updatePermissionItems() {
+                $('#b2c-item').toggleClass('checked', $('#b2c-checkbox').is(':checked'));
+                $('#c2c-item').toggleClass('checked', $('#c2c-checkbox').is(':checked'));
+            }
+
+            // Initialize styling
+            updatePermissionItems();
+
+            // Handle checkbox changes
+            $('.permission-checkbox').change(function () {
+                updatePermissionItems();
+            });
+
+            // Handle clicking on permission items
+            $('.permission-item').click(function (e) {
+                if (e.target.type !== 'checkbox' && !$(e.target).is('label')) {
+                    var checkbox = $(this).find('.permission-checkbox');
+                    checkbox.prop('checked', !checkbox.prop('checked'));
+                    updatePermissionItems();
+                }
+            });
+
+            // Form validation
+            $('form').submit(function (e) {
+                var categoryName = $('#CategoryName').val().trim();
+                var isB2C = $('#b2c-checkbox').is(':checked');
+                var isC2C = $('#c2c-checkbox').is(':checked');
+
+                if (!categoryName) {
+                    alert('Vui lòng nhập tên danh mục!');
+                    $('#CategoryName').focus();
+                    e.preventDefault();
+                    return false;
+                }
+
+                if (!isB2C && !isC2C) {
+                    alert('Vui lòng chọn ít nhất một quyền: B2C hoặc C2C!');
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
+}

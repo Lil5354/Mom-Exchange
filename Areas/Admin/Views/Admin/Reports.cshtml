@@ -183,12 +183,18 @@
     </div>
     <div class="compact-stat-card">
         <div class="compact-stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
-            <i class="fas fa-user"></i>
+            <i class="fas fa-baby"></i>
         </div>
         <div class="compact-stat-content">
-            <div class="compact-stat-number">@Model.ClientUsers</div>
-            <div class="compact-stat-label">Khách hàng</div>
+            <div class="compact-stat-number">@Model.MomUsers</div>
+            <div class="compact-stat-label">Mẹ bỉm</div>
         </div>
+    </div>
+    <div class="compact-stat-card">
+        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+            <i class="fas fa-store"></i>
+        </div>
+        
     </div>
     <div class="compact-stat-card">
         <div class="compact-stat-icon" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
@@ -320,8 +326,12 @@
                                                 roleClass = "badge-danger";
                                                 break;
                                             case 2:
-                                                roleName = "Khách hàng";
+                                                roleName = "Mẹ bỉm";
                                                 roleClass = "badge-warning";
+                                                break;
+                                            case 3:
+                                                roleName = "Nhãn hàng";
+                                                roleClass = "badge-info";
                                                 break;
                                             default:
                                                 roleName = "N/A";
@@ -522,8 +532,8 @@
                 newUsers: newUsersData
             },
             roleDistribution: {
-                labels: ['Quản trị viên', 'Khách hàng'],
-                series: [@Model.AdminUsers, @Model.ClientUsers]
+                labels: ['Quản trị viên', 'Mẹ bỉm', 'Nhãn hàng'],
+                series: [@Model.AdminUsers, @Model.MomUsers]
             },
             monthlyActivity: {
                 months: ['T5', 'T6', 'T7', 'T8', 'T9', 'T10'],
@@ -696,7 +706,7 @@
                     }
                 },
                 labels: chartData.roleDistribution.labels,
-                colors: [chartColors.danger, chartColors.warning],
+                colors: [chartColors.danger, chartColors.warning, chartColors.info],
                 plotOptions: {
                     pie: {
                         donut: {

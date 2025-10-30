@@ -240,7 +240,7 @@ namespace B_M.Areas.Admin.Controllers
                     return Json(new { success = false, message = "Bạn không thể thay đổi quyền của chính mình." });
                 }
 
-                // Kiểm tra role hợp lệ
+                // Kiểm tra role hợp lệ (chỉ 2 roles: 1=Admin, 2=Mom)
                 if (NewRole < 1 || NewRole > 2)
                 {
                     return Json(new { success = false, message = "Quyền không hợp lệ." });
@@ -375,7 +375,7 @@ namespace B_M.Areas.Admin.Controllers
                     TotalUsers = stats.TotalUsers,
                     ActiveUsers = stats.ActiveUsers,
                     AdminUsers = stats.AdminUsers,
-                    ClientUsers = stats.ClientUsers,
+                    MomUsers = stats.MomUsers,
                     NewUsersThisMonth = stats.NewUsersThisMonth,
                     RecentUsers = stats.RecentUsers
                 };
@@ -478,7 +478,7 @@ namespace B_M.Areas.Admin.Controllers
             var users = userRepository.GetAllUsers();
             return new
             {
-                labels = new[] { "Quản trị viên", "Khách hàng" },
+                labels = new[] { "Quản trị viên", "Mẹ bỉm" },
                 series = new[] 
                 {
                     users.Count(u => u.Role == 1),
@@ -630,7 +630,7 @@ namespace B_M.Areas.Admin.Controllers
                     TotalUsers = 100,
                     ActiveUsers = 80,
                     AdminUsers = 5,
-                    ClientUsers = 95,
+                    MomUsers = 70,
                     NewUsersThisMonth = 10,
                     RecentUsers = new List<User>()
                 };
@@ -656,7 +656,7 @@ namespace B_M.Areas.Admin.Controllers
                 var result = $"DATABASE TEST SUCCESS!<br/>" +
                            $"Found {users.Count} users<br/>" +
                            $"Active users: {users.Count(u => u.IsActive)}<br/>" +
-                           $"Client users: {users.Count(u => u.Role == 2)}<br/>" +
+                           $"Mom users: {users.Count(u => u.Role == 2)}<br/>" +
                            $"Time: {DateTime.Now}";
                 
                 return Content(result);
@@ -682,7 +682,7 @@ namespace B_M.Areas.Admin.Controllers
                            $"Total Users: {stats.TotalUsers}<br/>" +
                            $"Active Users: {stats.ActiveUsers}<br/>" +
                            $"Admin Users: {stats.AdminUsers}<br/>" +
-                           $"Client Users: {stats.ClientUsers}<br/>" +
+                           $"Mom Users: {stats.MomUsers}<br/>" +
                            $"New This Month: {stats.NewUsersThisMonth}<br/>" +
                            $"Time: {DateTime.Now}";
                 
@@ -755,15 +755,41 @@ namespace B_M.Areas.Admin.Controllers
         {
             var users = userRepository.GetAllUsers();
             
-            return new AdminDashboardViewModel
+            // Get additional statistics using ApplicationDbContext
+            using (var db = new ApplicationDbContext())
             {
-                TotalUsers = users.Count,
-                ActiveUsers = users.Count(u => u.IsActive),
-                AdminUsers = users.Count(u => u.Role == 1),
-                ClientUsers = users.Count(u => u.Role == 2),
-                NewUsersThisMonth = users.Count(u => u.CreatedAt >= DateTime.Now.AddMonths(-1)),
-                RecentUsers = users.OrderByDescending(u => u.CreatedAt).Take(5).ToList()
-            };
+                var milkPosts = db.MilkDonationPosts.ToList();
+                var medicalRecords = db.UserMedicalRecords.ToList();
+                var categories = db.Categories.ToList();
+                var postC2Cs = db.PostC2Cs.ToList();
+                
+                return new AdminDashboardViewModel
+                {
+                    // User Statistics
+                    TotalUsers = users.Count,
+                    ActiveUsers = users.Count(u => u.IsActive),
+                    AdminUsers = users.Count(u => u.Role == 1),
+                    MomUsers = users.Count(u => u.Role == 2),
+                    ClientUsers = users.Count(u => u.Role == 2), // Same as MomUsers for compatibility
+                    NewUsersThisMonth = users.Count(u => u.CreatedAt >= DateTime.Now.AddMonths(-1)),
+                    RecentUsers = users.OrderByDescending(u => u.CreatedAt).Take(5).ToList(),
+                    
+                    // Milk Donation Statistics
+                    TotalMilkPosts = milkPosts.Count,
+                    ActiveMilkPosts = milkPosts.Count(p => p.Status == 1),
+                    Tier1Users = users.Count(u => u.MilkDonationStatus == 1),
+                    Tier2Users = users.Count(u => u.MilkDonationStatus == 3),
+                    PendingMedicalRecords = medicalRecords.Count(r => r.VerificationStatus == 0),
+                    
+                    // Category Statistics
+                    TotalCategories = categories.Count,
+                    ActiveCategories = categories.Count(c => c.IsB2CEnabled || c.IsC2CEnabled),
+
+                    // C2C Post Statistics
+                    TotalC2CPosts = postC2Cs.Count,
+                    ActiveC2CPosts = postC2Cs.Count(p => p.Status == 1)
+                };
+            }
         }
 
 
@@ -772,7 +798,7 @@ namespace B_M.Areas.Admin.Controllers
             switch (role)
             {
                 case 1: return "Quản trị viên";
-                case 2: return "Khách hàng";
+                case 2: return "Mẹ bỉm";
                 default: return "Không xác định";
             }
         }
@@ -1181,6 +1207,30 @@ namespace B_M.Areas.Admin.Controllers
                 TempData["ErrorMessage"] = "Có lỗi xảy ra khi tạo template: " + ex.Message;
                 return RedirectToAction("ImportUsers");
             }
+        }
+
+        // GET: Admin/CheckRole - Kiểm tra quyền hiện tại
+        [AllowAnonymous]
+        public ActionResult CheckRole()
+        {
+            var userEmail = User.Identity.Name;
+            var sessionRole = Session["Role"];
+            var sessionActive = Session["IsActive"];
+            
+            var result = $@"
+📧 Email đăng nhập: {userEmail ?? "Chưa đăng nhập"}
+🔑 Session Role: {sessionRole ?? "null"} 
+📊 Role meaning: {(sessionRole != null && (byte)sessionRole == 1 ? "✅ Admin (có quyền)" : "❌ Không phải Admin")}
+🟢 Is Active: {sessionActive ?? "null"}
+
+💡 Cần có: Role = 1 và IsActive = True để truy cập Admin area
+
+🔗 Test URLs:
+- Admin Category: /Admin/Category
+- Admin Category Test: /Admin/Category/Test
+";
+            
+            return Content(result, "text/plain");
         }
 
     }

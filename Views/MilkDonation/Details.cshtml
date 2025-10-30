@@ -49,24 +49,96 @@
                         </div>
                     </div>
 
-                    <div class="post-content">
-                        <div class="info-section">
-                            <h3><i class="fa-solid fa-utensils"></i> Chế độ ăn của mẹ</h3>
-                            <p>@Model.DietInfo</p>
-                        </div>
-
-                        <div class="info-section">
-                            <h3><i class="fa-solid fa-snowflake"></i> Cách bảo quản sữa</h3>
-                            <p>@Model.StorageInfo</p>
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(Model.Note))
-                        {
-                            <div class="info-section">
-                                <h3><i class="fa-solid fa-sticky-note"></i> Ghi chú thêm</h3>
-                                <p>@Model.Note</p>
+                    @if (Model.HasHealthDeclaration == true)
+                    {
+                        <div class="health-declaration-section">
+                            <h3><i class="fa-solid fa-clipboard-check"></i> Khai báo Y tế cơ bản</h3>
+                            <div class="health-declaration-content">
+                                <div class="health-info-grid">
+                                    <div class="health-info-item">
+                                        <label><i class="fa-solid fa-smoking"></i> Hút thuốc:</label>
+                                        <span class="health-value @(Model.IsSmoker == true ? "health-yes" : "health-no")">
+                                            @(Model.IsSmoker == true ? "Có" : "Không")
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="health-info-item">
+                                        <label><i class="fa-solid fa-wine-glass"></i> Sử dụng đồ uống có cồn:</label>
+                                        <span class="health-value @(Model.UsesAlcohol == true ? "health-yes" : "health-no")">
+                                            @(Model.UsesAlcohol == true ? "Có" : "Không")
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="health-info-item">
+                                        <label><i class="fa-solid fa-pills"></i> Sử dụng thuốc:</label>
+                                        <span class="health-value @(Model.UsesMedication == true ? "health-yes" : "health-no")">
+                                            @(Model.UsesMedication == true ? "Có" : "Không")
+                                        </span>
+                                    </div>
+                                    
+                                    @if (Model.UsesMedication == true && !string.IsNullOrEmpty(Model.MedicationDetails))
+                                    {
+                                        <div class="health-info-item full-width">
+                                            <label><i class="fa-solid fa-list"></i> Chi tiết thuốc:</label>
+                                            <span class="health-details">@Model.MedicationDetails</span>
+                                        </div>
+                                    }
+                                    
+                                    <div class="health-info-item">
+                                        <label><i class="fa-solid fa-ban"></i> Cam kết không sử dụng chất kích thích/ma túy:</label>
+                                        <span class="health-value @(Model.CommitNoDrugs == true ? "health-yes" : "health-no")">
+                                            @(Model.CommitNoDrugs == true ? "Có" : "Không")
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="health-info-item">
+                                        <label><i class="fa-solid fa-shield-virus"></i> Cam kết không mắc bệnh truyền nhiễm:</label>
+                                        <span class="health-value @(Model.CommitNoInfectiousDiseases == true ? "health-yes" : "health-no")">
+                                            @(Model.CommitNoInfectiousDiseases == true ? "Có" : "Không")
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="health-info-item full-width">
+                                        <label><i class="fa-solid fa-calendar"></i> Ngày khai báo:</label>
+                                        <span class="health-date">@(Model.HealthDeclarationSubmittedAt?.ToString("dd/MM/yyyy HH:mm") ?? "Không xác định")</span>
+                                    </div>
+                                </div>
                             </div>
-                        }
+                        </div>
+                    }
+
+                    <div class="image-info-row">
+                        <div class="image-col">
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <div class="post-image-section">
+                                    <div class="post-image">
+                                        <img src="@Model.ImageUrl" alt="Hình ảnh sữa mẹ" class="img-fluid">
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="info-col">
+                            <div class="post-content">
+                                <div class="info-section">
+                                    <h3><i class="fa-solid fa-utensils"></i> Chế độ ăn của mẹ</h3>
+                                    <p>@Model.DietInfo</p>
+                                </div>
+
+                                <div class="info-section">
+                                    <h3><i class="fa-solid fa-snowflake"></i> Cách bảo quản sữa</h3>
+                                    <p>@Model.StorageInfo</p>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(Model.Note))
+                                {
+                                    <div class="info-section">
+                                        <h3><i class="fa-solid fa-sticky-note"></i> Ghi chú thêm</h3>
+                                        <p>@Model.Note</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
                     </div>
 
                     <div class="post-footer">
@@ -94,7 +166,13 @@
                                             <i class="fa-solid fa-check"></i> @Model.RequestButtonText
                                         </button>
                                     }
-                                    <a href="@Url.Action("Conversation", "Chat", new { userId = Model.DonorUserId })" class="btn btn-outline-primary">
+                                    <a href="#" class="btn btn-outline-primary open-chat-modal" 
+                                       data-chat-userid="@Model.DonorUserId"
+                                       data-chat-username="@Model.DonorName"
+                                       data-chat-useravatar="@Model.DonorAvatarUrl"
+                                       data-chat-postid="@Model.Id"
+                                       data-chat-posttitle="@Model.Title"
+                                       data-chat-posttype="milk-donation">
                                         <i class="fa-solid fa-comments"></i> Chat với người cho
                                     </a>
                                 }
@@ -209,3 +287,157 @@
         }
     </script>
 }
+
+<style>
+    /* Card tổng quan */
+    .milk-donation-details .post-detail-card {
+        background: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(214, 51, 132, 0.08);
+        overflow: hidden;
+    }
+
+    /* Header người đăng */
+    .milk-donation-details .post-header { padding: 16px 16px 0; }
+    .milk-donation-details .donor-avatar-large {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 6px 14px rgba(214, 51, 132, 0.15);
+    }
+    .milk-donation-details .donor-name { margin: 0; font-size: 20px; font-weight: 700; color: #2c3e50; }
+    .milk-donation-details .donor-location, .milk-donation-details .post-date { margin: 2px 0; color: #6c757d; }
+
+    /* Cảnh báo xác thực */
+    .milk-donation-details .verification-badge { padding: 8px 16px 0; display: flex; justify-content: flex-end; }
+    .milk-donation-details .verification-warning { padding: 0 16px 8px; }
+    .milk-donation-details .badge-warning { background: #fff7d6; color: #f0ad00; border: 1px solid #ffe08a; }
+    .milk-donation-details .badge-success { background: #eaf7ef; color: #2e7d32; border: 1px solid #d4edda; }
+
+    /* Khu vực hình ảnh: giữ tỉ lệ, không quá cao */
+    .milk-donation-details .post-image-section { padding: 0 0 16px; }
+    .milk-donation-details .post-image { border-radius: 12px; overflow: hidden; background: #f8f9fa; border: 1px solid #e9ecef; }
+    .milk-donation-details .post-image img {
+        display: block;
+        width: 100%;
+        height: clamp(220px, 32vw, 340px);
+        object-fit: cover;
+    }
+
+    /* Bố cục 2 cột: ảnh 1/2, thông tin 1/2 */
+    .milk-donation-details .image-info-row {
+        display: flex;
+        gap: 16px;
+        padding: 0 16px 8px;
+        align-items: flex-start;
+    }
+    .milk-donation-details .image-info-row .image-col { flex: 1 1 50%; }
+    .milk-donation-details .image-info-row .info-col { flex: 1 1 50%; }
+
+    /* Nội dung thông tin */
+    .milk-donation-details .post-content { padding: 8px 16px 0; }
+    .milk-donation-details .info-section h3 { color: #d63384; font-weight: 600; font-size: 1.05rem; }
+
+    /* Footer và nút hành động */
+    .milk-donation-details .post-footer { padding: 8px 16px 16px; }
+    .milk-donation-details .action-buttons .btn-primary { background: #d63384; border-color: #d63384; }
+    .milk-donation-details .action-buttons .btn-primary:hover { background: #c02d6b; border-color: #c02d6b; }
+    .milk-donation-details .action-buttons .btn-outline-primary { color: #d63384; border-color: #d63384; }
+    .milk-donation-details .action-buttons .btn-outline-primary:hover { background: #d63384; color: #fff; }
+
+    .health-declaration-section {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+
+    .health-declaration-section h3 {
+        color: #d63384;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .health-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .health-info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .health-info-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .health-info-item label {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .health-info-item label i {
+        color: #d63384;
+        width: 16px;
+    }
+
+    .health-value {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-align: center;
+        display: inline-block;
+        width: fit-content;
+    }
+
+    .health-yes {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .health-no {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .health-details {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    .health-date {
+        color: #666;
+        font-size: 0.9rem;
+        font-style: italic;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .health-info-grid {
+            grid-template-columns: 1fr;
+        }
+        .milk-donation-details .image-info-row { flex-direction: column; }
+        .milk-donation-details .post-image img { height: 220px; }
+        .milk-donation-details .donor-avatar-large { width: 52px; height: 52px; }
+    }
+</style>

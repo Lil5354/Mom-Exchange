@@ -92,6 +92,57 @@
 
     <!-- Global Toast Notification Styles -->
     <style>
+        /* ===== Global Modal Styles (for account modals) ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: modalFadeIn .18s ease-out;
+        }
+        .modal-content-custom {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            max-height: 90vh;
+            overflow: hidden;
+            width: 520px;
+            max-width: 95vw;
+        }
+        .modal-header-custom {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header-custom h3 {
+            margin: 0;
+            color: #d63384;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            color: #888;
+            padding: 4px 8px;
+        }
+        .modal-close:hover { color: #d63384; }
+        .modal-body-custom { padding: 16px 18px; overflow: auto; max-height: calc(90vh - 58px); }
+        @@keyframes modalFadeIn { from { opacity: .6; } to { opacity: 1; } }
+        body.modal-open { overflow: hidden; }
+
         /* Toast Container */
         .toast-container {
             position: fixed;
@@ -436,13 +487,9 @@
                                             <i class="fa-solid fa-user-edit" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Chỉnh sửa thông tin
                                         </a>
-                                        <a href="@Url.Action("ChangePassword", "Account")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
+                                        <a href="#" onclick="openChangePasswordModal();return false;" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
                                             <i class="fa-solid fa-key" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Đổi mật khẩu
-                                        </a>
-                                        <a href="@Url.Action("ForgotPassword", "Account")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
-                                            <i class="fa-solid fa-question-circle" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
-                                            Quên mật khẩu
                                         </a>
                                         <a href="@Url.Action("Orders", "Account")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
                                             <i class="fa-solid fa-shopping-bag" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
@@ -452,7 +499,7 @@
                                             <i class="fa-solid fa-heart" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Yêu thích
                                         </a>
-                                        <a href="@Url.Action("MyPosts", "MilkDonation")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
+                                        <a href="#" onclick="openMyPostsModal();return false;" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
                                             <i class="fa-solid fa-hand-holding-heart" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Quản lý tin sữa
                                         </a>
@@ -614,6 +661,7 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="@Url.Content("~/Scripts/custom-cursor.js")"></script>
     <script src="@Url.Content("~/Scripts/trade-popup.js")"></script>
+    <script src="@Url.Content("~/Scripts/account-modals.js")"></script>
 
     <script>
         AOS.init({
@@ -946,40 +994,8 @@
             });
         }
 
-        // Load chat conversations
-        function loadChatConversations() {
-            const chatPopupMessages = document.getElementById('chatPopupMessages');
-            if (!chatPopupMessages) return;
 
-            chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải...</div>';
-
-            fetch('@Url.Action("GetConversationSummaries", "Chat")', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success && data.conversations) {
-                    renderChatConversations(data.conversations);
-                } else {
-                    chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-comments" style="margin-right: 8px;"></i>Chưa có cuộc hội thoại nào</div>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading conversations:', error);
-                chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;"><i class="fa-solid fa-exclamation-triangle" style="margin-right: 8px;"></i>Có lỗi xảy ra khi tải cuộc hội thoại</div>';
-            });
-        }
-
-        // Render chat conversations
+        // Render chat conversations with product context
         function renderChatConversations(conversations) {
             const chatPopupMessages = document.getElementById('chatPopupMessages');
             if (!chatPopupMessages || !conversations.length) {
@@ -989,14 +1005,33 @@
 
             let html = '';
             conversations.forEach(conversation => {
+                // Render related products
+                let productHtml = '';
+                if (conversation.relatedProducts && conversation.relatedProducts.length > 0) {
+                    productHtml = '<div style="margin-top: 4px; font-size: 10px; color: #6c757d;">';
+                    conversation.relatedProducts.slice(0, 2).forEach(product => {
+                        const typeColor = product.postType === 'milk-donation' ? '#28a745' : 
+                                         product.postTypeDisplay === 'Trao đổi' ? '#17a2b8' : '#ffc107';
+                        productHtml += `<span style="background: ${typeColor}; color: white; padding: 1px 4px; border-radius: 8px; margin-right: 4px; font-size: 9px;">${product.postTypeDisplay}</span>`;
+                    });
+                    if (conversation.relatedProducts.length > 2) {
+                        productHtml += `<span style="color: #6c757d;">+${conversation.relatedProducts.length - 2}</span>`;
+                    }
+                    productHtml += '</div>';
+                }
+
                 html += `
-                    <div class="chat-conversation-item" data-user-id="${conversation.userID}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.3s ease; margin-bottom: 8px;" onclick="openChatConversation(${conversation.userID}, '${conversation.userName}', '${conversation.userAvatar}')">
+                    <div class="chat-conversation-item" data-user-id="${conversation.userID}" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.3s ease; margin-bottom: 8px; border-left: 3px solid transparent;" onclick="openChatConversation(${conversation.userID}, '${conversation.userName}', '${conversation.userAvatar}')">
                         <img src="${conversation.userAvatar}" alt="${conversation.userName}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                         <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <h6 style="margin: 0; font-size: 14px; font-weight: 600; color: #2c3e50;">${conversation.userName}</h6>
+                                ${conversation.unreadCount > 0 ? `<span style="background: #dc3545; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-left: 4px;">${conversation.unreadCount}</span>` : ''}
+                            </div>
                             <p style="margin: 0; font-size: 12px; color: #6c757d; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${conversation.lastMessage || 'Chưa có tin nhắn'}</p>
+                            ${productHtml}
+                            ${conversation.lastMessageTime ? `<div style="font-size: 10px; color: #adb5bd; margin-top: 2px;">${conversation.lastMessageTime}</div>` : ''}
                         </div>
-                        ${conversation.unreadCount > 0 ? `<span style="background: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center;">${conversation.unreadCount}</span>` : ''}
                     </div>
                 `;
             });
@@ -1019,102 +1054,129 @@
             document.getElementById('chatReceiverId').value = userId;
 
             // Chuyển header thành thông tin của người đang chat với
-            document.getElementById('chatUserName').textContent = userName;
-            document.getElementById('chatUserAvatar').src = userAvatar;
+            document.getElementById('chatUserName').textContent = userName || 'Người dùng';
+            document.getElementById('chatUserAvatar').src = userAvatar || '/images/avatar-default.jpg';
             document.getElementById('chatUserStatus').textContent = 'Đang hoạt động';
 
-            // Load messages for this conversation
-            loadChatMessages(userId);
+            // Show product badge in header if available
+            const currentContext = window.currentChatContext;
+            let statusText = 'Đang hoạt động';
+            if (currentContext && currentContext.postType) {
+                const typeDisplay = currentContext.postType === 'milk-donation' ? 'Sữa mẹ' : 
+                                   currentContext.postType === 'c2c' ? 'Thanh lý' : 'Sản phẩm';
+                statusText = `${typeDisplay} - ${statusText}`;
+            }
+            document.getElementById('chatUserStatus').textContent = statusText;
+
+            // Enable khung nhập message khi đã chọn room
+            document.getElementById('chatPopupForm').style.display = 'flex';
+            
+            // Bắt đầu lắng nghe tin nhắn realtime bằng Firebase cho cuộc trò chuyện này
+            startFirebaseChat(userId);
         }
 
-        // Load chat messages
-        function loadChatMessages(userId) {
+        // Bắt đầu lắng nghe tin nhắn bằng Firebase cho userId được chọn
+        function startFirebaseChat(userId) {
             const chatPopupMessages = document.getElementById('chatPopupMessages');
             if (!chatPopupMessages) return;
 
-            chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải...</div>';
+            // Gán OTHER_USER_ID toàn cục để chat-firebase.js xác định ROOM_ID
+            window.OTHER_USER_ID = userId;
 
-            fetch('@Url.Action("GetMessagesSimple", "Chat")?userId=' + userId, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    renderChatMessages(data.messages);
-                } else {
-                    chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;">Có lỗi xảy ra khi tải tin nhắn</div>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading messages:', error);
-                chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;">Có lỗi xảy ra khi tải tin nhắn</div>';
-            });
+            // Xoá danh sách cũ và hiển thị trạng thái tải
+            chatPopupMessages.innerHTML = '';
+
+            // Đăng ký lắng nghe tin nhắn realtime
+            if (typeof listenMessages === 'function') {
+                listenMessages(function (msg, key) {
+                    appendFirebaseMessage(msg);
+                });
+            }
+
+            // Lắng nghe trạng thái online nếu có
+            if (typeof listenOnlineStatus === 'function') {
+                try {
+                    listenOnlineStatus(function (statusMap) {
+                        const otherId = String(userId);
+                        const isOtherOnline = !!(statusMap && (statusMap[otherId] || statusMap[userId]));
+                        document.getElementById('chatUserStatus').textContent = isOtherOnline ? 'Đang hoạt động' : 'Ngoại tuyến';
+                    });
+                } catch (e) { /* ignore */ }
+            }
         }
 
-        // Render chat messages
-        function renderChatMessages(messages) {
+        // Thêm 1 tin nhắn từ Firebase vào UI
+        function appendFirebaseMessage(msg) {
             const chatPopupMessages = document.getElementById('chatPopupMessages');
             if (!chatPopupMessages) return;
 
-            let html = '';
-            messages.forEach(message => {
-                const messageClass = message.isFromCurrentUser ? 'message-sent' : 'message-received';
-                html += `
-                    <div class="chat-message ${messageClass}" style="margin-bottom: 12px; display: flex; ${message.isFromCurrentUser ? 'justify-content: flex-end;' : 'justify-content: flex-start;'}">
-                        <div style="max-width: 70%; padding: 8px 12px; border-radius: 12px; ${message.isFromCurrentUser ? 'background: linear-gradient(135deg, #d63384, #e91e63); color: white;' : 'background: white; color: #2c3e50; border: 1px solid #e9ecef;'}">
-                            <div style="font-size: 14px; line-height: 1.4;">${message.content}</div>
-                            <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">${message.timeDisplay}</div>
-                        </div>
-                    </div>
-                `;
-            });
+            const isFromCurrentUser = String(msg.senderId) === String(window.CURRENT_USER_ID);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'chat-message ' + (isFromCurrentUser ? 'message-sent' : 'message-received');
+            wrapper.style.marginBottom = '12px';
+            wrapper.style.display = 'flex';
+            wrapper.style.justifyContent = isFromCurrentUser ? 'flex-end' : 'flex-start';
 
-            chatPopupMessages.innerHTML = html;
+            const bubble = document.createElement('div');
+            bubble.style.maxWidth = '70%';
+            bubble.style.padding = '8px 12px';
+            bubble.style.borderRadius = '12px';
+            if (isFromCurrentUser) {
+                bubble.style.background = 'linear-gradient(135deg, #d63384, #e91e63)';
+                bubble.style.color = 'white';
+            } else {
+                bubble.style.background = 'white';
+                bubble.style.color = '#2c3e50';
+                bubble.style.border = '1px solid #e9ecef';
+            }
+
+            // Nội dung có thể là text hoặc image
+            if (msg.type === 'image' && msg.imageUrl) {
+                const img = document.createElement('img');
+                img.src = msg.imageUrl;
+                img.style.maxWidth = '100%';
+                img.style.borderRadius = '10px';
+                bubble.appendChild(img);
+            }
+            if (msg.text) {
+                const text = document.createElement('div');
+                text.style.fontSize = '14px';
+                text.style.lineHeight = '1.4';
+                text.textContent = msg.text;
+                bubble.appendChild(text);
+            }
+
+            const timeEl = document.createElement('div');
+            timeEl.style.fontSize = '11px';
+            timeEl.style.opacity = '0.7';
+            timeEl.style.marginTop = '4px';
+            try {
+                timeEl.textContent = new Date(msg.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            } catch (_) { timeEl.textContent = ''; }
+            bubble.appendChild(timeEl);
+
+            wrapper.appendChild(bubble);
+            chatPopupMessages.appendChild(wrapper);
             chatPopupMessages.scrollTop = chatPopupMessages.scrollHeight;
         }
 
-        // Send chat message
+        // Send chat message qua Firebase
         function sendChatMessage() {
-            const form = document.getElementById('chatPopupForm');
             const messageInput = document.getElementById('chatMessageInput');
             const receiverId = document.getElementById('chatReceiverId').value;
-
             if (!receiverId || !messageInput.value.trim()) return;
 
-            const formData = new FormData(form);
-            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+            // Đảm bảo OTHER_USER_ID đã set đúng phòng
+            window.OTHER_USER_ID = receiverId;
 
-            fetch('@Url.Action("SendMessage", "Chat")', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
+            try {
+                if (typeof sendMessage === 'function') {
+                    sendMessage(messageInput.value.trim());
                     messageInput.value = '';
-                    // Reload messages
-                    loadChatMessages(receiverId);
-                } else {
-                    console.error('Error sending message:', data.message);
                 }
-            })
-            .catch(error => {
-                console.error('Error sending message:', error);
-            });
+            } catch (e) {
+                console.error('Firebase sendMessage error:', e);
+            }
         }
 
         function loadNotificationSummary() {
@@ -1201,7 +1263,159 @@
                 });
             }
         });
+
+        // ======= FIREBASE CHAT CONVERSATIONS (NEW) =======
+        // Lấy danh sách hội thoại từ Firebase khi mở popup
+        function loadFirebaseConversations(onLoaded) {
+            if (typeof CURRENT_USER_ID === 'undefined' || !firebase?.database) return;
+            const db = firebase.database();
+            db.ref('chat').once('value', function(snapshot) {
+                const convoMap = {};
+                snapshot.forEach(function(roomSnap) {
+                    const roomKey = roomSnap.key;
+                    if (!roomKey.startsWith('room_')) return;
+                    const parts = roomKey.replace('room_', '').split('_');
+                    if (parts.length !== 2) return;
+                    if (parts[0] != CURRENT_USER_ID && parts[1] != CURRENT_USER_ID) return;
+                    const otherId = (parts[0] == CURRENT_USER_ID ? parts[1] : parts[0]);
+                    // Nếu đã có conversation với otherId rồi thì bỏ qua (chặn trùng khi user swap vị trí)
+                    if (convoMap[otherId]) return;
+                    const messagesSnap = roomSnap.child('messages');
+                    let lastMsg = null;
+                    messagesSnap.forEach(m => { lastMsg = m.val(); });
+                    if (lastMsg) {
+                        convoMap[otherId] = {
+                            userID: otherId,
+                            userName: lastMsg.senderName || 'Người dùng',
+                            userAvatar: lastMsg.avatar || '/images/avatar-default.jpg',
+                            lastMessage: lastMsg.text || '[Hình ảnh]',
+                            unreadCount: 0
+                        };
+                    }
+                });
+                const conversations = Object.values(convoMap);
+                if (onLoaded) onLoaded(conversations);
+            });
+        }
+        // Load chat conversations - HYBRID: Firebase + Product Context
+        function loadChatConversations() {
+            const chatPopupMessages = document.getElementById('chatPopupMessages');
+            if (!chatPopupMessages) return;
+            
+            chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>Đang tải conversations...</div>';
+            document.getElementById('chatPopupForm').style.display = 'none';
+
+            // Step 1: Lấy conversations từ Firebase (đảm bảo đầy đủ users)
+            loadFirebaseConversations(function(firebaseConversations){
+                if (!firebaseConversations.length) {
+                    chatPopupMessages.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;"><i class="fa-solid fa-comments" style="margin-right: 8px;"></i>Chưa có cuộc hội thoại nào</div>';
+                    return;
+                }
+                
+                // Step 2: Lấy product context từ server và merge
+            fetch('@Url.Action("GetConversationSummaries", "Chat")', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+                .then(serverData => {
+                    // Merge Firebase conversations với product context từ server
+                    const enrichedConversations = firebaseConversations.map(fbConv => {
+                        // Tìm matching conversation từ server data để lấy product info
+                        const serverConv = serverData?.conversations?.find(s => s.userID == fbConv.userID);
+                        return {
+                            ...fbConv,
+                            relatedProducts: serverConv?.relatedProducts || [],
+                            lastMessageTime: serverConv?.lastMessageTime || null
+                        };
+                    });
+                    
+                    renderChatConversationsWithProducts(enrichedConversations);
+                })
+                .catch(error => {
+                    console.log('Product context unavailable, showing Firebase only:', error);
+                    // Fallback: hiển thị Firebase conversations mà không có product badges
+                    renderChatConversationsWithProducts(firebaseConversations);
+                });
+            });
+        }
+
+        // Render conversations với product badges
+        function renderChatConversationsWithProducts(conversations) {
+            const chatPopupMessages = document.getElementById('chatPopupMessages');
+            
+                        let html = '';
+                        conversations.forEach(conversation => {
+                // Render product badges
+                let productHtml = '';
+                if (conversation.relatedProducts && conversation.relatedProducts.length > 0) {
+                    productHtml = '<div style="margin-top: 4px; font-size: 10px; color: #6c757d;">';
+                    conversation.relatedProducts.slice(0, 2).forEach(product => {
+                        const typeColor = product.postType === 'milk-donation' ? '#28a745' : 
+                                         product.postTypeDisplay === 'Trao đổi' ? '#17a2b8' : '#ffc107';
+                        productHtml += `<span style="background: ${typeColor}; color: white; padding: 1px 4px; border-radius: 8px; margin-right: 4px; font-size: 9px;">${product.postTypeDisplay}</span>`;
+                        });
+                    if (conversation.relatedProducts.length > 2) {
+                        productHtml += `<span style="color: #6c757d;">+${conversation.relatedProducts.length - 2}</span>`;
+                    }
+                    productHtml += '</div>';
+                }
+
+                        html += `
+                    <div class="chat-conversation-item" data-user-id="${conversation.userID}" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.3s ease; margin-bottom: 8px; border-left: 3px solid transparent;" onclick="openChatConversation(${conversation.userID}, '${conversation.userName}', '${conversation.userAvatar}')">
+                                <img src="${conversation.userAvatar}" alt="${conversation.userName}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <h6 style="margin: 0; font-size: 14px; font-weight: 600; color: #2c3e50;">${conversation.userName}</h6>
+                                ${conversation.unreadCount > 0 ? `<span style="background: #dc3545; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-left: 4px;">${conversation.unreadCount}</span>` : ''}
+                            </div>
+                                    <p style="margin: 0; font-size: 12px; color: #6c757d; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${conversation.lastMessage || 'Chưa có tin nhắn'}</p>
+                            ${productHtml}
+                            ${conversation.lastMessageTime ? `<div style="font-size: 10px; color: #adb5bd; margin-top: 2px;">${conversation.lastMessageTime}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    chatPopupMessages.innerHTML = html;
+            
+            // Add hover effects
+            const items = chatPopupMessages.querySelectorAll('.chat-conversation-item');
+            items.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.background = '#f8f9fa';
+                    this.style.borderLeftColor = '#d63384';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.background = 'transparent';
+                    this.style.borderLeftColor = 'transparent';
+                });
+            });
+        }
+        // Removed duplicate function - using single openChatConversation above
     </script>
+    <!-- Global Milk Donation Management Modals -->
+    <div id="myPostsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content-custom" style="width: 1000px; max-width: 95vw;">
+            <div class="modal-header-custom">
+                <h3><i class="fa-solid fa-list"></i> Quản lý tin đăng của tôi</h3>
+                <button type="button" class="modal-close" onclick="closeModal('myPostsModal')">&times;</button>
+            </div>
+            <div class="modal-body-custom" id="myPostsContent">
+                <div class="text-center"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            </div>
+        </div>
+    </div>
+    <div id="waitingListModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content-custom" style="width: 1000px; max-width: 95vw;">
+            <div class="modal-header-custom">
+                <h3><i class="fa-solid fa-users"></i> Danh sách chờ</h3>
+                <button type="button" class="modal-close" onclick="closeModal('waitingListModal')">&times;</button>
+            </div>
+            <div class="modal-body-custom" id="waitingListContent">
+                <div class="text-center"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Global Toast Notification JavaScript -->
     <script>
@@ -1312,11 +1526,146 @@
     });
     </script>
 
+    <!-- Complete Profile Modal -->
+    <div id="completeProfileModal" class="modal fade" tabindex="-1" role="dialog" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width: 900px;">
+            <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                <div id="completeProfileModalBody">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="completeProfileModalBackdrop" class="modal-backdrop fade" style="display: none;"></div>
+
     <!-- jQuery Library -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+    <!-- Complete Profile Modal Script -->
+    <script>
+        function closeCompleteProfileModal() {
+            $('#completeProfileModal').removeClass('show').fadeOut(300);
+            $('#completeProfileModalBackdrop').removeClass('show').fadeOut(300);
+        }
+
+        function showCompleteProfileModal() {
+            // Load the partial view content
+            $.ajax({
+                url: '@Url.Action("CompleteProfile", "Account")',
+                type: 'GET',
+                success: function(data) {
+                    $('#completeProfileModalBody').html(data);
+                    $('#completeProfileModalBackdrop').fadeIn(300, function() {
+                        $(this).addClass('show');
+                    });
+                    $('#completeProfileModal').fadeIn(300, function() {
+                        $(this).addClass('show');
+                    });
+                },
+                error: function() {
+                    alert('Không thể tải form hoàn thiện hồ sơ. Vui lòng thử lại.');
+                }
+            });
+        }
+
+        // Check if we need to show the complete profile modal
+        @if (TempData["ShowCompleteProfileModal"] != null && (bool)TempData["ShowCompleteProfileModal"])
+        {
+            <text>
+            $(document).ready(function() {
+                setTimeout(function() {
+                    showCompleteProfileModal();
+                }, 500);
+            });
+            </text>
+        }
+
+        // Close modal when clicking backdrop
+        $(document).on('click', '#completeProfileModalBackdrop', function() {
+            closeCompleteProfileModal();
+        });
+    </script>
+    <!-- ==== MOMEXCHANGE FIREBASE REAL-TIME CHAT SCRIPTS ==== -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+    <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBG1i1dO8XYTV0RdA_XVQ2cfvLSP0Oeog4",
+        authDomain: "momexchangechat.firebaseapp.com",
+        databaseURL: "https://momexchangechat-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "momexchangechat",
+        storageBucket: "momexchangechat.appspot.com",
+        messagingSenderId: "266940378899",
+        appId: "1:266940378899:web:abc50cee8c4697dbdbf4e6",
+        measurementId: "G-ECMV6KC1Q5"
+    };
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    // Khai báo biến context user toàn cục cho Chat
+    window.CURRENT_USER_ID = '@Session["UserID"]';
+    window.CURRENT_USER_NAME = '@Html.Raw(Session["FullName"] ?? "Khách")';
+    window.CURRENT_USER_AVATAR = '@(Session["AvatarURL"] ?? "/images/avatar-default.jpg")';
+    </script>
+    <script src="@Url.Content("~/Scripts/chat-firebase.js")"></script>
+    <script>window.sendMessage = sendMessage;
+    window.listenMessages = listenMessages;
+    window.setOnlineStatus = setOnlineStatus;
+    window.listenOnlineStatus = listenOnlineStatus;
+    window.sendImage = sendImage;
+    window.getRoomId = getRoomId;</script>
     @RenderSection("scripts", required: false)
+
+    <script>
+    // Generic close modal for shared usage
+    function closeModal(modalId){ try{$('#'+modalId).fadeOut(300);}catch(e){ var el=document.getElementById(modalId); if(el) el.style.display='none'; } }
+    function openMyPostsModal(){
+        try{
+            $('#myPostsModal').fadeIn(300);
+        }catch(e){ var el=document.getElementById('myPostsModal'); if(el) el.style.display='block'; }
+        // Load partial
+        $.ajax({
+            url: '@Url.Action("MyPosts", "MilkDonation")',
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(html){ $('#myPostsContent').html(html); },
+            error: function(){ $('#myPostsContent').html('<div class="alert alert-danger">Không thể tải danh sách. Vui lòng thử lại.</div>'); }
+        });
+    }
+    // Function to mở chat popup với 1 người chỉ định
+    function openChatPopupFor(userId, userName, userAvatar) {
+        // Mở popup chat nếu đang ẩn
+        var chatPopup = document.getElementById('chatPopup');
+        var chatToggle = document.getElementById('chatToggle');
+        if (chatPopup && chatPopup.style.display !== 'block') {
+            chatPopup.style.display = 'block';
+            chatToggle.style.display = 'none';
+        }
+        if (userId) {
+            openChatConversation(userId, userName || 'Người dùng', userAvatar || '/images/avatar-default.jpg');
+        } else {
+            loadChatConversations();
+        }
+    }
+    // Bind tất cả nút open-chat-modal khi DOM ready
+    $(document).ready(function() {
+        $(document).on('click', '.open-chat-modal', function(e) {
+            e.preventDefault();
+            var userId = $(this).data('chat-userid');
+            var userName = $(this).data('chat-username');
+            var userAvatar = $(this).data('chat-useravatar');
+            var postId = $(this).data('chat-postid');
+            var postTitle = $(this).data('chat-posttitle');
+            
+            // Store post context for chat notifications
+            window.currentChatContext = {
+                postId: postId,
+                postTitle: postTitle,
+                postType: $(this).data('chat-posttype') || 'unknown'
+            };
+            
+            openChatPopupFor(userId, userName, userAvatar);
+        });
+    });
+    </script>
 </body>
-</html>
-</html>
 </html>

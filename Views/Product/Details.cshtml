@@ -123,9 +123,15 @@
                         </div>
                     }
 
-                    <button class="cta-button secondary message-seller-btn" onclick="messageSeller()">
+                    <a href="#" class="cta-button secondary message-seller-btn open-chat-modal" 
+                       data-chat-userid="@Model.UserID"
+                       data-chat-username="@(Model.User?.UserDetails?.FullName ?? Model.User?.Email ?? "Người bán")"
+                       data-chat-useravatar="@(Model.User?.UserDetails?.ProfilePictureURL ?? "/images/avatar-default.jpg")"
+                       data-chat-postid="@Model.ProductID"
+                       data-chat-posttitle="@Model.ProductName"
+                       data-chat-posttype="product">
                         <i class="fa-regular fa-comments"></i> Nhắn tin cho người bán
-                    </button>
+                    </a>
 
                     @if (Model.PostingType == "Exchange" || Model.PostingType == "Sell")
                     {

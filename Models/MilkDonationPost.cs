@@ -27,6 +27,9 @@ namespace B_M.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        [StringLength(500)]
+        public string ImageUrl { get; set; }
+
         // Navigation property
         [ForeignKey("UserID")]
         public virtual User User { get; set; }

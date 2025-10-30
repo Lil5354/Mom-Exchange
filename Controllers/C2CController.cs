@@ -34,7 +34,7 @@ namespace B_M.Controllers
         // GET: /C2C
         public ActionResult Index(string filter = null, int? categoryId = null, int? listingType = null,
                                   decimal? minPrice = null, decimal? maxPrice = null, string province = null,
-                                  string condition = null, string q = null, int page = 1, int pageSize = 20)
+                                  string condition = null, string q = null, int page = 1, int pageSize = 6)
         {
             var query = db.PostC2Cs
                 .Include(p => p.Images)
@@ -77,7 +77,7 @@ namespace B_M.Controllers
 
             if (!string.IsNullOrWhiteSpace(province))
             {
-                query = query.Where(p => p.User.UserDetails != null && p.User.UserDetails.Address.Contains(province));
+                query = query.Where(p => p.User.UserDetails != null && p.User.UserDetails.Address != null && p.User.UserDetails.Address.Contains(province));
             }
 
             if (!string.IsNullOrWhiteSpace(q))
@@ -134,8 +134,13 @@ namespace B_M.Controllers
             ViewBag.Page = page;
             ViewBag.PageSize = pageSize;
             ViewBag.Filter = filter;
+            ViewBag.CategoryID = categoryId;
+            ViewBag.ListingType = listingType;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
             ViewBag.SelectedCondition = condition;
             ViewBag.Query = q;
+            ViewBag.Province = province;
 
             return View(items);
         }
@@ -147,6 +152,7 @@ namespace B_M.Controllers
                 .Include(p => p.Images)
                 .Include(p => p.User.UserDetails)
                 .Include(p => p.Category)
+                .Include(p => p.ExchangePreferences.Select(ep => ep.Category))
                 .FirstOrDefault(p => p.PostID == id);
 
             if (post == null)
@@ -490,12 +496,12 @@ namespace B_M.Controllers
         {
             var provinces = new List<string>
             {
-                "TP Hà Nội", "TP Huế", "Quảng Ninh", "Cao Bằng", "Lạng Sơn",
+                "Hà Nội", "TP.HCM", "Đà Nẵng", "TP Huế", "Quảng Ninh", "Cao Bằng", "Lạng Sơn",
                 "Lai Châu", "Điện Biên", "Sơn La", "Thanh Hóa", "Nghệ An",
                 "Hà Tĩnh", "Tuyên Quang", "Lào Cai", "Thái Nguyên", "Phú Thọ",
-                "Bắc Ninh", "Hưng Yên", "TP Hải Phòng", "Ninh Bình", "Quảng Trị",
-                "TP Đà Nẵng", "Quảng Ngãi", "Gia Lai", "Khánh Hòa", "Lâm Đồng",
-                "Đắk Lắk", "TPHCM", "Đồng Nai", "Tây Ninh", "TP Cần Thơ",
+                "Bắc Ninh", "Hưng Yên", "Hải Phòng", "Ninh Bình", "Quảng Trị",
+                "Quảng Ngãi", "Gia Lai", "Khánh Hòa", "Lâm Đồng",
+                "Đắk Lắk", "Đồng Nai", "Tây Ninh", "Cần Thơ",
                 "Vĩnh Long", "Đồng Tháp", "Cà Mau", "An Giang"
             };
 

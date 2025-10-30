@@ -20,6 +20,65 @@ namespace B_M.Models
         public DateTime LastMessageTime { get; set; }
         public int UnreadCount { get; set; }
         public bool IsOnline { get; set; }
+        
+        // Product context information
+        public List<ProductContext> RelatedProducts { get; set; } = new List<ProductContext>();
+        
+        public string TimeDisplay => GetTimeDisplay();
+        
+        private string GetTimeDisplay()
+        {
+            var timeSpan = DateTime.Now - LastMessageTime;
+            
+            if (timeSpan.TotalMinutes < 1)
+                return "Vừa xong";
+            if (timeSpan.TotalMinutes < 60)
+                return $"{(int)timeSpan.TotalMinutes} phút trước";
+            if (timeSpan.TotalHours < 24)
+                return $"{(int)timeSpan.TotalHours} giờ trước";
+            if (timeSpan.TotalDays < 7)
+                return $"{(int)timeSpan.TotalDays} ngày trước";
+            
+            return LastMessageTime.ToString("dd/MM/yyyy");
+        }
+    }
+
+    public class ProductContext
+    {
+        public long PostID { get; set; }
+        public string PostTitle { get; set; }
+        public string PostType { get; set; } // "milk-donation", "c2c"
+        public string PostTypeDisplay { get; set; } // "Cho tặng sữa mẹ", "Thanh lý", "Trao đổi"
+        public decimal? Price { get; set; }
+        public int? ListingType { get; set; } // For C2C: 1=Sell, 2=Exchange, 3=Both
+        public string ImageUrl { get; set; }
+        public DateTime PostDate { get; set; }
+        public int Status { get; set; } // 1=Open, 2=Closed
+        
+        public string StatusText
+        {
+            get
+            {
+                return Status == 1 ? "Đang mở" : "Đã đóng";
+            }
+        }
+        
+        public string PriceDisplay
+        {
+            get
+            {
+                if (PostType == "milk-donation")
+                    return "Miễn phí";
+                
+                if (ListingType == 2)
+                    return "Trao đổi";
+                
+                if (Price.HasValue)
+                    return string.Format("{0:N0} đ", Price.Value);
+                
+                return "Trao đổi";
+            }
+        }
     }
 
     public class ConversationViewModel
@@ -33,6 +92,7 @@ namespace B_M.Models
         public string OtherUserAvatar { get; set; }
         
         public List<MessageViewModel> Messages { get; set; } = new List<MessageViewModel>();
+        public List<ProductContext> RelatedProducts { get; set; } = new List<ProductContext>();
         public bool IsOnline { get; set; }
     }
 

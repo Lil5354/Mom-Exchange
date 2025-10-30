@@ -51,4 +51,16 @@ packages/
 # Temporary files
 *.tmp
 *.temp
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Package lock files (tùy chọn)
+package-lock.json
+yarn.lock

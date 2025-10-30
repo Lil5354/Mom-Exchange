@@ -1,4 +1,4 @@
-﻿@model IEnumerable<B_M.Models.MilkDonationPostViewModel>
+﻿@model B_M.Models.MilkDonationIndexViewModel
 @{
     ViewBag.Title = "Cho tặng sữa mẹ";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -7,124 +7,443 @@
 @section Styles {
     <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
     <style>
-        /* Override for compact layout */
+        /* Full-width layout cho PC/Laptop - Centered Content */
+        body {
+            overflow-x: hidden;
+        }
+
+        .milk-donation-container {
+            width: 100%;
+            max-width: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Hero Section - Full width video background */
         .hero-section {
-            padding: 30px 0 !important;
-        }
-        
-        .hero-title {
-            font-size: 2rem !important;
-            margin-bottom: 15px !important;
-        }
-        
-        .hero-subtitle {
-            font-size: 1rem !important;
-            margin-bottom: 20px !important;
-        }
-        
-        .hero-actions .btn {
-            padding: 12px 24px !important;
-            font-size: 1rem !important;
-        }
-        
-        .section-header {
-            margin: 20px 0 !important;
-        }
-        
-        .section-header h2 {
-            margin-bottom: 8px !important;
-        }
-        
-        .posts-grid {
-            grid-template-columns: repeat(3, 1fr) !important;
-            gap: 20px !important;
-            margin-bottom: 30px !important;
-        }
-        
-        .post-card {
-            padding: 15px !important;
-            border-radius: 15px !important;
-        }
-        
-        .donor-avatar {
-            width: 40px !important;
-            height: 40px !important;
-            border: 2px solid #d63384 !important;
-        }
-        
-        .donor-name {
-            font-size: 1rem !important;
-        }
-        
-        .donor-location {
-            font-size: 0.8rem !important;
-            margin: 3px 0 0 0 !important;
-        }
-        
-        .post-date {
-            font-size: 0.8rem !important;
-        }
-        
-        .post-content {
-            margin-bottom: 15px !important;
-        }
-        
-        .info-section {
-            margin-bottom: 10px !important;
-        }
-        
-        .info-section h5 {
-            font-size: 0.85rem !important;
-            margin-bottom: 6px !important;
-        }
-        
-        .info-section p {
-            font-size: 0.8rem !important;
-            line-height: 1.4 !important;
+            position: relative;
+            width: 100%;
+            padding: 30px 0;
+            text-align: center;
             overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
+        }
+        .hero-video-wrap {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            /* Subtle black overlay for better text contrast over video */
+            background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0.35) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
         }
         
+        /* ===== Animations ===== */
+        @@keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @@keyframes slide-up {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @@keyframes fade-up {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 600ms ease-out both; }
+        .animate-slide-up { animation: slide-up 700ms ease-out both; }
+        .animate-fade-up  { animation: fade-up 500ms ease-out both; }
+        
+        /* Stagger for grid items */
+        .posts-grid > .post-card { opacity: 0; }
+        .posts-grid > .post-card { animation: fade-up 500ms ease-out forwards; }
+        .posts-grid > .post-card:nth-child(1) { animation-delay: 60ms; }
+        .posts-grid > .post-card:nth-child(2) { animation-delay: 120ms; }
+        .posts-grid > .post-card:nth-child(3) { animation-delay: 180ms; }
+        .posts-grid > .post-card:nth-child(4) { animation-delay: 240ms; }
+        .posts-grid > .post-card:nth-child(5) { animation-delay: 300ms; }
+
+        .hero-title {
+            color: #fff;
+            font-weight: 800;
+            text-shadow: 0 3px 12px rgba(0,0,0,.45);
+        }
+
+            .hero-title .fa-hand-holding-heart {
+                color: #fff; /* đồng bộ trắng */
+                filter: drop-shadow(0 3px 8px rgba(0,0,0,.45));
+            }
+
+        .hero-subtitle {
+            color: #fff;
+            opacity: .98;
+            text-shadow: 0 2px 8px rgba(0,0,0,.45);
+        }
+        
+        .hero-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-actions .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+        
+        /* Main Content - Full width với padding */
+        .main-content {
+            width: 100%;
+            padding: 40px 60px;
+            background: #f8f9fa;
+            min-height: 80vh;
+        }
+
+        /* Section Header - Centered */
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            color: #d63384;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        /* Filter Bar - Centered */
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar select {
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            background: white;
+            font-size: 1rem;
+            min-width: 200px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-bar select:hover {
+            border-color: #d63384;
+        }
+
+        .filter-bar select:focus {
+            border-color: #d63384;
+            box-shadow: 0 0 0 3px rgba(214, 51, 132, 0.1);
+            outline: none;
+        }
+
+        /* Posts Grid - Centered và responsive */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        @@media (min-width: 1200px) {
+            .posts-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @@media (min-width: 1600px) {
+            .posts-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @@media (min-width: 2000px) {
+            .posts-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+        
+        /* Post Cards - Enhanced Design */
+        .post-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            border-color: #d63384;
+        }
+
+        .post-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .post-content {
+            padding: 20px;
+        }
+
+        .donor-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .donor-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #f8f9fa;
+        }
+
+        .donor-details h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .donor-location {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .post-date {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .verification-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .verification-badge .badge {
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        .post-info {
+            margin-bottom: 15px;
+        }
+
+        .post-info p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .post-info strong {
+            color: #333;
+            font-weight: 600;
+        }
+
         .verification-warning {
-            margin-bottom: 15px !important;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
         }
-        
+
         .verification-warning .alert {
-            padding: 10px !important;
-            font-size: 0.8rem !important;
-            border-radius: 10px !important;
+            margin: 0;
+            padding: 0;
+            background: none;
+            border: none;
+            color: #856404;
+            font-size: 0.85rem;
         }
-        
-        .post-footer .btn {
-            padding: 6px 15px !important;
-            font-size: 0.85rem !important;
+
+        .post-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
-        
-        /* Responsive adjustments */
-        @@media (max-width: 1024px) {
-            .posts-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
+
+        .post-actions .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
-        
+
+        .btn-outline-primary {
+            border-color: #d63384;
+            color: #d63384;
+        }
+
+        .btn-outline-primary:hover {
+            background: #d63384;
+            border-color: #d63384;
+            color: white;
+        }
+
+        .btn-primary {
+            background: #d63384;
+            border-color: #d63384;
+        }
+
+        .btn-primary:hover {
+            background: #c02d6b;
+            border-color: #c02d6b;
+        }
+
+        /* Empty State - Centered */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #d63384;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .empty-state p {
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        /* Pagination - Centered */
+        .pagination-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .pagination {
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .pagination .page-link {
+            color: #d63384;
+            border: 1px solid #e9ecef;
+            padding: 10px 15px;
+            margin: 0 3px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination .page-link:hover {
+            background: #d63384;
+            color: white;
+            border-color: #d63384;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: #d63384;
+            border-color: #d63384;
+            color: white;
+        }
+
+        /* Responsive */
         @@media (max-width: 768px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
             .posts-grid {
-                grid-template-columns: 1fr !important;
-                gap: 15px !important;
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
             
-            .hero-title {
-                font-size: 1.5rem !important;
+            .filter-bar {
+                flex-direction: column;
+                align-items: center;
             }
             
-            .hero-actions {
-                flex-direction: column !important;
-                align-items: center !important;
+            .filter-bar select {
+                min-width: 250px;
             }
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #d63384;
+            border-color: #d63384;
+            color: white;
+        }
+
+        .pagination-info {
+            margin-top: 10px;
+        }
+        /* Force white on hero heading and subtitle */
+        .hero-section .hero-title,
+        .hero-section .hero-title .fa-hand-holding-heart,
+        .hero-section .hero-subtitle {
+            color: #fff !important;
+            -webkit-text-fill-color: #fff; /* fix trên một số trình duyệt WebKit */
+            text-shadow: 0 3px 12px rgba(0,0,0,.45);
+        }
+
+        /* Đảm bảo không bị mờ do opacity kế thừa */
+        .hero-section .hero-content,
+        .hero-section .hero-title,
+        .hero-section .hero-subtitle {
+            opacity: 1 !important;
+            mix-blend-mode: normal;
+            filter: none;
+            background: transparent;
         }
     </style>
 }
@@ -132,34 +451,26 @@
 <div class="milk-donation-container">
     <!-- Hero Section -->
     <div class="hero-section">
+        <!-- Background Video -->
+        <div class="hero-video-wrap">
+            <video class="hero-video" autoplay muted loop playsinline poster="~/images/hero-fallback.jpg">
+                <source src="~/videos/1.mp4" type="video/mp4" />
+            </video>
+            <div class="hero-overlay"></div>
+        </div>
         <div class="container">
             <div class="row">
-                <div class="col-md-12 text-center">
-                    <h1 class="hero-title">
-                        <i class="fas fa-hand-holding-heart"></i>
-                        Cho tặng sữa mẹ
+                <div class="col-md-12 text-center hero-content animate-fade-in">
+                    <h1 class="hero-title animate-slide-up">
+                        <h1>Cầu nối <span class="highlight">sữa mẹ Việt</span></h1>
                     </h1>
-                    <p class="hero-subtitle">Kết nối tình yêu thương giữa các bà mẹ - An toàn, minh bạch, phi thương mại</p>
+                    <p class="hero-subtitle animate-slide-up" style="animation-delay: 120ms;">Kết nối tình yêu thương giữa các bà mẹ - An toàn, minh bạch, phi thương mại</p>
                     
-                    @if (Session["FullName"] != null)
+                    @if (Session["FullName"] == null)
                     {
-                        <div class="hero-actions">
-                            <button type="button" class="btn btn-primary btn-lg" onclick="openCreatePostModal()">
-                                <i class="fas fa-plus"></i> Đăng tin cho tặng
-                            </button>
-                            <button type="button" class="btn btn-outline-light btn-lg" onclick="openMyPostsModal()">
-                                <i class="fas fa-list"></i> Quản lý tin đăng
-                            </button>
-                            <button type="button" class="btn btn-outline-light btn-lg" onclick="openLifestyleSurveyModal()">
-                                <i class="fas fa-clipboard-check"></i> Nâng cấp xác thực
-                            </button>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="hero-actions">
+                        <div class="hero-actions animate-slide-up" style="animation-delay: 220ms;">
                             <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg">
-                                <i class="fas fa-user"></i> Đăng nhập để đăng tin
+                                <i class="fas fa-user"></i> Đăng nhập để tham gia
                             </a>
                         </div>
                     }
@@ -169,130 +480,211 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="section-header">
-                    <h2>Danh sách sữa mẹ cho tặng</h2>
-                    <p class="text-muted">Các bài đăng được sắp xếp theo mức độ xác thực và thời gian</p>
-    </div>
+    <div class="main-content">
+        <div class="section-header">
+            <h2>Danh sách sữa mẹ cho tặng</h2>
+            
+            <div class="filter-bar">
+                <select id="provinceFilter" onchange="filterPosts()">
+                    <option value="">Tất cả khu vực</option>
+                    <option value="Hà Nội" @(Model.ProvinceFilter == "Hà Nội" ? "selected" : "")>Hà Nội</option>
+                    <option value="TP.HCM" @(Model.ProvinceFilter == "TP.HCM" ? "selected" : "")>TP.HCM</option>
+                    <option value="Đà Nẵng" @(Model.ProvinceFilter == "Đà Nẵng" ? "selected" : "")>Đà Nẵng</option>
+                    <option value="TP Huế" @(Model.ProvinceFilter == "TP Huế" ? "selected" : "")>TP Huế</option>
+                    <option value="Quảng Ninh" @(Model.ProvinceFilter == "Quảng Ninh" ? "selected" : "")>Quảng Ninh</option>
+                    <option value="Cao Bằng" @(Model.ProvinceFilter == "Cao Bằng" ? "selected" : "")>Cao Bằng</option>
+                    <option>Lai Châu</option>
+                    <option>Điện Biên</option>
+                    <option>Sơn La</option>
+                    <option>Thanh Hóa</option>
+                    <option>Nghệ An</option>
+                    <option>Hà Tĩnh</option>
+                    <option>Tuyên Quang</option>
+                    <option>Lào Cai</option>
+                    <option>Thái Nguyên</option>
+                    <option>Phú Thọ</option>
+                    <option>Bắc Ninh</option>
+                    <option>Hưng Yên</option>
+                    <option>TP Hải Phòng</option>
+                    <option>Ninh Bình</option>
+                    <option>Quảng Trị</option>
+                    <option>TP Đà Nẵng</option>
+                    <option>Quảng Ngãi</option>
+                    <option>Gia Lai</option>
+                    <option>Khánh Hòa</option>
+                    <option>Lâm Đồng</option>
+                    <option>Đắk Lắk</option>
+                    <option @(Model.ProvinceFilter == "TPHCM" ? "selected" : "")>TP Hồ Chí Minh</option>
+                    <option>Đồng Nai</option>
+                    <option>Tây Ninh</option>
+                    <option>TP Cần Thơ</option>
+                    <option>Vĩnh Long</option>
+                    <option>Đồng Tháp</option>
+                    <option>Cà Mau</option>
+                    <option>An Giang</option>
+                </select>
+                <select id="tierFilter" onchange="filterPosts()">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="1" @(Model.TierFilter == "1" ? "selected" : "")>Thẻ Vàng</option>
+                    <option value="3" @(Model.TierFilter == "3" ? "selected" : "")>Thẻ Xanh</option>
+                </select>
+            </div>
+        </div>
 
-                @if (Model != null && Model.Any())
+        @if (Model != null && Model.Posts != null && Model.Posts.Any())
+        {
+            <div class="posts-grid">
+                @foreach (var post in Model.Posts)
                 {
-                    <div class="posts-grid">
-        @foreach (var post in Model)
+                    <div class="post-card @post.VerificationTierClass animate-fade-up">
+                        <div class="verification-badge">
+                            @if (post.VerificationTier == 1)
+                            {
+                                <span class="badge badge-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    THẺ VÀNG
+                                </span>
+                            }
+                            else if (post.VerificationTier == 3)
+                            {
+                                <span class="badge badge-success">
+                                    <i class="fas fa-check-circle"></i>
+                                    THẺ XANH
+                                </span>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(post.ImageUrl))
                         {
-                            <div class="post-card @post.VerificationTierClass" data-aos="fade-up">
-                                <div class="verification-badge">
-                                    @if (post.VerificationTier == 1)
-                                    {
-                                        <span class="badge badge-warning">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            THẺ VÀNG
-                                        </span>
-                                    }
-                                    else if (post.VerificationTier == 3)
-                                    {
-                                        <span class="badge badge-success">
-                                            <i class="fas fa-check-circle"></i>
-                                            THẺ XANH
-                                        </span>
-                                    }
-                                </div>
-
-                                <div class="post-header">
-                                    <div class="donor-info">
-                                        <img src="@post.DonorAvatarUrl" alt="@post.DonorName" class="donor-avatar">
-                                        <div class="donor-details">
-                                            <h4 class="donor-name">@post.DonorName</h4>
-                                            <p class="donor-location">
-                                                <i class="fas fa-map-marker-alt"></i>
-                                                @post.Location
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="post-date">
-                                        <i class="fas fa-calendar"></i>
-                                        @post.DateOfExpression.ToString("dd/MM/yyyy")
-                                    </div>
-                                </div>
-
-                                <div class="post-content">
-                                    <div class="info-section">
-                                        <h5><i class="fas fa-utensils"></i> Chế độ ăn</h5>
-                                        <p>@post.DietInfo</p>
-                                    </div>
-
-                                    <div class="info-section">
-                                        <h5><i class="fas fa-snowflake"></i> Bảo quản</h5>
-                                        <p>@post.StorageInfo</p>
-                                    </div>
-
-                                    @if (!string.IsNullOrEmpty(post.Note))
-                                    {
-                                        <div class="info-section">
-                                            <h5><i class="fas fa-sticky-note"></i> Ghi chú</h5>
-                                            <p>@post.Note</p>
-                                        </div>
-                                    }
-                                </div>
-
-                                <!-- Verification Warning -->
-                                <div class="verification-warning">
-                                    @if (post.VerificationTier == 1)
-                                    {
-                                        <div class="alert alert-warning">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <strong>KHAI BÁO CƠ BẢN.</strong> Sữa chưa được xác thực y tế. Nền tảng khuyến nghị không dùng cho bé uống.
-                                        </div>
-                                    }
-                                    else if (post.VerificationTier == 3)
-                                    {
-                                        <div class="alert alert-success">
-                                            <i class="fas fa-check-circle"></i>
-                                            <strong>ĐÃ XÁC THỰC Y TẾ.</strong> Người cho đã hoàn thành xác thực y tế.
-                                        </div>
-                                    }
-                                </div>
-
-                                <div class="post-footer">
-                                    <div class="post-actions">
-                                        <a href="@Url.Action("Details", "MilkDonation", new { id = post.Id })" class="btn btn-outline-primary">
-                                            <i class="fas fa-eye"></i> Xem chi tiết
-                                        </a>
-                                        <a href="@Url.Action("Conversation", "Chat", new { otherUserId = post.DonorUserId })" class="btn btn-primary">
-                                            <i class="fas fa-comments"></i> Liên hệ
-                                        </a>
-                                    </div>
-                                </div>
+                            <div class="post-image">
+                                <img src="@post.ImageUrl" alt="Hình ảnh sữa mẹ" class="img-fluid">
                             </div>
                         }
-                    </div>
-                }
-                else
-                {
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <i class="fas fa-baby"></i>
+
+                        <div class="post-content">
+                            <div class="donor-info">
+                                <img src="@post.DonorAvatarUrl" alt="@post.DonorName" class="donor-avatar">
+                                <div class="donor-details">
+                                    <h4>@post.DonorName</h4>
+                                    <p class="donor-location">
+                                        <i class="fa-solid fa-map-marker-alt"></i>
+                                        @post.Location
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="post-meta">
+                                <span class="post-date">
+                                    <i class="fa-solid fa-calendar"></i>
+                                    @post.DateOfExpression.ToString("dd/MM/yyyy")
+                                </span>
+                            </div>
+
+                            <div class="post-info">
+                                <p><strong>Chế độ ăn:</strong> @post.DietInfo</p>
+                                <p><strong>Bảo quản:</strong> @post.StorageInfo</p>
+                                @if (!string.IsNullOrEmpty(post.Note))
+                                {
+                                    <p><strong>Ghi chú:</strong> @post.Note</p>
+                                }
+                            </div>
+
+                            <div class="verification-warning">
+                                <div class="alert @(post.VerificationTier == 1 ? "alert-warning" : "alert-success")">
+                                    <i class="fa-solid @(post.VerificationTier == 1 ? "fa-exclamation-triangle" : "fa-check-circle")"></i>
+                                    @if (post.VerificationTier == 1)
+                                    {
+                                        <text>KHAI BÁO CƠ BẢN. Sữa chưa được xác thực y tế. Nền tảng khuyến nghị không dùng cho bé uống.</text>
+                                    }
+                                    else
+                                    {
+                                        <text>ĐÃ XÁC THỰC Y TẾ. Sữa đã được kiểm tra qua hồ sơ khám sức khỏe.</text>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="post-actions">
+                                <a href="@Url.Action("Details", "MilkDonation", new { id = post.Id })" class="btn btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Xem chi tiết
+                                </a>
+                                <a href="#" class="btn btn-primary open-chat-modal" 
+                                   data-chat-userid="@post.DonorUserId"
+                                   data-chat-username="@post.DonorName"
+                                   data-chat-useravatar="@post.DonorAvatarUrl"
+                                   data-chat-postid="@post.Id"
+                                   data-chat-posttitle="@post.Title"
+                                   data-chat-posttype="milk-donation">
+                                    <i class="fas fa-comments"></i> Liên hệ
+                                </a>
+                            </div>
                         </div>
-                        <h3>Chưa có tin đăng nào</h3>
-                        <p>Hiện tại chưa có ai đăng tin cho tặng sữa mẹ. Hãy là người đầu tiên!</p>
-                        @if (Session["FullName"] != null)
-                        {
-                            <button type="button" class="btn btn-primary btn-lg" onclick="openCreatePostModal()">
-                                <i class="fas fa-plus"></i> Đăng tin đầu tiên
-                            </button>
-                        }
-                        else
-                        {
-                            <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg">
-                                <i class="fas fa-user"></i> Đăng nhập để đăng tin
-                            </a>
-                        }
                     </div>
                 }
             </div>
-        </div>
+            
+            <!-- Pagination Controls -->
+            if (Model.TotalPages > 1)
+            {
+                <div class="pagination-container">
+                    <nav aria-label="Pagination">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, province = Model.ProvinceFilter, tier = Model.TierFilter })">
+                                        <i class="fas fa-chevron-left"></i> Trước
+                                    </a>
+                                </li>
+                            }
+                            
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = i, province = Model.ProvinceFilter, tier = Model.TierFilter })">@i</a>
+                                </li>
+                            }
+                            
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, province = Model.ProvinceFilter, tier = Model.TierFilter })">
+                                        Sau <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                    
+                    <div class="pagination-info text-center">
+                        <small class="text-muted">
+                            Trang @Model.CurrentPage / @Model.TotalPages - Tổng @Model.TotalPosts bài đăng
+                        </small>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-baby"></i>
+                </div>
+                <h3>Chưa có tin đăng nào</h3>
+                <p>Hiện tại chưa có ai đăng tin cho tặng sữa mẹ. Hãy là người đầu tiên!</p>
+                @if (Session["FullName"] != null)
+                {
+                    <button type="button" class="btn btn-primary btn-lg" onclick="openCreatePostModal()">
+                        <i class="fas fa-plus"></i> Đăng tin đầu tiên
+                    </button>
+                }
+                else
+                {
+                    <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user"></i> Đăng nhập để đăng tin
+                    </a>
+                }
+            </div>
+        }
     </div>
 </div>
 
@@ -365,6 +757,22 @@
             <div class="text-center">
                 <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
                 <p class="mt-3">Đang tải form...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Waiting List -->
+<div id="waitingListModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content-custom" style="width: 1000px; max-width: 95vw;">
+        <div class="modal-header-custom">
+            <h3><i class="fas fa-users"></i> Danh sách chờ</h3>
+            <button type="button" class="modal-close" onclick="closeModal('waitingListModal'); openMyPostsModal();">&times;</button>
+        </div>
+        <div class="modal-body-custom" id="waitingListContent">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-3">Đang tải danh sách chờ...</p>
             </div>
         </div>
     </div>
@@ -457,18 +865,19 @@
         }
 
         function loadMyPostsList() {
-            $.get('@Url.Action("MyPosts", "MilkDonation")')
-                .done(function(data) {
-                    var content = $(data).find('.my-posts-container .container').html();
-                    if (content) {
-                        $('#myPostsContent').html(content);
-                    } else {
-                        $('#myPostsContent').html(data);
-                    }
-                })
-                .fail(function() {
+            $.ajax({
+                url: '@Url.Action("MyPosts", "MilkDonation")',
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(data) {
+                    $('#myPostsContent').html(data);
+                },
+                error: function() {
                     $('#myPostsContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Không thể tải danh sách. Vui lòng thử lại.</div>');
-                });
+                }
+            });
         }
 
         function loadMedicalRecordsForm() {
@@ -619,6 +1028,28 @@
                 }
             }
         });
+
+        // Filter posts functionality - redirect to controller with filters
+        function filterPosts() {
+            var provinceFilter = document.getElementById('provinceFilter').value;
+            var tierFilter = document.getElementById('tierFilter').value;
+            
+            // Build URL with non-empty parameters only
+            var params = [];
+            if (provinceFilter && provinceFilter !== '') {
+                params.push('province=' + encodeURIComponent(provinceFilter));
+            }
+            if (tierFilter && tierFilter !== '') {
+                params.push('tier=' + encodeURIComponent(tierFilter));
+            }
+            
+            var url = '@Url.Action("Index", "MilkDonation")';
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            
+            window.location.href = url;
+        }
 
         // Auto-refresh posts every 30 seconds
         setInterval(function() {

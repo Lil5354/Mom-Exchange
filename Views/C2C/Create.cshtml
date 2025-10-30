@@ -4,113 +4,749 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container" style="padding-top:20px;">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card" style="padding:20px; border-radius:12px;">
-                <h3 style="color:#d63384;">Đăng tin Thanh lý / Trao đổi</h3>
-                @using (Html.BeginForm("Create", "C2C", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@section Styles {
+    <style>
+        .create-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @@keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .create-modal-container {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transform: scale(0.9);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @@keyframes slideIn {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .modal-header-modern {
+            background: linear-gradient(135deg, #d63384, #e91e63);
+            color: white;
+            padding: 24px 32px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body-modern {
+            padding: 32px;
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f3f4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group-modern {
+            margin-bottom: 24px;
+        }
+
+        .form-label-modern {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .required-indicator {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .form-control-modern {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #fff;
+            width: 100%;
+        }
+
+        .form-control-modern:focus {
+            border-color: #d63384;
+            box-shadow: 0 0 0 0.2rem rgba(214, 51, 132, 0.15);
+            outline: none;
+        }
+
+        .form-control-modern:hover {
+            border-color: #d63384;
+        }
+
+        .textarea-modern {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .radio-group-modern {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-weight: 500;
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .radio-option:hover {
+            border-color: #d63384;
+            background: rgba(214, 51, 132, 0.05);
+        }
+
+        .radio-option.active {
+            border-color: #d63384;
+            background: linear-gradient(135deg, rgba(214, 51, 132, 0.1), rgba(233, 30, 99, 0.1));
+            color: #d63384;
+        }
+
+        .radio-option input[type="radio"] {
+            margin: 0;
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-size: 14px;
+        }
+
+        .checkbox-option:hover {
+            border-color: #d63384;
+            background: rgba(214, 51, 132, 0.05);
+        }
+
+        .checkbox-option.checked {
+            border-color: #d63384;
+            background: linear-gradient(135deg, rgba(214, 51, 132, 0.1), rgba(233, 30, 99, 0.1));
+            color: #d63384;
+        }
+
+        .image-upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .image-upload-section:hover {
+            border-color: #d63384;
+            background: rgba(214, 51, 132, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            color: #6c757d;
+            margin-bottom: 16px;
+        }
+
+        .file-input-modern {
+            display: none;
+        }
+
+        .file-input-trigger {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-input-trigger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .url-inputs-container {
+            margin-top: 16px;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn-add-url {
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-url:hover {
+            transform: translateY(-1px);
+        }
+
+        .modal-actions {
+            padding: 24px 32px;
+            background: #f8f9fa;
+            border-radius: 0 0 16px 16px;
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+        }
+
+        .btn-submit-modern {
+            background: linear-gradient(135deg, #d63384, #e91e63);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-submit-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(214, 51, 132, 0.3);
+        }
+
+        .btn-cancel-modern {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-cancel-modern:hover {
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            background: #5a6268;
+        }
+
+        .validation-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-group-modern.has-error .form-control-modern {
+            border-color: #dc3545;
+        }
+
+        @@media (max-width: 768px) {
+            .create-modal-container {
+                width: 95%;
+                margin: 10px;
+                max-height: 95vh;
+            }
+
+            .modal-header-modern,
+            .modal-body-modern,
+            .modal-actions {
+                padding: 16px 20px;
+            }
+
+            .radio-group-modern {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn-submit-modern,
+            .btn-cancel-modern {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Smooth scrollbar */
+        .create-modal-container {
+            scrollbar-width: thin;
+            scrollbar-color: #d63384 #f1f3f4;
+        }
+
+        .create-modal-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .create-modal-container::-webkit-scrollbar-track {
+            background: #f1f3f4;
+        }
+
+        .create-modal-container::-webkit-scrollbar-thumb {
+            background: #d63384;
+            border-radius: 4px;
+        }
+    </style>
+}
+
+<div class="create-modal-backdrop" id="createModal">
+    <div class="create-modal-container">
+        <!-- Modal Header -->
+        <div class="modal-header-modern">
+            <h2 class="modal-title">
+                <i class="fas fa-plus-circle"></i>
+                Đăng tin Thanh lý & Trao đổi
+            </h2>
+            <button type="button" class="modal-close" onclick="closeCreateModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body-modern">
+            @using (Html.BeginForm("Create", "C2C", FormMethod.Post, new { enctype = "multipart/form-data", id = "createForm" }))
                 {
                     @Html.AntiForgeryToken()
-                    <div class="form-group">
-                        <label>Danh mục <span style="color:red">*</span></label>
-                        @Html.DropDownListFor(m => m.CategoryID, (IEnumerable<SelectListItem>)ViewBag.Categories, "-- Chọn danh mục --", new { @class = "form-control", required = "required" })
-                        @Html.ValidationMessageFor(m => m.CategoryID, "", new { @class = "text-danger" })
+                
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Thông tin cơ bản
+                    </h3>
+                    
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-list"></i>
+                            Danh mục <span class="required-indicator">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.CategoryID, (IEnumerable<SelectListItem>)ViewBag.Categories, "-- Chọn danh mục --", new { @class = "form-control-modern", required = "required" })
+                        @Html.ValidationMessageFor(m => m.CategoryID, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group">
-                        <label>Tiêu đề <span style="color:red">*</span></label>
-                        @Html.TextBoxFor(m => m.Title, new { @class = "form-control", maxlength = 255, required = "required", placeholder = "Nhập tiêu đề ngắn gọn" })
-                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-heading"></i>
+                            Tiêu đề <span class="required-indicator">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.Title, new { @class = "form-control-modern", maxlength = 255, required = "required", placeholder = "Nhập tiêu đề ngắn gọn, mô tả sản phẩm..." })
+                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group">
-                        <label>Nội dung <span style="color:red">*</span></label>
-                        @Html.TextAreaFor(m => m.Content, 6, 0, new { @class = "form-control", required = "required", placeholder = "Mô tả chi tiết tình trạng, phụ kiện kèm theo..." })
-                        @Html.ValidationMessageFor(m => m.Content, "", new { @class = "text-danger" })
+
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-align-left"></i>
+                            Mô tả chi tiết <span class="required-indicator">*</span>
+                        </label>
+                        @Html.TextAreaFor(m => m.Content, new { @class = "form-control-modern textarea-modern", required = "required", placeholder = "Mô tả chi tiết tình trạng, phụ kiện kèm theo, lý do bán/đổi..." })
+                        @Html.ValidationMessageFor(m => m.Content, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group">
-                        <label>Tình trạng <span style="color:red">*</span></label>
-                        @Html.DropDownListFor(m => m.Condition, (IEnumerable<SelectListItem>)ViewBag.ConditionOptions, "-- Chọn tình trạng --", new { @class = "form-control", required = "required" })
-                        @Html.ValidationMessageFor(m => m.Condition, "", new { @class = "text-danger" })
+
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-star"></i>
+                            Tình trạng <span class="required-indicator">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.Condition, (IEnumerable<SelectListItem>)ViewBag.ConditionOptions, "-- Chọn tình trạng --", new { @class = "form-control-modern", required = "required" })
+                        @Html.ValidationMessageFor(m => m.Condition, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group">
-                        <label>Hình thức đăng <span style="color:red">*</span></label>
-                        <div class="d-flex" style="gap:10px;">
-                            <label class="radio-inline"><input type="radio" name="ListingType" value="1" @(Model.ListingType == 1 ? "checked" : "") /> Chỉ bán</label>
-                            <label class="radio-inline"><input type="radio" name="ListingType" value="2" @(Model.ListingType == 2 ? "checked" : "") /> Chỉ trao đổi</label>
-                            <label class="radio-inline"><input type="radio" name="ListingType" value="3" @(Model.ListingType == 3 ? "checked" : "") /> Bán hoặc trao đổi</label>
+                    </div>
+
+                <!-- Listing Type Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-tag"></i>
+                        Hình thức đăng tin
+                    </h3>
+                    
+                    <div class="form-group-modern">
+                        <div class="radio-group-modern">
+                            <label class="radio-option">
+                                <input type="radio" name="ListingType" value="1" @(Model.ListingType == 1 || Model.ListingType == 3 ? "checked" : "") />
+                                <i class="fas fa-dollar-sign"></i>
+                                Thanh lý (Bán)
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="ListingType" value="2" @(Model.ListingType == 2 ? "checked" : "") />
+                                <i class="fas fa-exchange-alt"></i>
+                                Trao đổi
+                            </label>
                         </div>
                     </div>
-                    <div class="form-group" id="priceGroup">
-                        <label>Giá (đ) <span style="color:red">*</span></label>
-                        @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number", step = "1000", min = "0" })
-                        @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger" })
+
+                    <div class="form-group-modern" id="priceGroup">
+                        <label class="form-label-modern">
+                            <i class="fas fa-money-bill"></i>
+                            Giá bán (đ) <span class="required-indicator">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.Price, new { @class = "form-control-modern", type = "number", step = "1000", min = "0", placeholder = "Nhập giá bán (VD: 150000)" })
+                        @Html.ValidationMessageFor(m => m.Price, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group" id="exchangePrefs" style="display:none;">
-                        <label>Danh mục muốn đổi (chọn 2-5)</label>
-                        <div class="row">
+
+                    <div class="form-group-modern" id="exchangePrefs" style="display:none;">
+                        <label class="form-label-modern">
+                            <i class="fas fa-heart"></i>
+                            Danh mục muốn đổi (chọn 2-5 mục)
+                        </label>
+                        <div class="checkbox-grid">
                             @foreach (var c in (IEnumerable<SelectListItem>)ViewBag.Categories)
                             {
-                                <div class="col-md-6">
-                                    <label style="font-weight:400;">
-                                        <input type="checkbox" name="ExchangeCategoryIDs" value="@c.Value" /> @c.Text
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="ExchangeCategoryIDs" value="@c.Value" />
+                                    @c.Text
                                     </label>
-                                </div>
                             }
                         </div>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label>Hình ảnh (tối đa 8 hình)</label>
-                        <input type="file" name="ImageFiles" multiple accept="image/*" class="form-control" />
-                        <small class="text-muted">Bạn cũng có thể dán URL hình ảnh ở dưới</small>
-                        <div id="imageUrlInputs" style="margin-top:8px;">
-                            <input type="text" name="ImageUrls" class="form-control" placeholder="Dán URL hình ảnh (tùy chọn)" />
+                <!-- Images Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-images"></i>
+                        Hình ảnh sản phẩm
+                    </h3>
+                    
+                    <div class="image-upload-section">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
                         </div>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addImageUrlInput()" style="margin-top:6px;">+ Thêm URL</button>
+                        <div class="upload-text">
+                            <strong>Tải lên hình ảnh</strong><br>
+                            Tối đa 8 hình ảnh, định dạng JPG, PNG
                     </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Đăng tin</button>
-                        <a href="@Url.Action("Index")" class="btn btn-secondary">Hủy</a>
+                        <input type="file" name="ImageFiles" multiple accept="image/*" class="file-input-modern" id="fileInput" />
+                        <button type="button" class="file-input-trigger" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-upload"></i>
+                            Chọn hình ảnh
+                        </button>
+                        
+                        <div class="url-inputs-container">
+                            <small style="color: #6c757d; display: block; margin-bottom: 8px;">
+                                <i class="fas fa-link"></i> Hoặc dán URL hình ảnh
+                            </small>
+                            <div id="imageUrlInputs">
+                                <div class="url-input-group">
+                                    <input type="text" name="ImageUrls" class="form-control-modern" placeholder="https://example.com/image.jpg" style="flex: 1;" />
+                                </div>
+                            </div>
+                            <button type="button" class="btn-add-url" onclick="addImageUrlInput()">
+                                <i class="fas fa-plus"></i> Thêm URL
+                            </button>
+                        </div>
+                    </div>
                     </div>
                 }
             </div>
+
+        <!-- Modal Actions -->
+        <div class="modal-actions">
+            <a href="@Url.Action("Index")" class="btn-cancel-modern">
+                <i class="fas fa-times"></i>
+                Hủy bỏ
+            </a>
+            <button type="submit" form="createForm" class="btn-submit-modern">
+                <i class="fas fa-paper-plane"></i>
+                Đăng tin ngay
+            </button>
         </div>
     </div>
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form
+        toggleFields();
+        initializeRadioOptions();
+        initializeCheckboxOptions();
+        
+        // Form validation
+        initializeFormValidation();
+    });
+
     function toggleFields() {
-        var type = document.querySelector('input[name="ListingType"]:checked');
-        var priceGroup = document.getElementById('priceGroup');
-        var exchangeGroup = document.getElementById('exchangePrefs');
+        const type = document.querySelector('input[name="ListingType"]:checked');
+        const priceGroup = document.getElementById('priceGroup');
+        const exchangeGroup = document.getElementById('exchangePrefs');
+        
         if (!type) return;
+        
         if (type.value === '2') {
+            // Trao đổi
             priceGroup.style.display = 'none';
             exchangeGroup.style.display = 'block';
-        } else if (type.value === '1') {
+        } else {
+            // Thanh lý (Bán)
             priceGroup.style.display = 'block';
             exchangeGroup.style.display = 'none';
-        } else {
-            priceGroup.style.display = 'block';
-            exchangeGroup.style.display = 'block';
         }
     }
-    document.querySelectorAll('input[name="ListingType"]').forEach(function (r) {
-        r.addEventListener('change', toggleFields);
+
+    function initializeRadioOptions() {
+        const radioOptions = document.querySelectorAll('.radio-option');
+        const radioInputs = document.querySelectorAll('input[name="ListingType"]');
+        
+        radioInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                // Update visual state
+                radioOptions.forEach(option => option.classList.remove('active'));
+                this.closest('.radio-option').classList.add('active');
+                toggleFields();
     });
-    document.addEventListener('DOMContentLoaded', toggleFields);
+        });
+        
+        // Set initial state
+        const checkedInput = document.querySelector('input[name="ListingType"]:checked');
+        if (checkedInput) {
+            checkedInput.closest('.radio-option').classList.add('active');
+        }
+    }
+
+    function initializeCheckboxOptions() {
+        const checkboxOptions = document.querySelectorAll('.checkbox-option');
+        
+        checkboxOptions.forEach(function(option) {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            
+            option.addEventListener('click', function(e) {
+                if (e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
+                
+                if (checkbox.checked) {
+                    option.classList.add('checked');
+                } else {
+                    option.classList.remove('checked');
+                }
+            });
+            
+            // Set initial state
+            if (checkbox.checked) {
+                option.classList.add('checked');
+            }
+        });
+    }
 
     function addImageUrlInput() {
-        var container = document.getElementById('imageUrlInputs');
-        var input = document.createElement('input');
+        const container = document.getElementById('imageUrlInputs');
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'url-input-group';
+        
+        const input = document.createElement('input');
         input.type = 'text';
         input.name = 'ImageUrls';
-        input.className = 'form-control';
-        input.placeholder = 'Dán URL hình ảnh (tùy chọn)';
-        input.style.marginTop = '6px';
-        container.appendChild(input);
+        input.className = 'form-control-modern';
+        input.placeholder = 'https://example.com/image.jpg';
+        input.style.flex = '1';
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn-cancel-modern';
+        removeBtn.style.padding = '8px 12px';
+        removeBtn.style.fontSize = '12px';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.onclick = function() {
+            container.removeChild(inputGroup);
+        };
+        
+        inputGroup.appendChild(input);
+        inputGroup.appendChild(removeBtn);
+        container.appendChild(inputGroup);
     }
+
+    function initializeFormValidation() {
+        const form = document.getElementById('createForm');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(function(input) {
+            input.addEventListener('blur', validateField);
+            input.addEventListener('input', clearValidationError);
+        });
+        
+        form.addEventListener('submit', function(e) {
+            let hasErrors = false;
+            
+            inputs.forEach(function(input) {
+                if (!validateField({ target: input })) {
+                    hasErrors = true;
+                }
+            });
+            
+            if (hasErrors) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = document.querySelector('.has-error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    }
+
+    function validateField(e) {
+        const field = e.target;
+        const formGroup = field.closest('.form-group-modern');
+        
+        if (!formGroup) return true;
+        
+        // Clear previous errors
+        formGroup.classList.remove('has-error');
+        
+        // Check if required field is empty
+        if (field.required && !field.value.trim()) {
+            formGroup.classList.add('has-error');
+            return false;
+        }
+        
+        return true;
+    }
+
+    function clearValidationError(e) {
+        const field = e.target;
+        const formGroup = field.closest('.form-group-modern');
+        
+        if (formGroup && field.value.trim()) {
+            formGroup.classList.remove('has-error');
+    }
+    }
+
+    function closeCreateModal() {
+        if (confirm('Bạn có chắc muốn thoát? Dữ liệu chưa lưu sẽ bị mất.')) {
+            window.location.href = '@Url.Action("Index")';
+        }
+    }
+
+    // File input preview
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const files = e.target.files;
+        const uploadSection = document.querySelector('.image-upload-section');
+        
+        if (files.length > 0) {
+            uploadSection.style.borderColor = '#28a745';
+            uploadSection.style.background = 'rgba(40, 167, 69, 0.05)';
+            
+            const uploadText = uploadSection.querySelector('.upload-text');
+            uploadText.innerHTML = `<strong style="color: #28a745;">Đã chọn ${files.length} hình ảnh</strong><br>Bấm "Đăng tin ngay" để hoàn tất`;
+        }
+    });
 </script>
-
-

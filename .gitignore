@@ -51,4 +51,6 @@ packages/
 # Temporary files
 *.tmp
 *.temp
+App_Data/MedicalRecords/
+!App_Data/MedicalRecords/.gitkeep
 

@@ -11,7 +11,8 @@ using System.Web.Mvc;
 
 namespace B_M.Controllers
 {
-    public class MilkDonationController : Controller
+    [Authorize]
+    public class MilkDonationController : BaseController
     {
         private readonly ApplicationDbContext db;
         private readonly B_M.Repositories.UserRepository userRepository;

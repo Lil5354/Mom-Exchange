@@ -8,7 +8,7 @@
     /* Compact Stats for Reports */
     .compact-stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(5, 1fr);
         gap: 12px;
         margin-bottom: 20px;
     }
@@ -189,12 +189,6 @@
             <div class="compact-stat-number">@Model.MomUsers</div>
             <div class="compact-stat-label">Mẹ bỉm</div>
         </div>
-    </div>
-    <div class="compact-stat-card">
-        <div class="compact-stat-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
-            <i class="fas fa-store"></i>
-        </div>
-        
     </div>
     <div class="compact-stat-card">
         <div class="compact-stat-icon" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
@@ -536,27 +530,70 @@
                 series: [@Model.AdminUsers, @Model.MomUsers]
             },
             monthlyActivity: {
-                months: ['T5', 'T6', 'T7', 'T8', 'T9', 'T10'],
-                newUsers: newUsersData,
-                posts: [28, 35, 42, 38, 45, 52],
-                interactions: [120, 145, 168, 182, 195, 210]
+                months: [],
+                newUsers: [],
+                posts: [],
+                interactions: []
             },
             accountStatus: {
                 active: @Model.ActiveUsers,
                 inactive: @(Model.TotalUsers - Model.ActiveUsers)
             },
             postTrends: {
-                months: monthNames,
-                posts: [31, 40, 28, 51, 42, 65]
+                months: [],
+                posts: []
             },
             regionStats: {
-                regions: ['Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'],
-                users: [45, 38, 22, 18, 15]
+                regions: [],
+                users: []
             }
         };
 
         // Store chart instances
         var charts = {};
+
+        // Load chart data from API
+        async function loadChartDataFromAPI() {
+            try {
+                // Load all chart data from API
+                const [monthlyActivityResponse, regionResponse, postTrendsResponse] = await Promise.all([
+                    fetch('/Admin/Admin/GetChartData?chartType=monthlyActivity'),
+                    fetch('/Admin/Admin/GetChartData?chartType=regionStats'),
+                    fetch('/Admin/Admin/GetChartData?chartType=postTrends')
+                ]);
+                
+                // Load monthly activity data
+                if (monthlyActivityResponse.ok) {
+                    const result = await monthlyActivityResponse.json();
+                    if (result.success && result.data) {
+                        chartData.monthlyActivity.months = result.data.months;
+                        chartData.monthlyActivity.newUsers = result.data.newUsers;
+                        chartData.monthlyActivity.posts = result.data.posts;
+                        chartData.monthlyActivity.interactions = result.data.interactions;
+                    }
+                }
+                
+                // Load post trends data (actual posts from DB)
+                if (postTrendsResponse.ok) {
+                    const result = await postTrendsResponse.json();
+                    if (result.success && result.data) {
+                        chartData.postTrends.months = result.data.months;
+                        chartData.postTrends.posts = result.data.posts;
+                    }
+                }
+                
+                // Load region stats from API
+                if (regionResponse.ok) {
+                    const result = await regionResponse.json();
+                    if (result.success && result.data) {
+                        chartData.regionStats.regions = result.data.regions;
+                        chartData.regionStats.users = result.data.users;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+            }
+        }
 
         // Chart configurations
         function createUserGrowthChart(elementId) {
@@ -1202,8 +1239,11 @@
 
         // Document ready
         $(document).ready(function() {
-            // Initialize overview charts on load
-            initializeOverviewCharts();
+            // Load dynamic data from API first
+            loadChartDataFromAPI().then(function() {
+                // Initialize overview charts after data is loaded
+                initializeOverviewCharts();
+            });
             
             // Chart type selector
             $('#chartTypeSelector').on('change', function() {

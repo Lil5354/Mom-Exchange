@@ -64,16 +64,16 @@
                                                     @record.UploadedAt.ToString("dd/MM/yyyy HH:mm")
                                                 </span>
                                                 <span class="record-status @(record.VerificationStatus == 0 ? "status-pending" : record.VerificationStatus == 1 ? "status-approved" : "status-rejected")">
-                                                    switch (record.VerificationStatus)
+                                                    @switch (record.VerificationStatus)
                                                     {
                                                         case 0:
-                                                            <i class="fa-solid fa-clock"></i> Đang chờ duyệt
+                                                            @:<i class="fa-solid fa-clock"></i> Đang chờ duyệt
                                                             break;
                                                         case 1:
-                                                            <i class="fa-solid fa-check-circle"></i> Đã được duyệt
+                                                            @:<i class="fa-solid fa-check-circle"></i> Đã được duyệt
                                                             break;
                                                         case 2:
-                                                            <i class="fa-solid fa-times-circle"></i> Bị từ chối
+                                                            @:<i class="fa-solid fa-times-circle"></i> Bị từ chối
                                                             break;
                                                     }
                                                 </span>

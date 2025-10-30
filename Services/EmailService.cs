@@ -28,6 +28,17 @@ namespace B_M.Services
             _enableSsl = bool.Parse(ConfigurationManager.AppSettings["EmailEnableSsl"] ?? "true");
             _fromEmail = ConfigurationManager.AppSettings["EmailFromAddress"] ?? "noreply@momexchange.com";
             _fromName = ConfigurationManager.AppSettings["EmailFromName"] ?? "MomExchange System";
+            
+            // Debug logging
+            System.Diagnostics.Debug.WriteLine("=== EMAIL SERVICE CONSTRUCTOR ===");
+            System.Diagnostics.Debug.WriteLine($"SMTP Host: {_smtpHost}");
+            System.Diagnostics.Debug.WriteLine($"SMTP Port: {_smtpPort}");
+            System.Diagnostics.Debug.WriteLine($"Username: {_username}");
+            System.Diagnostics.Debug.WriteLine($"Password Length: {(_password?.Length ?? 0)}");
+            System.Diagnostics.Debug.WriteLine($"Enable SSL: {_enableSsl}");
+            System.Diagnostics.Debug.WriteLine($"From Email: {_fromEmail}");
+            System.Diagnostics.Debug.WriteLine($"From Name: {_fromName}");
+            System.Diagnostics.Debug.WriteLine("================================");
         }
 
         public EmailService(string smtpHost, int smtpPort, string username, string password, 
@@ -59,10 +70,13 @@ namespace B_M.Services
                 // Force TLS 1.2 for Gmail (required)
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
                 
-                // Trust all certificates (for development/testing only - remove in production if you have valid certs)
+                // Trust all certificates (for development/testing only)
                 ServicePointManager.ServerCertificateValidationCallback = 
                     delegate (object s, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) 
-                    { return true; };
+                    { 
+                        System.Diagnostics.Debug.WriteLine($"Certificate validation: {sslPolicyErrors}");
+                        return true; 
+                    };
 
                 System.Diagnostics.Debug.WriteLine($"[EmailService] Sending email - SSL: {_enableSsl}, Host: {_smtpHost}:{_smtpPort}");
 
@@ -75,15 +89,24 @@ namespace B_M.Services
                     message.IsBodyHtml = isHtml;
                     message.Priority = MailPriority.Normal;
 
-                    using (var client = new SmtpClient(_smtpHost, _smtpPort))
+                    using (var client = new SmtpClient())
                     {
-                        client.Credentials = new NetworkCredential(_username, _password);
+                        client.Host = _smtpHost;
+                        client.Port = _smtpPort;
                         client.EnableSsl = _enableSsl;
-                        client.Timeout = 30000; // 30 seconds
-                        client.DeliveryMethod = SmtpDeliveryMethod.Network;
                         client.UseDefaultCredentials = false;
-
+                        client.Credentials = new NetworkCredential(_username, _password);
+                        client.Timeout = 30000;
+                        client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                        
+                        // Additional settings for Gmail
+                        System.Diagnostics.Debug.WriteLine($"Attempting to send email to {toEmail}...");
+                        System.Diagnostics.Debug.WriteLine($"SMTP Host: {_smtpHost}, Port: {_smtpPort}, SSL: {_enableSsl}");
+                        System.Diagnostics.Debug.WriteLine($"Username: {_username}");
+                        
                         client.Send(message);
+                        
+                        System.Diagnostics.Debug.WriteLine($"Email sent successfully to {toEmail}");
                     }
                 }
 
@@ -96,15 +119,34 @@ namespace B_M.Services
             catch (SmtpException ex)
             {
                 System.Diagnostics.Debug.WriteLine($"SMTP Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Status Code: {ex.StatusCode}");
+                
+                string errorMessage = "Lỗi gửi email: ";
+                
+                if (ex.Message.Contains("authentication") || ex.Message.Contains("not authenticated"))
+                {
+                    errorMessage += "Xác thực thất bại. Vui lòng kiểm tra lại Username và App Password trong Web.config. " +
+                                   "App Password phải là 16 ký tự không có khoảng trắng và vẫn còn hiệu lực.";
+                }
+                else if (ex.Message.Contains("secure connection"))
+                {
+                    errorMessage += "Yêu cầu kết nối bảo mật. Vui lòng đảm bảo EnableSsl = true.";
+                }
+                else
+                {
+                    errorMessage += ex.Message;
+                }
+                
                 return new EmailResult
                 {
                     Success = false,
-                    Message = $"Lỗi gửi email: {ex.Message}"
+                    Message = errorMessage
                 };
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Email Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
                 return new EmailResult
                 {
                     Success = false,
@@ -326,8 +368,11 @@ namespace B_M.Services
             var passwordInfo = string.IsNullOrEmpty(temporaryPassword) 
                 ? "<p>Bạn có thể đăng nhập bằng mật khẩu đã tạo khi đăng ký.</p>"
                 : $@"
-                    <p><strong>Mật khẩu tạm thời:</strong> <code style='background: #f4f4f4; padding: 5px 10px; border-radius: 4px; font-size: 16px;'>{temporaryPassword}</code></p>
-                    <p style='color: #e74c3c;'><strong>⚠️ Quan trọng:</strong> Vui lòng đổi mật khẩu ngay sau khi đăng nhập lần đầu.</p>";
+                    <p><strong>🔑 Mật khẩu tạm thời của bạn:</strong></p>
+                    <div style='background: linear-gradient(135deg, #fff5f8 0%, #ffe0eb 100%); border: 2px solid #f8a5c2; padding: 15px; border-radius: 8px; text-align: center; margin: 15px 0;'>
+                        <code style='background: white; padding: 10px 20px; border-radius: 5px; font-size: 18px; font-weight: bold; color: #e91e63; letter-spacing: 2px; border: 2px dashed #f8a5c2;'>{temporaryPassword}</code>
+                    </div>
+                    <p style='color: #e91e63; background: #fff5f8; padding: 12px; border-radius: 6px; border-left: 4px solid #f8a5c2;'><strong>⚠️ Quan trọng:</strong> Vui lòng đổi mật khẩu ngay sau khi đăng nhập lần đầu để bảo mật tài khoản!</p>";
 
             return $@"
 <!DOCTYPE html>
@@ -335,48 +380,63 @@ namespace B_M.Services
 <head>
     <meta charset='utf-8'>
     <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }}
-        .footer {{ background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 10px 10px; }}
-        .button {{ display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-        .info-box {{ background: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; }}
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; }}
+        .container {{ max-width: 600px; margin: 30px auto; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }}
+        .header {{ background: linear-gradient(135deg, #ff8fab 0%, #fc8dc7 50%, #f093fb 100%); color: white; padding: 40px 30px; text-align: center; }}
+        .header h1 {{ margin: 0; font-size: 28px; font-weight: bold; }}
+        .header .icon {{ font-size: 48px; margin-bottom: 15px; }}
+        .content {{ padding: 40px 30px; background: white; }}
+        .footer {{ background: linear-gradient(135deg, #fae8f0 0%, #fce4ec 100%); padding: 25px; text-align: center; font-size: 12px; color: #666; border-top: 3px solid #ff8fab; }}
+        .button {{ display: inline-block; background: linear-gradient(135deg, #ff8fab 0%, #fc8dc7 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 30px; margin: 25px 0; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3); transition: all 0.3s; }}
+        .button:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4); }}
+        .info-box {{ background: linear-gradient(135deg, #fff5f8 0%, #ffe0eb 100%); border-left: 5px solid #ff8fab; padding: 20px; margin: 25px 0; border-radius: 8px; }}
+        .features {{ background: #fef6f9; padding: 20px; border-radius: 8px; margin: 20px 0; }}
+        .features ul {{ list-style: none; padding: 0; }}
+        .features li {{ padding: 10px 0; padding-left: 30px; position: relative; }}
+        .features li:before {{ content: '💕'; position: absolute; left: 0; font-size: 20px; }}
+        .divider {{ border-top: 2px solid #ff8fab; margin: 30px 0; opacity: 0.3; }}
     </style>
 </head>
 <body>
     <div class='container'>
         <div class='header'>
-            <h1 style='margin: 0;'>👋 Chào mừng đến với MomExchange!</h1>
+            <div class='icon'>💗</div>
+            <h1>Chào mừng đến với MomExchange!</h1>
+            <p style='margin: 10px 0 0 0; font-size: 16px;'>Cộng đồng yêu thương cho mẹ và bé</p>
         </div>
         <div class='content'>
-            <p>Xin chào <strong>{fullName}</strong>,</p>
-            <p>Chúc mừng! Tài khoản của bạn đã được tạo thành công trên hệ thống <strong>MomExchange</strong>.</p>
+            <p style='font-size: 16px; color: #555;'>Xin chào <strong style='color: #e91e63; font-size: 18px;'>{fullName}</strong>,</p>
+            <p style='font-size: 16px; color: #555;'>Chúc mừng! 🎉 Tài khoản của bạn đã được tạo thành công trên hệ thống <strong style='color: #e91e63;'>MomExchange</strong> - nơi kết nối yêu thương cho mẹ và bé.</p>
             
             <div class='info-box'>
-                <p style='margin: 0;'><strong>📧 Email:</strong> {username}</p>
+                <p style='margin: 5px 0; font-size: 15px;'><strong>📧 Email đăng nhập:</strong> <span style='color: #e91e63; font-weight: bold;'>{username}</span></p>
                 {passwordInfo}
             </div>
 
-            <p>MomExchange là nền tảng trao đổi và chia sẻ dành cho các bà mẹ. Tại đây bạn có thể:</p>
-            <ul>
-                <li>Chia sẻ kinh nghiệm nuôi dạy con</li>
-                <li>Trao đổi đồ dùng cho bé</li>
-                <li>Kết nối với cộng đồng mẹ bỉm</li>
-                <li>Hiến tặng sữa mẹ</li>
-            </ul>
-
-            <div style='text-align: center;'>
-                <a href='https://momexchange.com/login' class='button'>Đăng nhập ngay</a>
+            <div class='features'>
+                <p style='margin: 0 0 15px 0; font-size: 17px; font-weight: bold; color: #e91e63;'>✨ Khám phá MomExchange - Nơi mẹ và bé được yêu thương:</p>
+                <ul>
+                    <li><strong>Chia sẻ kinh nghiệm nuôi dạy con</strong> - Học hỏi từ những bà mẹ experienced</li>
+                    <li><strong>Trao đổi đồ dùng cho bé</strong> - Tiết kiệm và bảo vệ môi trường</li>
+                    <li><strong>Kết nối với cộng đồng mẹ bỉm</strong> - Cùng nhau vượt qua những khó khăn</li>
+                    <li><strong>Hiến tặng và nhận sữa mẹ</strong> - Sẻ chia tình thương</li>
+                </ul>
             </div>
 
-            <p>Nếu bạn có bất kỳ câu hỏi nào, đừng ngại liên hệ với chúng tôi qua email: <a href='mailto:support@momexchange.com'>support@momexchange.com</a></p>
+            <div style='text-align: center; padding: 20px 0;'>
+                <a href='http://localhost:53251/' class='button'>🚀 Bắt đầu ngay</a>
+            </div>
+
+            <div class='divider'></div>
+
+            <p style='font-size: 15px; color: #666;'>💌 Nếu bạn có bất kỳ câu hỏi nào hoặc cần hỗ trợ, đừng ngại liên hệ với chúng tôi qua email: <a href='mailto:dttthao.5354@gmail.com' style='color: #e91e63; font-weight: bold;'>dttthao.5354@gmail.com</a></p>
             
-            <p>Trân trọng,<br><strong>Đội ngũ MomExchange</strong></p>
+            <p style='margin-top: 30px; font-size: 15px;'>Trân trọng,<br><strong style='color: #e91e63; font-size: 17px;'>💕 Đội ngũ MomExchange</strong></p>
         </div>
         <div class='footer'>
-            <p>&copy; {DateTime.Now.Year} MomExchange. All rights reserved.</p>
-            <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+            <p style='margin: 5px 0;'><strong>&copy; {DateTime.Now.Year} MomExchange.</strong> Tất cả quyền được bảo lưu.</p>
+            <p style='margin: 5px 0;'>💗 Email này được gửi tự động, vui lòng không trả lời trực tiếp.</p>
+            <p style='margin: 10px 0 0 0; font-size: 11px; color: #999;'>From: <a href='mailto:dttthao.5354@gmail.com' style='color: #e91e63;'>dttthao.5354@gmail.com</a></p>
         </div>
     </div>
 </body>

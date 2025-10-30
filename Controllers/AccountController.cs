@@ -2,6 +2,7 @@
 using B_M.Models;
 using B_M.Helpers;
 using B_M.Repositories;
+using B_M.Services;
 using System;
 using System.Linq;
 using System.Web;
@@ -231,7 +232,44 @@ namespace B_M.Controllers
                     {
                         // Đăng ký thành công
                         System.Diagnostics.Debug.WriteLine("=== REGISTER SUCCESS ===");
-                        TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                        
+                        // Gửi email chào mừng (chỉ khi có email hợp lệ)
+                        if (!string.IsNullOrEmpty(model.Email) && model.Email.Contains("@") && !model.Email.EndsWith("@local.temp"))
+                        {
+                            try
+                            {
+                                var emailService = new EmailService();
+                                var emailResult = emailService.SendWelcomeEmail(
+                                    model.Email,
+                                    model.FullName,
+                                    model.Email,
+                                    null // Không có mật khẩu tạm thời cho đăng ký thông thường
+                                );
+
+                                if (emailResult.Success)
+                                {
+                                    System.Diagnostics.Debug.WriteLine("Welcome email sent successfully!");
+                                    TempData["SuccessMessage"] = $"Đăng ký thành công! Vui lòng kiểm tra email {model.Email} để xem thông tin tài khoản.";
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Welcome email failed: {emailResult.Message}");
+                                    TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                                    TempData["WarningMessage"] = $"Không thể gửi email thông báo: {emailResult.Message}";
+                                }
+                            }
+                            catch (Exception emailEx)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Email sending error: {emailEx.Message}");
+                                TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                                TempData["WarningMessage"] = "Không thể gửi email thông báo. Vui lòng kiểm tra cấu hình email.";
+                            }
+                        }
+                        else
+                        {
+                            TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                        }
+                        
                         return RedirectToAction("Login");
                     }
                     else

@@ -270,6 +270,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Global Toast Notifications Container -->
     <div class="toast-container" id="globalToastContainer">
@@ -1316,7 +1317,25 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     @RenderSection("scripts", required: false)
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+          apiKey: "AIzaSyBENFl9c4AIPJ7t7UlqsPyEuov_kYIp_No",
+          authDomain: "minigame-mebe.firebaseapp.com",
+          databaseURL: "https://minigame-mebe-default-rtdb.firebaseio.com",
+          projectId: "minigame-mebe",
+          storageBucket: "minigame-mebe.appspot.com",
+          messagingSenderId: "280836935793",
+          appId: "1:280836935793:web:1a4f8c35911dbd2a7d4bd0",
+          measurementId: "G-Q9TT4BVWZ7"
+      };
+      if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+      }
+      window.firebaseDb = firebase.database();
+    </script>
+    <!-- End Firebase setup -->
 </body>
-</html>
-</html>
 </html>

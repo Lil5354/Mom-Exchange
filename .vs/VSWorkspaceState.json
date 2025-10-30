@@ -4,8 +4,10 @@
     "\\Areas",
     "\\Areas\\Admin",
     "\\Areas\\Admin\\Controllers",
+    "\\Areas\\Admin\\Views",
+    "\\Areas\\Admin\\Views\\Admin",
     "\\Models"
   ],
-  "SelectedNode": "\\B\u0026M.sln",
+  "SelectedNode": "\\Areas\\Admin\\Views\\Admin\\Reports.cshtml",
   "PreviewInSolutionExplorer": false
 }

@@ -139,14 +139,6 @@
                         
                         <div style="margin-bottom: 15px;">
                             <label style="display: flex; align-items: center; gap: 10px; font-weight: 500; color: #2c3e50;">
-                                @Html.CheckBoxFor(m => m.GenerateRandomPassword, new { @id = "generatePasswordCheck" })
-                                <span>Tự động tạo mật khẩu ngẫu nhiên</span>
-                            </label>
-                            <small style="color: #7f8c8d; font-size: 12px; margin-left: 25px;">Mật khẩu sẽ được tạo tự động và hiển thị sau khi tạo tài khoản</small>
-                        </div>
-
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: flex; align-items: center; gap: 10px; font-weight: 500; color: #2c3e50;">
                                 @Html.CheckBoxFor(m => m.IsActive)
                                 <span>Tài khoản hoạt động ngay</span>
                             </label>
@@ -179,20 +171,6 @@
 @section scripts {
     <script>
         $(document).ready(function() {
-            // Toggle password field based on checkbox
-            $('#generatePasswordCheck').on('change', function() {
-                var passwordField = $('#passwordField');
-                var confirmPasswordField = $('input[name="ConfirmPassword"]');
-                
-                if ($(this).is(':checked')) {
-                    passwordField.prop('disabled', true).val('').attr('placeholder', 'Mật khẩu sẽ được tạo tự động');
-                    confirmPasswordField.prop('disabled', true).val('').attr('placeholder', 'Mật khẩu sẽ được tạo tự động');
-                } else {
-                    passwordField.prop('disabled', false).attr('placeholder', 'Nhập mật khẩu...');
-                    confirmPasswordField.prop('disabled', false).attr('placeholder', 'Nhập lại mật khẩu...');
-                }
-            });
-
             // Form submission
             $('#createUserForm').on('submit', function(e) {
                 var createBtn = $('#createUserBtn');

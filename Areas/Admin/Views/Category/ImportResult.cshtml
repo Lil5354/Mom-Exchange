@@ -1,0 +1,168 @@
+@model B_M.Models.AdminImportCategoriesResultViewModel
+@{
+    ViewBag.Title = "Kết quả import danh mục";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5><i class="fas fa-chart-bar"></i> Kết quả import danh mục</h5>
+        <div style="display: flex; gap: 10px;">
+            <a href="@Url.Action("Import")" class="btn-admin-secondary" style="text-decoration: none;">
+                <i class="fas fa-plus"></i> Import thêm
+            </a>
+            <a href="@Url.Action("Index")" class="btn-admin-secondary" style="text-decoration: none;">
+                <i class="fas fa-folder"></i> Xem danh sách
+            </a>
+        </div>
+    </div>
+    <div class="admin-card-body">
+        <!-- Summary Statistics -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #3498db, #2980b9); border-radius: 12px; color: white;">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 5px;">@Model.TotalRows</div>
+                <div style="font-size: 14px; opacity: 0.9;">Tổng số dòng</div>
+            </div>
+            
+            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #2ecc71, #27ae60); border-radius: 12px; color: white;">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 5px;">@Model.SuccessCount</div>
+                <div style="font-size: 14px; opacity: 0.9;">Thành công</div>
+            </div>
+            
+            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #e74c3c, #c0392b); border-radius: 12px; color: white;">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 5px;">@Model.ErrorCount</div>
+                <div style="font-size: 14px; opacity: 0.9;">Lỗi</div>
+            </div>
+            
+            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #f39c12, #e67e22); border-radius: 12px; color: white;">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 5px;">@Model.SkippedCount</div>
+                <div style="font-size: 14px; opacity: 0.9;">Bỏ qua</div>
+            </div>
+        </div>
+
+        <!-- File Information -->
+        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+            <h6 style="color: #495057; margin: 0 0 10px 0;">
+                <i class="fas fa-file"></i> Thông tin file
+            </h6>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; color: #6c757d; font-size: 14px;">
+                <div><strong>Tên file:</strong> @Model.FileName</div>
+                <div><strong>Thời gian import:</strong> @Model.ImportTime.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                <div><strong>Tỷ lệ thành công:</strong> @(Model.TotalRows > 0 ? Math.Round((double)Model.SuccessCount / Model.TotalRows * 100, 1) : 0)%</div>
+            </div>
+        </div>
+
+        <!-- Success Categories -->
+        @if (Model.SuccessCategories.Any())
+        {
+            <div class="admin-card" style="margin-bottom: 25px;">
+                <div class="admin-card-header">
+                    <h6><i class="fas fa-check-circle" style="color: #2ecc71;"></i> Danh mục đã tạo thành công (@Model.SuccessCount)</h6>
+                </div>
+                <div class="admin-card-body">
+                    <div class="table-responsive">
+                        <table class="table-admin">
+                            <thead>
+                                <tr>
+                                    <th>Dòng</th>
+                                    <th>Tên danh mục</th>
+                                    <th>Danh mục cha</th>
+                                    <th>B2C</th>
+                                    <th>C2C</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in Model.SuccessCategories)
+                                {
+                                    <tr>
+                                        <td>@category.RowNumber</td>
+                                        <td><strong>@category.CategoryName</strong></td>
+                                        <td>@category.ParentCategoryName</td>
+                                        <td>
+                                            @if (category.IsB2CEnabled)
+                                            {
+                                                <span class="badge badge-success">Bật</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary">Tắt</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (category.IsC2CEnabled)
+                                            {
+                                                <span class="badge badge-success">Bật</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary">Tắt</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Errors -->
+        @if (Model.Errors.Any())
+        {
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h6><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Lỗi trong quá trình import (@Model.ErrorCount)</h6>
+                </div>
+                <div class="admin-card-body">
+                    <div class="table-responsive">
+                        <table class="table-admin">
+                            <thead>
+                                <tr>
+                                    <th>Dòng</th>
+                                    <th>Tên danh mục</th>
+                                    <th>Lỗi</th>
+                                    <th>Trường</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var error in Model.Errors)
+                                {
+                                    <tr>
+                                        <td>@error.RowNumber</td>
+                                        <td>@(error.CategoryName ?? "N/A")</td>
+                                        <td style="color: #e74c3c;">@error.ErrorMessage</td>
+                                        <td>@(error.FieldName ?? "N/A")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- No Data Message -->
+        @if (!Model.SuccessCategories.Any() && !Model.Errors.Any())
+        {
+            <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                <i class="fas fa-info-circle" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                <p>Không có dữ liệu để hiển thị</p>
+            </div>
+        }
+
+        <!-- Action Buttons -->
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ecf0f1;">
+            @if (Model.SuccessCategories.Any())
+            {
+                <a href="@Url.Action("Index")" class="btn-admin" style="text-decoration: none;">
+                    <i class="fas fa-folder"></i> Xem danh sách danh mục
+                </a>
+            }
+            <a href="@Url.Action("Import")" class="btn-admin-secondary" style="text-decoration: none; margin-left: 15px;">
+                <i class="fas fa-plus"></i> Import thêm
+            </a>
+        </div>
+    </div>
+</div>
+

@@ -12,6 +12,8 @@ namespace B_M.Models
         public int B2CCategories { get; set; }
         public int C2CCategories { get; set; }
         public int BothEnabledCategories { get; set; }
+
+        
     }
 
     public class CategoryTreeNode
@@ -72,5 +74,10 @@ namespace B_M.Models
         // For display purposes
         public string ParentCategoryName { get; set; }
         public List<Category> AvailableParentCategories { get; set; } = new List<Category>();
+
+        // For tree view purposes
+        public int Level { get; set; }
+        public List<AdminCategoryViewModel> SubCategories { get; set; } = new List<AdminCategoryViewModel>();
+        public int SubCategoryCount { get; set; }
     }
 }

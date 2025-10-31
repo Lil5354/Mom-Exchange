@@ -4,8 +4,12 @@
     "\\Areas",
     "\\Areas\\Admin",
     "\\Areas\\Admin\\Controllers",
-    "\\Models"
+    "\\Areas\\Admin\\Views",
+    "\\Areas\\Admin\\Views\\MilkDonation",
+    "\\Models",
+    "\\Views",
+    "\\Views\\C2C"
   ],
-  "SelectedNode": "\\B\u0026M.sln",
+  "SelectedNode": "\\Areas\\Admin\\Views\\MilkDonation\\Index.cshtml",
   "PreviewInSolutionExplorer": false
 }

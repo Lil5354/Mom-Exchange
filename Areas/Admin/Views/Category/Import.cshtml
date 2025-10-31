@@ -1,0 +1,171 @@
+@model B_M.Models.AdminImportCategoriesViewModel
+@{
+    ViewBag.Title = "Import danh mục từ Excel";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5><i class="fas fa-file-excel"></i> Import danh mục từ file Excel</h5>
+        <div style="display: flex; gap: 10px;">
+            <a href="@Url.Action("DownloadTemplate")" class="btn-admin-secondary" style="text-decoration: none;">
+                <i class="fas fa-download"></i> Tải template
+            </a>
+            <a href="@Url.Action("Index")" class="btn-admin-secondary" style="text-decoration: none;">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+    <div class="admin-card-body">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @using (Html.BeginForm("Import", "Category", new { area = "Admin" }, FormMethod.Post, new { @id = "importForm", @enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <!-- Left Column - File Upload -->
+                <div>
+                    <h6 style="color: #2c3e50; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #ecf0f1;">
+                        <i class="fas fa-upload"></i> Chọn file Excel
+                    </h6>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; color: #2c3e50; display: block; margin-bottom: 5px;">
+                            File Excel <span style="color: #e74c3c;">*</span>
+                        </label>
+                        <div style="border: 2px dashed #3498db; border-radius: 8px; padding: 30px; text-align: center; background: #f8f9fa;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #3498db; margin-bottom: 15px;"></i>
+                            <p style="margin: 0; color: #2c3e50; font-weight: 600;">Kéo thả file Excel vào đây</p>
+                            <p style="margin: 5px 0; color: #7f8c8d; font-size: 14px;">hoặc</p>
+                            <input type="file" name="ExcelFile" id="excelFile" accept=".xlsx,.xls" 
+                                   style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;" />
+                            <p style="margin: 10px 0 0 0; color: #7f8c8d; font-size: 12px;">
+                                Chấp nhận file .xlsx, .xls (tối đa 10MB)
+                            </p>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.ExcelFile, "", new { @class = "text-danger", @style = "font-size: 12px; margin-top: 5px;" })
+                    </div>
+
+                    <div style="background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                        <h6 style="color: #0c5460; margin: 0 0 10px 0; font-size: 14px;">
+                            <i class="fas fa-info-circle"></i> Hướng dẫn sử dụng
+                        </h6>
+                        <ul style="margin: 0; padding-left: 20px; color: #0c5460; font-size: 13px;">
+                            <li>Tải template Excel để biết định dạng chuẩn</li>
+                            <li>Cột A: CategoryName (Tên danh mục - bắt buộc)</li>
+                            <li>Cột B: Description (Mô tả - tùy chọn)</li>
+                            <li>Cột C: ParentCategoryName (Tên danh mục cha - để trống nếu là danh mục gốc)</li>
+                            <li>Cột D: IsB2CEnabled (1/true/yes để bật B2C, 0/false/no để tắt)</li>
+                            <li>Cột E: IsC2CEnabled (1/true/yes để bật C2C, 0/false/no để tắt)</li>
+                            <li>Phải có ít nhất một trong B2C hoặc C2C được bật</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right Column - Import Settings -->
+                <div>
+                    <h6 style="color: #2c3e50; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #ecf0f1;">
+                        <i class="fas fa-cog"></i> Cài đặt import
+                    </h6>
+
+                    <!-- Import Options -->
+                    <div style="margin-bottom: 20px;">
+                        <h6 style="color: #2c3e50; margin-bottom: 15px;">Tùy chọn import</h6>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; font-weight: 500; color: #2c3e50;">
+                                @Html.CheckBoxFor(m => m.SkipDuplicateNames)
+                                <span>Bỏ qua danh mục trùng tên</span>
+                            </label>
+                            <small style="color: #7f8c8d; font-size: 12px; margin-left: 25px;">Không tạo danh mục nếu tên đã tồn tại ở cùng cấp</small>
+                        </div>
+                    </div>
+
+                    <!-- File Info -->
+                    <div id="fileInfo" style="display: none; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+                        <h6 style="color: #495057; margin: 0 0 10px 0; font-size: 14px;">
+                            <i class="fas fa-file"></i> Thông tin file
+                        </h6>
+                        <div id="fileDetails" style="color: #6c757d; font-size: 13px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ecf0f1;">
+                <button type="submit" id="importBtn" class="btn-admin-primary" disabled style="min-width: 200px; padding: 12px 30px;">
+                    <i class="fas fa-file-upload"></i> Import danh mục
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // File upload handling
+            $('#excelFile').on('change', function() {
+                var file = this.files[0];
+                if (file) {
+                    var fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    var fileName = file.name;
+                    var fileType = fileName.split('.').pop().toLowerCase();
+                    
+                    // Validate file type
+                    if (!['xlsx', 'xls'].includes(fileType)) {
+                        alert('Chỉ chấp nhận file Excel (.xlsx, .xls)');
+                        $(this).val('');
+                        $('#fileInfo').hide();
+                        $('#importBtn').prop('disabled', true);
+                        return;
+                    }
+                    
+                    // Validate file size
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('File quá lớn. Kích thước tối đa là 10MB');
+                        $(this).val('');
+                        $('#fileInfo').hide();
+                        $('#importBtn').prop('disabled', true);
+                        return;
+                    }
+                    
+                    // Show file info
+                    $('#fileDetails').html(`
+                        <div><strong>Tên file:</strong> ${fileName}</div>
+                        <div><strong>Kích thước:</strong> ${fileSize} MB</div>
+                        <div><strong>Loại file:</strong> ${fileType.toUpperCase()}</div>
+                    `);
+                    $('#fileInfo').show();
+                    $('#importBtn').prop('disabled', false);
+                } else {
+                    $('#fileInfo').hide();
+                    $('#importBtn').prop('disabled', true);
+                }
+            });
+
+            // Form submission
+            $('#importForm').on('submit', function(e) {
+                if (!$('#excelFile')[0].files.length) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn file Excel để import');
+                    return false;
+                }
+            });
+        });
+    </script>
+}
+

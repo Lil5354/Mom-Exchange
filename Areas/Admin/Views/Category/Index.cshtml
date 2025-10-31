@@ -316,9 +316,14 @@
         <h5>
             <i class="fas fa-sitemap"></i> Cây Danh mục
         </h5>
-        <a href="@Url.Action("Create")" class="btn-admin">
-            <i class="fas fa-plus"></i> Thêm danh mục gốc
-        </a>
+        <div style="display: flex; gap: 10px;">
+            <a href="@Url.Action("Create")" class="btn-admin">
+                <i class="fas fa-plus"></i> Thêm danh mục gốc
+            </a>
+            <a href="@Url.Action("Import")" class="btn-admin-secondary" style="text-decoration: none;">
+                <i class="fas fa-file-excel"></i> Import từ Excel
+            </a>
+        </div>
     </div>
     
     <div class="admin-card-body">

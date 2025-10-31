@@ -1,0 +1,424 @@
+@{
+    ViewBag.Title = "Cộng Đồng Mẹ & Bé - MomExchange";
+}
+
+<!-- Include Community CSS -->
+<link href="~/Content/community.css" rel="stylesheet" />
+
+<!-- Community Hero Section -->
+<section class="community-hero">
+    <div class="community-container">
+        <h1 class="hero-title">Cộng Đồng MomExchange</h1>
+        <p class="hero-subtitle">Kết nối với hàng nghìn bà mẹ trên toàn quốc - Chia sẻ kinh nghiệm và yêu thương</p>
+        
+        <div class="hero-stats">
+            <div class="stat-item fade-in">
+                <span class="stat-number">@ViewBag.TotalMembers</span>
+                <span class="stat-label">Thành viên</span>
+            </div>
+            <div class="stat-item fade-in delay-1">
+                <span class="stat-number">@ViewBag.TotalPosts</span>
+                <span class="stat-label">Bài đăng trao đổi</span>
+            </div>
+            <div class="stat-item fade-in delay-2">
+                <span class="stat-number">@ViewBag.TotalMilkPosts</span>
+                <span class="stat-label">Bài chia sẻ sữa mẹ</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Community Navigation -->
+<nav class="community-nav">
+    <ul class="nav-tabs">
+        <li class="nav-tab active" data-target="topics">Chuyên mục sức khỏe</li>
+        <li class="nav-tab" data-target="posts">Bài đăng nổi bật</li>
+        <li class="nav-tab" data-target="tools">Công cụ sức khỏe</li>
+        <li class="nav-tab" data-target="groups">Cộng đồng</li>
+    </ul>
+</nav>
+
+<!-- Main Content -->
+<main class="community-main">
+    <!-- Left Content -->
+    <div class="main-content">
+        <!-- Health Topics Section -->
+        <section id="topics" class="content-section active">
+            <h2 class="section-title">Chuyên mục sức khỏe</h2>
+            <div class="topics-grid">
+                <div class="topic-card fade-in">
+                    <div class="topic-icon">👶</div>
+                    <h3 class="topic-title">Sự phát triển của trẻ</h3>
+                    <p class="topic-description">Theo dõi và hỗ trợ sự phát triển toàn diện của bé từ sơ sinh đến 5 tuổi</p>
+                    <div class="topic-stats">
+                        <span>248 bài viết</span>
+                        <span>1.2k thảo luận</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in delay-1">
+                    <div class="topic-icon">🤰</div>
+                    <h3 class="topic-title">Mang thai</h3>
+                    <p class="topic-description">Chia sẻ kinh nghiệm và kiến thức trong suốt hành trình mang thai</p>
+                    <div class="topic-stats">
+                        <span>189 bài viết</span>
+                        <span>892 thảo luận</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in delay-2">
+                    <div class="topic-icon">🍼</div>
+                    <h3 class="topic-title">Tiêu hóa 0-2 tuổi</h3>
+                    <p class="topic-description">Chăm sóc hệ tiêu hóa và dinh dưỡng cho trẻ nhỏ</p>
+                    <div class="topic-stats">
+                        <span>156 bài viết</span>
+                        <span>743 thảo luận</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in delay-3">
+                    <div class="topic-icon">💕</div>
+                    <h3 class="topic-title">Sau khi sinh</h3>
+                    <p class="topic-description">Hỗ trợ mẹ phục hồi và chăm sóc bé sau sinh</p>
+                    <div class="topic-stats">
+                        <span>134 bài viết</span>
+                        <span>567 thảo luận</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in">
+                    <div class="topic-icon">💑</div>
+                    <h3 class="topic-title">Chuẩn bị mang thai</h3>
+                    <p class="topic-description">Hướng dẫn chuẩn bị trước khi có bé</p>
+                    <div class="topic-stats">
+                        <span>98 bài viết</span>
+                        <span>423 thảo luận</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in delay-1">
+                    <div class="topic-icon">👨‍👩‍👧‍👦</div>
+                    <h3 class="topic-title">Gia đình</h3>
+                    <p class="topic-description">Xây dựng gia đình hạnh phúc và nuôi dạy con tốt</p>
+                    <div class="topic-stats">
+                        <span>167 bài viết</span>
+                        <span>689 thảo luận</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Posts Section -->
+        <section id="posts" class="content-section">
+            <h2 class="section-title">Bài đăng nổi bật trong cộng đồng</h2>
+            <div class="featured-posts">
+                <div class="posts-list">
+                    @if (ViewBag.RecentPosts != null)
+                    {
+                        foreach (var post in ViewBag.RecentPosts)
+                        {
+                            <div class="post-item fade-in">
+                                <div class="post-avatar">
+                                    @(post.User?.UserDetails?.FullName?.Substring(0, 1).ToUpper() ?? "M")
+                                </div>
+                                <div class="post-content">
+                                     <h3 class="post-title">
+                                         @{
+                                             var postTitle = (string)post.Title;
+                                             var postId = (long)post.PostID;
+                                         }
+                                         <a href="@Url.Action("Details", "C2C", new { id = postId })">@postTitle</a>
+                                        @if (post.ListingType == 2)
+                                        {
+                                            <span class="post-badge exchange">Trao đổi</span>
+                                        }
+                                        else if (post.ListingType == 1)
+                                        {
+                                            <span class="post-badge">Thanh lý</span>
+                                        }
+                                    </h3>
+                                    <div class="post-meta">
+                                        Đăng bởi: @(post.User?.UserDetails?.FullName ?? "Ẩn danh") • 
+                                        @post.CreatedAt.ToString("dd/MM/yyyy")
+                                    </div>
+                                    <p class="post-preview">@Html.Raw(post.Description?.Length > 100 ? post.Description.Substring(0, 100) + "..." : post.Description)</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    
+                    @if (ViewBag.RecentMilkDonations != null)
+                    {
+                        foreach (var milkPost in ViewBag.RecentMilkDonations)
+                        {
+                            <div class="post-item fade-in">
+                                <div class="post-avatar">
+                                    @(milkPost.User?.UserDetails?.FullName?.Substring(0, 1).ToUpper() ?? "M")
+                                </div>
+                                <div class="post-content">
+                                     <h3 class="post-title">
+                                         @{
+                                             var milkPostTitle = (string)milkPost.Title;
+                                             var milkPostId = (long)milkPost.PostID;
+                                         }
+                                         <a href="@Url.Action("Details", "MilkDonation", new { id = milkPostId })">@milkPostTitle</a>
+                                        <span class="post-badge milk">Sữa mẹ</span>
+                                    </h3>
+                                    <div class="post-meta">
+                                        Đăng bởi: @(milkPost.User?.UserDetails?.FullName ?? "Ẩn danh") • 
+                                        @milkPost.CreatedAt.ToString("dd/MM/yyyy")
+                                    </div>
+                                    <p class="post-preview">@Html.Raw(milkPost.Content?.Length > 100 ? milkPost.Content.Substring(0, 100) + "..." : milkPost.Content)</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- Health Tools Section -->
+        <section id="tools" class="content-section">
+            <h2 class="section-title">Công cụ sức khỏe</h2>
+            <div class="topics-grid">
+                <div class="topic-card fade-in">
+                    <div class="topic-icon">📅</div>
+                    <h3 class="topic-title">Tính ngày rụng trứng</h3>
+                    <p class="topic-description">Theo dõi chu kỳ kinh nguyệt và xác định những ngày dễ thụ thai nhất</p>
+                </div>
+                
+                <div class="topic-card fade-in delay-1">
+                    <div class="topic-icon">👶</div>
+                    <h3 class="topic-title">Công cụ tính ngày dự sinh</h3>
+                    <p class="topic-description">Tính toán ngày dự sinh chính xác dựa trên chu kỳ kinh nguyệt</p>
+                </div>
+                
+                <div class="topic-card fade-in delay-2">
+                    <div class="topic-icon">📏</div>
+                    <h3 class="topic-title">Biểu đồ tăng trưởng trẻ em</h3>
+                    <p class="topic-description">Theo dõi chiều cao, cân nặng và sự phát triển của bé</p>
+                </div>
+                
+                <div class="topic-card fade-in delay-3">
+                    <div class="topic-icon">⚖️</div>
+                    <h3 class="topic-title">Tính cân nặng khi mang thai</h3>
+                    <p class="topic-description">Monitor trọng lượng tăng lên hợp lý trong thai kỳ</p>
+                </div>
+                
+                <div class="topic-card fade-in">
+                    <div class="topic-icon">💩</div>
+                    <h3 class="topic-title">Phân trẻ sơ sinh bình thường</h3>
+                    <p class="topic-description">Hướng dẫn nhận biết tình trạng sức khỏe qua phân của bé</p>
+                </div>
+                
+                <div class="topic-card fade-in delay-1">
+                    <div class="topic-icon">💉</div>
+                    <h3 class="topic-title">Lịch tiêm chủng cho bé</h3>
+                    <p class="topic-description">Theo dõi và nhắc nhở lịch tiêm phòng đầy đủ cho trẻ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Groups Section -->
+        <section id="groups" class="content-section">
+            <h2 class="section-title">Tìm cộng đồng của bạn</h2>
+            <div class="topics-grid">
+                <div class="topic-card fade-in">
+                    <div class="topic-icon">💑</div>
+                    <h3 class="topic-title">Chuẩn bị mang thai</h3>
+                    <p class="topic-description">Dành cho các cặp đôi đang chuẩn bị đón con đầu lòng</p>
+                    <div class="topic-stats">
+                        <span>1.2k thành viên</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in delay-1">
+                    <div class="topic-icon">🤰</div>
+                    <h3 class="topic-title">Mẹ bầu</h3>
+                    <p class="topic-description">Cộng đồng những bà mẹ đang mang thai chia sẻ kinh nghiệm</p>
+                    <div class="topic-stats">
+                        <span>2.8k thành viên</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in delay-2">
+                    <div class="topic-icon">💕</div>
+                    <h3 class="topic-title">Chăm sóc mẹ sau sinh</h3>
+                    <p class="topic-description">Hỗ trợ mẹ phục hồi và chăm sóc bản thân sau sinh</p>
+                    <div class="topic-stats">
+                        <span>1.9k thành viên</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in delay-3">
+                    <div class="topic-icon">👶</div>
+                    <h3 class="topic-title">Bé sơ sinh</h3>
+                    <p class="topic-description">Chia sẻ kinh nghiệm chăm sóc bé từ 0-6 tháng tuổi</p>
+                    <div class="topic-stats">
+                        <span>3.1k thành viên</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in">
+                    <div class="topic-icon">🚶</div>
+                    <h3 class="topic-title">Bé tập đi và mẫu giáo (2-5 tuổi)</h3>
+                    <p class="topic-description">Hướng dẫn nuôi dạy trẻ từ 2-5 tuổi</p>
+                    <div class="topic-stats">
+                        <span>2.3k thành viên</span>
+                    </div>
+                </div>
+                
+                <div class="topic-card fade-in delay-1">
+                    <div class="topic-icon">🎒</div>
+                    <h3 class="topic-title">Bé tiểu học (6-10 tuổi)</h3>
+                    <p class="topic-description">Hỗ trợ giáo dục và phát triển trẻ tuổi học đường</p>
+                    <div class="topic-stats">
+                        <span>1.7k thành viên</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Right Sidebar -->
+    <aside class="sidebar">
+        <!-- Quick Actions -->
+        <div class="sidebar-card fade-in">
+            <h3 class="sidebar-title">Hành động nhanh</h3>
+            <div class="quick-actions">
+                <a href="@Url.Action("Create", "C2C")" class="action-btn">
+                    <span class="action-icon">📝</span>
+                    Đăng bài trao đổi
+                </a>
+                <a href="@Url.Action("CreatePost", "MilkDonation")" class="action-btn">
+                    <span class="action-icon">🍼</span>
+                    Chia sẻ sữa mẹ
+                </a>
+                <a href="@Url.Action("Index", "MilkDonation")" class="action-btn">
+                    <span class="action-icon">🔍</span>
+                    Tìm sữa mẹ
+                </a>
+                <a href="@Url.Action("Index", "Chat")" class="action-btn">
+                    <span class="action-icon">💬</span>
+                    Trò chuyện
+                </a>
+            </div>
+        </div>
+
+        <!-- Health Tools -->
+        <div class="sidebar-card fade-in delay-1">
+            <h3 class="sidebar-title">Công cụ nổi bật</h3>
+            <div class="tools-grid">
+                <div class="tool-item">
+                    <span class="tool-icon">📅</span>
+                    <div class="tool-name">Tính ngày dự sinh</div>
+                </div>
+                <div class="tool-item">
+                    <span class="tool-icon">🌸</span>
+                    <div class="tool-name">Ngày rụng trứng</div>
+                </div>
+                <div class="tool-item">
+                    <span class="tool-icon">📏</span>
+                    <div class="tool-name">Tăng trưởng bé</div>
+                </div>
+                <div class="tool-item">
+                    <span class="tool-icon">💉</span>
+                    <div class="tool-name">Lịch tiêm chủng</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Communities -->
+        <div class="sidebar-card fade-in delay-2">
+            <h3 class="sidebar-title">Cộng đồng hoạt động</h3>
+            <div class="groups-list">
+                <div class="group-item">
+                    <div class="group-icon">👶</div>
+                    <div class="group-info">
+                        <div class="group-name">Bé sơ sinh</div>
+                        <div class="group-members">3.1k thành viên</div>
+                    </div>
+                </div>
+                <div class="group-item">
+                    <div class="group-icon">🤰</div>
+                    <div class="group-info">
+                        <div class="group-name">Mẹ bầu</div>
+                        <div class="group-members">2.8k thành viên</div>
+                    </div>
+                </div>
+                <div class="group-item">
+                    <div class="group-icon">🚶</div>
+                    <div class="group-info">
+                        <div class="group-name">Bé tập đi</div>
+                        <div class="group-members">2.3k thành viên</div>
+                    </div>
+                </div>
+                <div class="group-item">
+                    <div class="group-icon">💕</div>
+                    <div class="group-info">
+                        <div class="group-name">Mẹ sau sinh</div>
+                        <div class="group-members">1.9k thành viên</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+</main>
+
+<!-- JavaScript for Community Page -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab Navigation
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    navTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.dataset.target;
+            
+            // Remove active class from all tabs and sections
+            navTabs.forEach(t => t.classList.remove('active'));
+            contentSections.forEach(s => s.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding section
+            this.classList.add('active');
+            const targetSection = document.getElementById(target);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+        });
+    });
+
+    // Animate cards on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+
+<style>
+/* Tab Content Management */
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+/* Initial animation state */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+}
+</style>

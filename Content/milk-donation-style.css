@@ -70,7 +70,6 @@
 .hero-subtitle {
     font-size: 1rem;
     margin-bottom: 20px;
-    opacity: 0.9;
 }
 
 .hero-actions {
@@ -1569,9 +1568,9 @@
 /* Floating Action Buttons */
 .fab-container {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 1000;
+    bottom: 90px;
+    right: 20px;
+    z-index: 1001;
 }
 
 .fab {
@@ -3080,4 +3079,5 @@
         width: 60px;
         height: 60px;
     }
+
 }

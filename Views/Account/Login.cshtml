@@ -108,7 +108,10 @@
                         @Html.CheckBox("RememberMe", loginModel.RememberMe, new { style = "cursor: pointer;" })
                         <span>Ghi nhớ tôi</span>
                     </label>
-                    <a href="#" style="font-size: 14px;">Quên mật khẩu?</a>
+                    <button type="button" data-forgot-password
+                            style="font-size: 14px; background: none; border: 0; color: #d63384; text-decoration: underline; cursor: pointer; padding: 0;">
+                        Quên mật khẩu?
+                    </button>
                 </div>
                 <button class="auth-button" type="submit">Đăng Nhập</button>
             }
@@ -363,5 +366,27 @@
                 }
             }, 5000);
         }
+    </script>
+    <script src="@Url.Content("~/Scripts/account-modals.js")"></script>
+    <script>
+        // Delegated click to ensure modal opens even if inline handlers are blocked
+        document.addEventListener('click', function (e) {
+            var trigger = e.target.closest('[data-forgot-password]');
+            if (!trigger) return;
+            e.preventDefault();
+            if (typeof openForgotPasswordModal === 'function') {
+                openForgotPasswordModal();
+            } else {
+                // Fallback loader
+                fetch('/Account/ForgotPasswordRequest', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (r) { return r.text(); })
+                    .then(function (html) {
+                        var containerId = 'accountModalContainer';
+                        var c = document.getElementById(containerId);
+                        if (!c) { c = document.createElement('div'); c.id = containerId; document.body.appendChild(c); }
+                        c.innerHTML = html;
+                    });
+            }
+        });
     </script>
 }

@@ -2,10 +2,16 @@
     ViewBag.Title = "Về MomExchange";
 }
 
-<section class="animated-hero">
-    <div class="hero-content" data-aos="fade-up">
+<section class="hero-section">
+    <div class="hero-video-wrap">
+        <video class="hero-video" autoplay muted loop playsinline poster="~/images/hero-fallback.jpg">
+            <source src="~/videos/2.mp4" type="video/mp4" />
+        </video>
+        <div class="hero-overlay"></div>
+    </div>
+    <div class="container text-center hero-content" data-aos="fade-up">
         <h1>Câu chuyện về <span class="highlight">MomExchange</span></h1>
-        <p>Hơn cả một nền tảng, chúng tôi là một cộng đồng được xây dựng từ sự thấu hiểu và sẻ chia.</p>
+        <p class="hero-subtitle">Hơn cả một nền tảng, chúng tôi là một cộng đồng được xây dựng từ sự thấu hiểu và sẻ chia.</p>
     </div>
 </section>
 
@@ -134,6 +140,16 @@
 </section>
 
 <style>
+/* Hero video for About page - reuse same look as MilkDonation */
+.hero-section { position: relative; width: 100%; padding: 60px 0; text-align: center; overflow: hidden; }
+.hero-video-wrap { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.hero-video { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; transform: translate(-50%,-50%); object-fit: cover; }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.25) 60%, rgba(0,0,0,.35) 100%); z-index: 1; pointer-events: none; }
+.hero-content { position: relative; z-index: 2; }
+.hero-title { color: #fff; font-weight: 800; text-shadow: 0 3px 12px rgba(0,0,0,.45); margin-bottom: 10px; }
+.hero-subtitle { color: #fff; opacity: .98; text-shadow: 0 2px 8px rgba(0,0,0,.5); }
+/* Enforce white subtitle regardless of prior rules */
+.hero-section .hero-subtitle { color: #ffffff !important; -webkit-text-fill-color: #ffffff; opacity: 1; }
 /* Team Section Styles */
 .team-section {
     background: linear-gradient(135deg, #f8e8f0 0%, #fce4ec 100%);

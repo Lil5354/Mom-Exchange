@@ -5,6 +5,7 @@ using System.Linq;
 using System.Web.Mvc;
 using B_M.Filters;
 using B_M.Models;
+using B_M.Helpers;
 
 namespace B_M.Areas.Admin.Controllers
 {
@@ -19,7 +20,7 @@ namespace B_M.Areas.Admin.Controllers
             try
             {
                 var categories = db.Categories.ToList();
-                var rootCategories = BuildCategoryTree(categories, null);
+                var rootCategories = BuildCategoryTreeNodes(categories, null);
 
                 var viewModel = new CategoryIndexViewModel
                 {
@@ -305,6 +306,25 @@ namespace B_M.Areas.Admin.Controllers
                 .ToList();
         }
 
+        private List<CategoryTreeNode> BuildCategoryTreeNodes(List<Category> allCategories, int? parentId, int level = 0)
+        {
+            return allCategories
+                .Where(c => c.ParentCategoryID == parentId)
+                .Select(c => new CategoryTreeNode
+                {
+                    CategoryID = c.CategoryID,
+                    CategoryName = c.CategoryName,
+                    Description = c.Description,
+                    ParentCategoryID = c.ParentCategoryID,
+                    IsB2CEnabled = c.IsB2CEnabled,
+                    IsC2CEnabled = c.IsC2CEnabled,
+                    Level = level,
+                    Children = BuildCategoryTreeNodes(allCategories, c.CategoryID, level + 1)
+                })
+                .OrderBy(c => c.CategoryName)
+                .ToList();
+        }
+
         private void LoadParentCategoriesDropdown(int? selectedId, int? excludeId = null)
         {
             try
@@ -354,6 +374,114 @@ namespace B_M.Areas.Admin.Controllers
                 category = db.Categories.Find(category.ParentCategoryID.Value);
             }
             return false;
+        }
+
+        // GET: Admin/Category/Import
+        public ActionResult Import()
+        {
+            try
+            {
+                var model = new B_M.Models.AdminImportCategoriesViewModel
+                {
+                    SkipDuplicateNames = true
+                };
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return RedirectToAction("Index");
+            }
+        }
+
+        // POST: Admin/Category/Import
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Import(B_M.Models.AdminImportCategoriesViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                if (model.ExcelFile == null || model.ExcelFile.ContentLength == 0)
+                {
+                    ModelState.AddModelError("ExcelFile", "Vui lòng chọn file Excel.");
+                    return View(model);
+                }
+
+                var allowedExtensions = new[] { ".xlsx", ".xls" };
+                var fileExtension = System.IO.Path.GetExtension(model.ExcelFile.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    ModelState.AddModelError("ExcelFile", "Chỉ chấp nhận file Excel (.xlsx, .xls).");
+                    return View(model);
+                }
+
+                if (model.ExcelFile.ContentLength > 10 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("ExcelFile", "File quá lớn. Kích thước tối đa là 10MB.");
+                    return View(model);
+                }
+
+                var result = ExcelHelper.ProcessCategoryExcelFile(model.ExcelFile, model, db);
+                TempData["ImportResult"] = result;
+
+                if (result.SuccessCount > 0)
+                {
+                    TempData["SuccessMessage"] = $"Import thành công {result.SuccessCount} danh mục.";
+                }
+
+                if (result.ErrorCount > 0)
+                {
+                    TempData["ErrorMessage"] = $"Có {result.ErrorCount} lỗi trong quá trình import.";
+                }
+
+                return RedirectToAction("ImportResult");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Có lỗi xảy ra khi import: " + ex.Message);
+                return View(model);
+            }
+        }
+
+        // GET: Admin/Category/ImportResult
+        public ActionResult ImportResult()
+        {
+            try
+            {
+                var result = TempData["ImportResult"] as B_M.Models.AdminImportCategoriesResultViewModel;
+                if (result == null)
+                {
+                    TempData["ErrorMessage"] = "Không có kết quả import để hiển thị.";
+                    return RedirectToAction("Import");
+                }
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return RedirectToAction("Import");
+            }
+        }
+
+        // GET: Admin/Category/DownloadTemplate
+        public ActionResult DownloadTemplate()
+        {
+            try
+            {
+                var template = ExcelHelper.CreateCategoryExcelTemplate();
+                var fileName = $"CategoryImportTemplate_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                return File(template, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Có lỗi khi tạo template: " + ex.Message;
+                return RedirectToAction("Import");
+            }
         }
 
         protected override void Dispose(bool disposing)

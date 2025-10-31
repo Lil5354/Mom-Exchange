@@ -1,0 +1,376 @@
+@model B_M.Models.AdminPostC2CListViewModel
+@{
+    ViewBag.Title = "Quản lý Bài đăng C2C";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-content">
+    <div class="admin-header">
+        <h2><i class="fas fa-exchange-alt"></i> Quản lý Bài đăng C2C</h2>
+        <p class="text-muted">Quản lý các bài đăng thanh lý, trao đổi của mẹ bỉm</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.Error as string))
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> @ViewBag.Error
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.TotalPosts</h4>
+                            <p class="mb-0">Tổng bài đăng</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-list fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.ActivePosts</h4>
+                            <p class="mb-0">Đang mở</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.SalePosts</h4>
+                            <p class="mb-0">Bài bán</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.ExchangePosts</h4>
+                            <p class="mb-0">Bài trao đổi</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exchange-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-filter"></i> Bộ lọc</h5>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "PostC2C", FormMethod.Get, new { @class = "form-inline" }))
+            {
+                <div class="form-group mr-3">
+                    <label for="statusFilter" class="mr-2">Trạng thái:</label>
+                    @Html.DropDownList("statusFilter", new List<SelectListItem>
+                    {
+                        new SelectListItem { Text = "Tất cả", Value = "", Selected = !Model.StatusFilter.HasValue },
+                        new SelectListItem { Text = "Đang mở", Value = "1", Selected = Model.StatusFilter == 1 },
+                        new SelectListItem { Text = "Đã bán/đổi", Value = "2", Selected = Model.StatusFilter == 2 }
+                    }, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group mr-3">
+                    <label for="categoryFilter" class="mr-2">Danh mục:</label>
+                    @Html.DropDownList("categoryFilter", new SelectList(ViewBag.Categories as List<B_M.Models.Category>, "CategoryID", "CategoryName", Model.CategoryFilter), "Tất cả", new { @class = "form-control" })
+                </div>
+
+                <div class="form-group mr-3">
+                    <label for="listingTypeFilter" class="mr-2">Loại:</label>
+                    @Html.DropDownList("listingTypeFilter", new List<SelectListItem>
+                    {
+                        new SelectListItem { Text = "Tất cả", Value = "", Selected = !Model.ListingTypeFilter.HasValue },
+                        new SelectListItem { Text = "Chỉ bán", Value = "1", Selected = Model.ListingTypeFilter == 1 },
+                        new SelectListItem { Text = "Chỉ trao đổi", Value = "2", Selected = Model.ListingTypeFilter == 2 },
+                        new SelectListItem { Text = "Bán hoặc trao đổi", Value = "3", Selected = Model.ListingTypeFilter == 3 }
+                    }, new { @class = "form-control" })
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Lọc
+                </button>
+                <a href="@Url.Action("Index", "PostC2C")" class="btn btn-secondary ml-2">
+                    <i class="fas fa-times"></i> Xóa lọc
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Posts List -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-list"></i> Danh sách bài đăng (@Model.TotalPosts bài)</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Posts.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tiêu đề</th>
+                                <th>Người đăng</th>
+                                <th>Danh mục</th>
+                                <th>Giá</th>
+                                <th>Loại</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày đăng</th>
+                                <th>Hình ảnh</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var post in Model.Posts)
+                            {
+                                <tr>
+                                    <td>@post.PostID</td>
+                                    <td>
+                                        <strong>@post.Title</strong>
+                                        @if (!string.IsNullOrEmpty(post.Condition))
+                                        {
+                                            <br><small class="text-muted">Tình trạng: @post.Condition</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(post.UserAvatarUrl))
+                                            {
+                                                <img src="@post.UserAvatarUrl" alt="Avatar" class="rounded-circle mr-2" style="width: 30px; height: 30px;">
+                                            }
+                                            else
+                                            {
+                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mr-2" style="width: 30px; height: 30px;">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                            }
+                                            <div>
+                                                <div>@post.UserName</div>
+                                                <small class="text-muted">@post.UserEmail</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@post.CategoryName</td>
+                                    <td>@post.PriceText</td>
+                                    <td><span class="badge @post.ListingTypeClass">@post.ListingTypeText</span></td>
+                                    <td><span class="badge @post.StatusClass">@post.StatusText</span></td>
+                                    <td>@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (post.ImageCount > 0)
+                                        {
+                                            <span class="badge badge-info">@post.ImageCount ảnh</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không có</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="@Url.Action("Details", "PostC2C", new { id = post.PostID })" class="btn btn-sm btn-info" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (post.Status == 1)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-warning" onclick="hidePost(@post.PostID)" title="Ẩn bài đăng">
+                                                    <i class="fas fa-eye-slash"></i>
+                                                </button>
+                                            }
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="deletePost(@post.PostID)" title="Xóa bài đăng">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Pagination">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, statusFilter = Model.StatusFilter, categoryFilter = Model.CategoryFilter, listingTypeFilter = Model.ListingTypeFilter })">Trước</a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = i, statusFilter = Model.StatusFilter, categoryFilter = Model.CategoryFilter, listingTypeFilter = Model.ListingTypeFilter })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, statusFilter = Model.StatusFilter, categoryFilter = Model.CategoryFilter, listingTypeFilter = Model.ListingTypeFilter })">Sau</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Không có bài đăng nào.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Hide Post Modal -->
+<div class="modal fade" id="hidePostModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ẩn bài đăng</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn ẩn bài đăng này?</p>
+                <div class="form-group">
+                    <label for="hideReason">Lý do (tùy chọn):</label>
+                    <textarea id="hideReason" class="form-control" rows="3" placeholder="Nhập lý do ẩn bài đăng..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" onclick="confirmHidePost()">Ẩn bài đăng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Post Modal -->
+<div class="modal fade" id="deletePostModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xóa bài đăng</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!</p>
+                <p>Bạn có chắc chắn muốn xóa bài đăng này?</p>
+                <div class="form-group">
+                    <label for="deleteReason">Lý do (tùy chọn):</label>
+                    <textarea id="deleteReason" class="form-control" rows="3" placeholder="Nhập lý do xóa bài đăng..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeletePost()">Xóa bài đăng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPostId = 0;
+
+        function hidePost(postId) {
+            currentPostId = postId;
+            $('#hidePostModal').modal('show');
+        }
+
+        function deletePost(postId) {
+            currentPostId = postId;
+            $('#deletePostModal').modal('show');
+        }
+
+        function confirmHidePost() {
+            const reason = $('#hideReason').val();
+            
+            $.ajax({
+                url: '@Url.Action("HidePost", "PostC2C")',
+                type: 'POST',
+                data: {
+                    postId: currentPostId,
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Ẩn bài đăng thành công!');
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi ẩn bài đăng.');
+                }
+            });
+            
+            $('#hidePostModal').modal('hide');
+        }
+
+        function confirmDeletePost() {
+            const reason = $('#deleteReason').val();
+            
+            $.ajax({
+                url: '@Url.Action("DeletePost", "PostC2C")',
+                type: 'POST',
+                data: {
+                    postId: currentPostId,
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Xóa bài đăng thành công!');
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi xóa bài đăng.');
+                }
+            });
+            
+            $('#deletePostModal').modal('hide');
+        }
+    </script>
+}

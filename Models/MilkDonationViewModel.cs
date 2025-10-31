@@ -124,6 +124,10 @@ namespace B_M.Models
         [StringLength(2000, ErrorMessage = "Ghi chú không được quá 2000 ký tự")]
         public string Note { get; set; }
 
+        [Display(Name = "Hình ảnh")]
+        [StringLength(500, ErrorMessage = "URL hình ảnh không được quá 500 ký tự")]
+        public string ImageUrl { get; set; }
+
         // Computed properties
         public string VerificationTierText
         {
@@ -144,12 +148,14 @@ namespace B_M.Models
         public int Id { get; set; }
         public int DonorUserId { get; set; }
         public string DonorName { get; set; }
+        public string Title { get; set; }  // Missing property for chat integration
         public string Location { get; set; }
         public DateTime DateOfExpression { get; set; }
         public string DietInfo { get; set; }
         public string StorageInfo { get; set; }
         public string Note { get; set; }
         public string DonorAvatarUrl { get; set; }
+        public string ImageUrl { get; set; }
         public int VerificationTier { get; set; }
         public DateTime PostedAt { get; set; }
         public int Status { get; set; }
@@ -157,6 +163,16 @@ namespace B_M.Models
         // Request-related properties
         public bool HasUserRequested { get; set; }
         public int? UserRequestStatus { get; set; } // null if no request, 0=pending, 1=accepted, 2=declined
+
+        // Health declaration properties (for tier 1 and tier 2 posts)
+        public bool? HasHealthDeclaration { get; set; }
+        public bool? IsSmoker { get; set; }
+        public bool? UsesAlcohol { get; set; }
+        public bool? UsesMedication { get; set; }
+        public string MedicationDetails { get; set; }
+        public bool? CommitNoDrugs { get; set; }
+        public bool? CommitNoInfectiousDiseases { get; set; }
+        public DateTime? HealthDeclarationSubmittedAt { get; set; }
 
         public string VerificationTierText
         {
@@ -203,7 +219,7 @@ namespace B_M.Models
             {
                 switch (VerificationTier)
                 {
-                    case 1: return "⚠️ KHAI BÁO CƠ BẢN. Sữa chưa được xác thực y tế. Nền tảng khuyến nghị không dùng cho bé uống.";
+                    case 1: return "KHAI BÁO CƠ BẢN. Sữa chưa được xác thực y tế. Nền tảng khuyến nghị không dùng cho bé uống.";
                     case 3: return "✅ ĐÃ XÁC THỰC Y TẾ";
                     default: return "❓ CHƯA XÁC MINH";
                 }
@@ -342,5 +358,15 @@ namespace B_M.Models
                 default: return "badge-unknown";
             }
         }
+    }
+
+    public class MilkDonationIndexViewModel
+    {
+        public List<MilkDonationPostViewModel> Posts { get; set; }
+        public int CurrentPage { get; set; }
+        public int TotalPages { get; set; }
+        public int TotalPosts { get; set; }
+        public string ProvinceFilter { get; set; }
+        public string TierFilter { get; set; }
     }
 }

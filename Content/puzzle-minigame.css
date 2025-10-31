@@ -1,0 +1,49 @@
+/* Minigame: Puzzle lật ô - Chủ đề mẹ & bé */
+.minigame-modal-bg {
+  position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(255,186,215,0.6); display: flex; justify-content: center; align-items: center;
+}
+.minigame-modal-content {
+  background: linear-gradient(135deg, #fff4fa 0%, #ffe8ec 100%);
+  border-radius: 18px; box-shadow: 0 8px 40px rgba(214,51,132,0.2);
+  width: 460px; max-width: 98vw; padding: 24px 32px 30px; position: relative;
+  font-family: Montserrat, Arial, sans-serif;
+}
+.minigame-close-btn { position:absolute; top:15px; right:18px; background:none; border:none; font-size:1.4rem; color:#d63384; cursor:pointer; }
+.minigame-header {
+  display:flex; flex-direction:column; align-items:center; gap:7px; margin-bottom:15px;
+}
+.minigame-header img { height:52px; margin-bottom:6px; }
+.minigame-header h2 { color:#d63384; font-size:1.4rem; font-weight:800; margin-bottom:3px; letter-spacing:0.5px; }
+.minigame-board {
+  display: grid; grid-template-columns: repeat(4, 64px); gap: 12px 10px; justify-content:center; margin:16px 0 20px;
+}
+.minigame-card {
+  width:64px; height:64px; perspective:500px; cursor:pointer;
+}
+.minigame-card .card-face {
+  background: #fce4ec; border-radius:10px; box-shadow:0 2px 8px #f8bbd0c8;
+  display:flex; align-items:center; justify-content:center; font-size:2.2rem; font-weight:700; color:#d63384;
+  width:100%; height:100%; user-select:none; position:absolute;
+  transition:transform 0.42s cubic-bezier(.4,2,.4,1),background 0.15s; backface-visibility:hidden;
+}
+.minigame-card .card-front { background:linear-gradient(125deg,#ffc5dd,#fce4ec 65%); }
+.minigame-card .card-back { transform:rotateY(180deg); }
+.minigame-card.flipped .card-front { transform:rotateY(180deg); }
+.minigame-card.flipped .card-back { transform:rotateY(0deg); }
+.minigame-scoreboard { text-align:center; color:#8e4a6b; margin-bottom:10px; }
+.minigame-leaderboard { margin-top:20px; text-align:left; background:#fce4ec7a; border-radius:10px; padding:10px 14px; }
+.minigame-leaderboard-title{ font-size:1.05em; font-weight:700; color:#d63384; margin-bottom:6px; }
+.minigame-leaderboard ul{ list-style:none;padding:0;margin:0;font-size:0.95em;}
+.minigame-leaderboard li{display:flex;align-items:center;gap:8px;padding:2px 0;border-bottom:1px solid #fce4ec7a;}
+.minigame-leaderboard li:last-child{border-bottom:none;}
+.minigame-leaderboard span[style*='color:#e91e63']{font-size:1.18em;}
+.minigame-start-btn{ display:block; margin:22px auto 0; background:#d63384; color:#fff; font-weight:600; border:none; border-radius:16px; font-size:1.09em; padding:10px 24px; cursor:pointer; transition:all .18s; box-shadow:0 2px 8px #f8bbd08a;}
+.minigame-start-btn:hover{ filter:brightness(1.08); background:#e91e63;}
+.minigame-alert{margin:10px 0; color:#e91e63;font-size:0.98em; font-weight:600; text-align:center; line-height:1.3;}
+.minigame-card.disappear{opacity:0;pointer-events:none;transition:opacity .45s;}
+@media (max-width: 540px) {
+ .minigame-modal-content{padding:10px 4vw;min-width:0;width:99vw;}
+ .minigame-board{grid-template-columns:repeat(4,48px);gap:8px 7px;}
+ .minigame-card{width:48px;height:48px;}
+}

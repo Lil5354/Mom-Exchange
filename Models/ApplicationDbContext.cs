@@ -41,6 +41,7 @@ namespace B_M.Models
         public DbSet<MilkDonationRequest> MilkDonationRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<SystemSettings> SystemSettings { get; set; }
+        public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
 
         // Communication & Trading
         public DbSet<Message> Messages { get; set; }
@@ -492,6 +493,22 @@ namespace B_M.Models
                 .WithMany(p => p.Ratings)
                 .HasForeignKey(r => r.PostID)
                 .WillCascadeOnDelete(false);
+
+            // ====== PASSWORD RESET CODE CONFIGURATION ======
+            modelBuilder.Entity<PasswordResetCode>()
+                .ToTable("PasswordResetCodes")
+                .HasKey(p => p.Id);
+
+            modelBuilder.Entity<PasswordResetCode>()
+                .Property(p => p.Code)
+                .IsRequired()
+                .HasMaxLength(6);
+
+            modelBuilder.Entity<PasswordResetCode>()
+                .HasRequired(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserID)
+                .WillCascadeOnDelete(true);
 
             base.OnModelCreating(modelBuilder);
         }

@@ -51,7 +51,19 @@ packages/
 # Temporary files
 *.tmp
 *.temp
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 App_Data/MedicalRecords/
 !App_Data/MedicalRecords/.gitkeep
 
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Package lock files (tùy chọn)
+package-lock.json
+yarn.lock
 old_code_base/

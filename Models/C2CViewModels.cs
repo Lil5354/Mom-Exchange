@@ -18,6 +18,7 @@ namespace B_M.Models
         public string PrimaryImageUrl { get; set; }
         public int SellerUserID { get; set; }
         public string SellerName { get; set; }
+        public string SellerAvatar { get; set; }
         public DateTime CreatedAt { get; set; }
         public IEnumerable<string> ExchangeCategoryNames { get; set; }
 

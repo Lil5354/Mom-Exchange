@@ -418,6 +418,341 @@ namespace B_M.Helpers
                 return package.GetAsByteArray();
             }
         }
+
+        // ========== CATEGORY IMPORT METHODS ==========
+
+        public static B_M.Models.AdminImportCategoriesResultViewModel ProcessCategoryExcelFile(
+            HttpPostedFileBase file,
+            B_M.Models.AdminImportCategoriesViewModel model,
+            ApplicationDbContext db)
+        {
+            var result = new B_M.Models.AdminImportCategoriesResultViewModel
+            {
+                FileName = file.FileName,
+                ImportTime = DateTime.Now
+            };
+
+            try
+            {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                using (var package = new ExcelPackage(file.InputStream))
+                {
+                    var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+                    if (worksheet == null)
+                    {
+                        result.Errors.Add(new B_M.Models.ImportCategoryError
+                        {
+                            RowNumber = 0,
+                            ErrorMessage = "File Excel không có worksheet nào"
+                        });
+                        return result;
+                    }
+
+                    var rowCount = worksheet.Dimension?.Rows ?? 0;
+                    if (rowCount < 2)
+                    {
+                        result.Errors.Add(new B_M.Models.ImportCategoryError
+                        {
+                            RowNumber = 0,
+                            ErrorMessage = "File Excel không có dữ liệu"
+                        });
+                        return result;
+                    }
+
+                    result.TotalRows = rowCount - 1;
+
+                    // Đọc tất cả categories hiện có để map parent
+                    var existingCategories = db.Categories.ToDictionary(
+                        c => c.CategoryName.ToLower(),
+                        c => c.CategoryID,
+                        StringComparer.OrdinalIgnoreCase);
+
+                    // Process each row - process parents first
+                    var categoriesToAdd = new List<Category>();
+                    var categoryDataList = new List<ExcelCategoryData>();
+
+                    // First pass: read all data
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        try
+                        {
+                            var categoryData = ExtractCategoryDataFromRow(worksheet, row);
+                            categoryDataList.Add(categoryData);
+                        }
+                        catch (Exception ex)
+                        {
+                            result.ErrorCount++;
+                            result.Errors.Add(new B_M.Models.ImportCategoryError
+                            {
+                                RowNumber = row,
+                                ErrorMessage = $"Lỗi đọc dữ liệu dòng: {ex.Message}"
+                            });
+                        }
+                    }
+
+                    // Process categories in order (parents before children)
+                    foreach (var categoryData in categoryDataList.OrderBy(c => string.IsNullOrEmpty(c.ParentCategoryName) ? 0 : 1))
+                    {
+                        try
+                        {
+                            var validationResult = ValidateCategoryData(categoryData, db, model, existingCategories);
+
+                            if (validationResult.IsValid)
+                            {
+                                // Check duplicate at same level
+                                int? parentId = null;
+                                if (!string.IsNullOrWhiteSpace(categoryData.ParentCategoryName))
+                                {
+                                    var parentNameLower = categoryData.ParentCategoryName.Trim().ToLower();
+                                    if (existingCategories.ContainsKey(parentNameLower))
+                                    {
+                                        parentId = existingCategories[parentNameLower];
+                                    }
+                                    else
+                                    {
+                                        result.ErrorCount++;
+                                        result.Errors.Add(new B_M.Models.ImportCategoryError
+                                        {
+                                            RowNumber = categoryData.RowNumber,
+                                            CategoryName = categoryData.CategoryName,
+                                            ErrorMessage = $"Không tìm thấy danh mục cha: {categoryData.ParentCategoryName}"
+                                        });
+                                        continue;
+                                    }
+                                }
+
+                                var isDuplicate = db.Categories.Any(c =>
+                                    c.CategoryName.ToLower() == categoryData.CategoryName.Trim().ToLower() &&
+                                    c.ParentCategoryID == parentId);
+
+                                if (isDuplicate && model.SkipDuplicateNames)
+                                {
+                                    result.SkippedCount++;
+                                    continue;
+                                }
+
+                                if (!isDuplicate)
+                                {
+                                    var category = CreateCategoryFromData(categoryData, parentId);
+                                    db.Categories.Add(category);
+                                    db.SaveChanges();
+
+                                    // Update dictionary
+                                    existingCategories[category.CategoryName.ToLower()] = category.CategoryID;
+
+                                    result.SuccessCount++;
+                                    result.SuccessCategories.Add(new B_M.Models.ImportCategorySuccess
+                                    {
+                                        RowNumber = categoryData.RowNumber,
+                                        CategoryName = category.CategoryName,
+                                        ParentCategoryName = categoryData.ParentCategoryName ?? "(Không có)",
+                                        IsB2CEnabled = category.IsB2CEnabled,
+                                        IsC2CEnabled = category.IsC2CEnabled
+                                    });
+                                }
+                                else
+                                {
+                                    result.ErrorCount++;
+                                    result.Errors.Add(new B_M.Models.ImportCategoryError
+                                    {
+                                        RowNumber = categoryData.RowNumber,
+                                        CategoryName = categoryData.CategoryName,
+                                        ErrorMessage = "Danh mục đã tồn tại ở cùng cấp"
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                result.ErrorCount++;
+                                result.Errors.AddRange(validationResult.Errors.Select(e => new B_M.Models.ImportCategoryError
+                                {
+                                    RowNumber = categoryData.RowNumber,
+                                    CategoryName = categoryData.CategoryName,
+                                    ErrorMessage = e,
+                                    FieldName = "Validation"
+                                }));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            result.ErrorCount++;
+                            result.Errors.Add(new B_M.Models.ImportCategoryError
+                            {
+                                RowNumber = categoryData.RowNumber,
+                                CategoryName = categoryData.CategoryName ?? "N/A",
+                                ErrorMessage = $"Lỗi xử lý dòng: {ex.Message}"
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add(new B_M.Models.ImportCategoryError
+                {
+                    RowNumber = 0,
+                    ErrorMessage = $"Lỗi đọc file Excel: {ex.Message}"
+                });
+            }
+
+            return result;
+        }
+
+        private static ExcelCategoryData ExtractCategoryDataFromRow(ExcelWorksheet worksheet, int row)
+        {
+            return new ExcelCategoryData
+            {
+                RowNumber = row,
+                CategoryName = GetCellValue(worksheet, row, 1), // Column A
+                Description = GetCellValue(worksheet, row, 2), // Column B
+                ParentCategoryName = GetCellValue(worksheet, row, 3), // Column C
+                IsB2CEnabled = GetCellValue(worksheet, row, 4).ToLower() == "true" || GetCellValue(worksheet, row, 4) == "1" || GetCellValue(worksheet, row, 4).ToLower() == "yes", // Column D
+                IsC2CEnabled = GetCellValue(worksheet, row, 5).ToLower() == "true" || GetCellValue(worksheet, row, 5) == "1" || GetCellValue(worksheet, row, 5).ToLower() == "yes" // Column E
+            };
+        }
+
+        private static ValidationResult ValidateCategoryData(
+            ExcelCategoryData categoryData,
+            ApplicationDbContext db,
+            B_M.Models.AdminImportCategoriesViewModel model,
+            Dictionary<string, int> existingCategories)
+        {
+            var result = new ValidationResult();
+
+            if (string.IsNullOrWhiteSpace(categoryData.CategoryName))
+            {
+                result.Errors.Add("Tên danh mục là bắt buộc");
+            }
+
+            if (!categoryData.IsB2CEnabled && !categoryData.IsC2CEnabled)
+            {
+                result.Errors.Add("Phải chọn ít nhất một quyền: B2C hoặc C2C (1/true/yes cho B2C hoặc C2C)");
+            }
+
+            result.IsValid = result.Errors.Count == 0;
+            return result;
+        }
+
+        private static Category CreateCategoryFromData(ExcelCategoryData categoryData, int? parentId)
+        {
+            return new Category
+            {
+                CategoryName = categoryData.CategoryName.Trim(),
+                Description = string.IsNullOrWhiteSpace(categoryData.Description) ? null : categoryData.Description.Trim(),
+                ParentCategoryID = parentId,
+                IsB2CEnabled = categoryData.IsB2CEnabled,
+                IsC2CEnabled = categoryData.IsC2CEnabled
+            };
+        }
+
+        public static byte[] CreateCategoryExcelTemplate()
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Categories");
+
+                // Headers
+                worksheet.Cells[1, 1].Value = "CategoryName";
+                worksheet.Cells[1, 2].Value = "Description";
+                worksheet.Cells[1, 3].Value = "ParentCategoryName";
+                worksheet.Cells[1, 4].Value = "IsB2CEnabled";
+                worksheet.Cells[1, 5].Value = "IsC2CEnabled";
+
+                // Style headers
+                using (var range = worksheet.Cells[1, 1, 1, 5])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(79, 129, 189));
+                    range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    range.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thick);
+                }
+
+                // Sample data
+                var sampleData = new[]
+                {
+                    new { CategoryName = "Đồ dùng cho bé", Description = "Các sản phẩm thiết yếu cho trẻ sơ sinh và trẻ nhỏ", ParentCategoryName = "", IsB2CEnabled = "1", IsC2CEnabled = "1" },
+                    new { CategoryName = "Quần áo trẻ em", Description = "Quần áo, phụ kiện cho bé từ 0-5 tuổi", ParentCategoryName = "Đồ dùng cho bé", IsB2CEnabled = "1", IsC2CEnabled = "1" },
+                    new { CategoryName = "Đồ chơi trẻ em", Description = "Đồ chơi giáo dục, an toàn cho bé", ParentCategoryName = "Đồ dùng cho bé", IsB2CEnabled = "1", IsC2CEnabled = "1" },
+                    new { CategoryName = "Sữa và thực phẩm", Description = "Sữa bột, sữa tươi, thực phẩm bổ sung cho bé", ParentCategoryName = "Đồ dùng cho bé", IsB2CEnabled = "1", IsC2CEnabled = "0" },
+                    new { CategoryName = "Xe đẩy & Ghế ăn", Description = "Các loại xe đẩy, ghế ăn dặm cho bé", ParentCategoryName = "Đồ dùng cho bé", IsB2CEnabled = "1", IsC2CEnabled = "1" },
+                    new { CategoryName = "Đồ dùng cho mẹ", Description = "Các sản phẩm dành cho mẹ bầu và sau sinh", ParentCategoryName = "", IsB2CEnabled = "1", IsC2CEnabled = "1" },
+                    new { CategoryName = "Thời trang bầu", Description = "Quần áo, váy bầu thoải mái và phong cách", ParentCategoryName = "Đồ dùng cho mẹ", IsB2CEnabled = "1", IsC2CEnabled = "1" },
+                    new { CategoryName = "Chăm sóc sức khỏe mẹ", Description = "Sản phẩm bổ sung, chăm sóc cá nhân cho mẹ", ParentCategoryName = "Đồ dùng cho mẹ", IsB2CEnabled = "1", IsC2CEnabled = "0" },
+                    new { CategoryName = "Đồ dùng cho con bú", Description = "Máy hút sữa, bình sữa, phụ kiện cho con bú", ParentCategoryName = "Đồ dùng cho mẹ", IsB2CEnabled = "1", IsC2CEnabled = "1" },
+                    new { CategoryName = "Sách và giáo dục", Description = "Sách về nuôi dạy con, phát triển bản thân cho mẹ", ParentCategoryName = "Đồ dùng cho mẹ", IsB2CEnabled = "1", IsC2CEnabled = "1" }
+                };
+
+                int row = 2;
+                foreach (var data in sampleData)
+                {
+                    worksheet.Cells[row, 1].Value = data.CategoryName;
+                    worksheet.Cells[row, 2].Value = data.Description;
+                    worksheet.Cells[row, 3].Value = data.ParentCategoryName;
+                    worksheet.Cells[row, 4].Value = data.IsB2CEnabled;
+                    worksheet.Cells[row, 5].Value = data.IsC2CEnabled;
+
+                    // Alternate row colors
+                    if (row % 2 == 0)
+                    {
+                        using (var range = worksheet.Cells[row, 1, row, 5])
+                        {
+                            range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(242, 242, 242));
+                        }
+                    }
+
+                    row++;
+                }
+
+                // Add instructions sheet
+                var notesSheet = package.Workbook.Worksheets.Add("Hướng dẫn");
+                notesSheet.Cells[1, 1].Value = "HƯỚNG DẪN SỬ DỤNG TEMPLATE IMPORT CATEGORIES";
+                notesSheet.Cells[1, 1].Style.Font.Bold = true;
+                notesSheet.Cells[1, 1].Style.Font.Size = 14;
+
+                notesSheet.Cells[3, 1].Value = "CÁC CỘT TRONG FILE:";
+                notesSheet.Cells[3, 1].Style.Font.Bold = true;
+
+                notesSheet.Cells[4, 1].Value = "CategoryName (Bắt buộc):";
+                notesSheet.Cells[4, 2].Value = "Tên danh mục. Phải duy nhất ở cùng cấp.";
+
+                notesSheet.Cells[5, 1].Value = "Description (Tùy chọn):";
+                notesSheet.Cells[5, 2].Value = "Mô tả về danh mục.";
+
+                notesSheet.Cells[6, 1].Value = "ParentCategoryName (Tùy chọn):";
+                notesSheet.Cells[6, 2].Value = "Tên danh mục cha. Để trống nếu là danh mục gốc.";
+
+                notesSheet.Cells[7, 1].Value = "IsB2CEnabled (Bắt buộc):";
+                notesSheet.Cells[7, 2].Value = "1/true/yes để bật B2C, 0/false/no để tắt.";
+
+                notesSheet.Cells[8, 1].Value = "IsC2CEnabled (Bắt buộc):";
+                notesSheet.Cells[8, 2].Value = "1/true/yes để bật C2C, 0/false/no để tắt.";
+
+                notesSheet.Cells[10, 1].Value = "LƯU Ý:";
+                notesSheet.Cells[10, 1].Style.Font.Bold = true;
+                notesSheet.Cells[10, 1].Style.Font.Color.SetColor(System.Drawing.Color.Red);
+
+                notesSheet.Cells[11, 1].Value = "• Không xóa hàng tiêu đề (hàng đầu tiên)";
+                notesSheet.Cells[12, 1].Value = "• Phải có ít nhất một trong B2C hoặc C2C được bật (1/true/yes)";
+                notesSheet.Cells[13, 1].Value = "• Danh mục cha phải được tạo trước danh mục con";
+                notesSheet.Cells[14, 1].Value = "• Tên danh mục trùng lặp ở cùng cấp sẽ bị bỏ qua";
+
+                notesSheet.Cells.AutoFitColumns();
+
+                // Set column widths for main sheet
+                worksheet.Column(1).Width = 30; // CategoryName
+                worksheet.Column(2).Width = 40; // Description
+                worksheet.Column(3).Width = 30; // ParentCategoryName
+                worksheet.Column(4).Width = 15; // IsB2CEnabled
+                worksheet.Column(5).Width = 15; // IsC2CEnabled
+
+                return package.GetAsByteArray();
+            }
+        }
     }
 
     public class ExcelUserData
@@ -437,5 +772,15 @@ namespace B_M.Helpers
         public bool IsValid { get; set; }
         public bool IsSkipped { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
+    }
+
+    public class ExcelCategoryData
+    {
+        public int RowNumber { get; set; }
+        public string CategoryName { get; set; }
+        public string Description { get; set; }
+        public string ParentCategoryName { get; set; }
+        public bool IsB2CEnabled { get; set; }
+        public bool IsC2CEnabled { get; set; }
     }
 }

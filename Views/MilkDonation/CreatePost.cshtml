@@ -50,11 +50,24 @@
                                 <i class="fa-solid fa-utensils"></i>
                                 @Html.DisplayNameFor(m => m.MotherDietInfo)
                             </label>
-                            @Html.TextAreaFor(m => m.MotherDietInfo, new { @class = "form-control", @rows = 4, @placeholder = "Mô tả chi tiết về chế độ ăn uống của bạn..." })
+                            <select id="dietSelect" class="form-control" onchange="toggleDietCustom()">
+                                <option value="">-- Chọn chế độ ăn --</option>
+                                <option value="Ăn uống bình thường, đa dạng">Ăn uống bình thường, đa dạng</option>
+                                <option value="Kiêng sữa bò và các sản phẩm từ sữa">Kiêng sữa bò và các sản phẩm từ sữa</option>
+                                <option value="Kiêng hải sản (do bé dị ứng)">Kiêng hải sản (do bé dị ứng)</option>
+                                <option value="Kiêng đậu phộng và các loại hạt">Kiêng đậu phộng và các loại hạt</option>
+                                <option value="Không uống caffeine">Không uống caffeine</option>
+                                <option value="Ăn chay">Ăn chay</option>
+                                <option value="Có bổ sung vitamin tổng hợp sau sinh">Có bổ sung vitamin tổng hợp sau sinh</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                            <div id="dietCustomSection" style="display: none; margin-top: 10px;">
+                                @Html.TextAreaFor(m => m.MotherDietInfo, new { @class = "form-control", @rows = 3, @placeholder = "Mô tả chi tiết về chế độ ăn uống của bạn..." })
+                            </div>
                             @Html.ValidationMessageFor(m => m.MotherDietInfo, "", new { @class = "text-danger" })
                             <small class="form-text text-muted">
                                 <i class="fa-solid fa-info-circle"></i>
-                                Bao gồm: thực phẩm thường ăn, vitamin bổ sung, thuốc đang dùng...
+                                Chọn chế độ ăn phù hợp hoặc chọn "Khác" để mô tả chi tiết
                             </small>
                         </div>
 
@@ -63,11 +76,23 @@
                                 <i class="fa-solid fa-snowflake"></i>
                                 @Html.DisplayNameFor(m => m.StorageMethod)
                             </label>
-                            @Html.TextAreaFor(m => m.StorageMethod, new { @class = "form-control", @rows = 4, @placeholder = "Mô tả cách bạn bảo quản sữa..." })
+                            <select id="storageSelect" class="form-control" onchange="toggleStorageCustom()">
+                                <option value="">-- Chọn cách bảo quản --</option>
+                                <option value="Trữ đông ngay sau khi vắt">Trữ đông ngay sau khi vắt</option>
+                                <option value="Bảo quản trong túi trữ sữa chuyên dụng (đã tiệt trùng)">Bảo quản trong túi trữ sữa chuyên dụng (đã tiệt trùng)</option>
+                                <option value="Bảo quản trong bình nhựa cứng (BPA-free)">Bảo quản trong bình nhựa cứng (BPA-free)</option>
+                                <option value="Bảo quản trong bình thủy tinh (đã tiệt trùng)">Bảo quản trong bình thủy tinh (đã tiệt trùng)</option>
+                                <option value="Bảo quản ở tủ đông (-18°C hoặc thấp hơn)">Bảo quản ở tủ đông (-18°C hoặc thấp hơn)</option>
+                                <option value="Bảo quản ở ngăn đá tủ lạnh">Bảo quản ở ngăn đá tủ lạnh</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                            <div id="storageCustomSection" style="display: none; margin-top: 10px;">
+                                @Html.TextAreaFor(m => m.StorageMethod, new { @class = "form-control", @rows = 3, @placeholder = "Mô tả cách bạn bảo quản sữa..." })
+                            </div>
                             @Html.ValidationMessageFor(m => m.StorageMethod, "", new { @class = "text-danger" })
                             <small class="form-text text-muted">
                                 <i class="fa-solid fa-info-circle"></i>
-                                Bao gồm: nhiệt độ bảo quản, loại túi/hộp, thời gian bảo quản...
+                                Chọn cách bảo quản phù hợp hoặc chọn "Khác" để mô tả chi tiết
                             </small>
                         </div>
 
@@ -78,6 +103,35 @@
                             </label>
                             @Html.TextAreaFor(m => m.Note, new { @class = "form-control", @rows = 3, @placeholder = "Ghi chú thêm về sữa hoặc điều kiện trao đổi..." })
                             @Html.ValidationMessageFor(m => m.Note, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-image"></i>
+                                @Html.DisplayNameFor(m => m.ImageUrl)
+                            </label>
+                            <div class="image-input-container">
+                                <div class="input-group">
+                                    @Html.TextBoxFor(m => m.ImageUrl, new { @class = "form-control", @placeholder = "Nhập URL hình ảnh hoặc upload file..." })
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('imageFile').click()">
+                                            <i class="fa-solid fa-upload"></i> Upload
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="file" id="imageFile" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
+                                <div id="imagePreview" class="image-preview" style="display: none; margin-top: 10px;">
+                                    <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeImage()" style="margin-left: 10px;">
+                                        <i class="fa-solid fa-times"></i> Xóa
+                                    </button>
+                                </div>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ImageUrl, "", new { @class = "text-danger" })
+                            <small class="form-text text-muted">
+                                <i class="fa-solid fa-info-circle"></i>
+                                Có thể nhập URL hình ảnh hoặc upload file từ máy tính (JPG, PNG, GIF)
+                            </small>
                         </div>
 
                         <div class="form-actions">
@@ -129,4 +183,106 @@
 
 @section Styles {
     <link href="~/Content/milk-donation-style.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <script>
+        function toggleDietCustom() {
+            var dietSelect = document.getElementById('dietSelect');
+            var customSection = document.getElementById('dietCustomSection');
+            var textarea = customSection.querySelector('textarea');
+            
+            if (dietSelect.value === 'Khác') {
+                customSection.style.display = 'block';
+                textarea.required = true;
+                textarea.focus();
+            } else {
+                customSection.style.display = 'none';
+                textarea.required = false;
+                textarea.value = '';
+                // Set the selected value to the hidden field
+                document.querySelector('input[name="MotherDietInfo"]').value = dietSelect.value;
+            }
+        }
+
+        function toggleStorageCustom() {
+            var storageSelect = document.getElementById('storageSelect');
+            var customSection = document.getElementById('storageCustomSection');
+            var textarea = customSection.querySelector('textarea');
+            
+            if (storageSelect.value === 'Khác') {
+                customSection.style.display = 'block';
+                textarea.required = true;
+                textarea.focus();
+            } else {
+                customSection.style.display = 'none';
+                textarea.required = false;
+                textarea.value = '';
+                // Set the selected value to the hidden field
+                document.querySelector('input[name="StorageMethod"]').value = storageSelect.value;
+            }
+        }
+
+        // Image upload and preview functions
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    // Set the URL field to a placeholder for uploaded file
+                    document.querySelector('input[name="ImageUrl"]').value = 'uploaded_file_' + Date.now();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeImage() {
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('imageFile').value = '';
+            document.querySelector('input[name="ImageUrl"]').value = '';
+        }
+
+        // Handle URL input changes
+        document.addEventListener('DOMContentLoaded', function() {
+            var imageUrlInput = document.querySelector('input[name="ImageUrl"]');
+            if (imageUrlInput) {
+                imageUrlInput.addEventListener('input', function() {
+                    var url = this.value.trim();
+                    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                        document.getElementById('previewImg').src = url;
+                        document.getElementById('imagePreview').style.display = 'block';
+                    } else if (!url) {
+                        document.getElementById('imagePreview').style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // Handle form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // Set values from dropdowns if not "Khác"
+                    var dietSelect = document.getElementById('dietSelect');
+                    var storageSelect = document.getElementById('storageSelect');
+                    
+                    if (dietSelect.value && dietSelect.value !== 'Khác') {
+                        var dietTextarea = document.querySelector('textarea[name="MotherDietInfo"]');
+                        if (dietTextarea) {
+                            dietTextarea.value = dietSelect.value;
+                        }
+                    }
+                    
+                    if (storageSelect.value && storageSelect.value !== 'Khác') {
+                        var storageTextarea = document.querySelector('textarea[name="StorageMethod"]');
+                        if (storageTextarea) {
+                            storageTextarea.value = storageSelect.value;
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 }

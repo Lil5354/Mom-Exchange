@@ -9,7 +9,7 @@ namespace B_M.Models
         public int ActiveUsers { get; set; }
         public int AdminUsers { get; set; }
         public int MomUsers { get; set; }
-        public int ClientUsers { get; internal set; } // Added by user - same as MomUsers for compatibility
+        public int ClientUsers { get; set; }
         public int NewUsersThisMonth { get; set; }
         public List<User> RecentUsers { get; set; } = new List<User>();
 

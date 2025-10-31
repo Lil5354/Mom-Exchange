@@ -9,12 +9,15 @@ using System.Web.Mvc;
 using System.Web.Security;
 using Microsoft.Owin.Security;
 using System.Threading.Tasks;
+using System.Data.Entity;
+using B_M.Services;
 
 namespace B_M.Controllers
 {
     public class AccountController : Controller
     {
         private readonly B_M.Repositories.UserRepository userRepository;
+        private readonly ApplicationDbContext _db = new ApplicationDbContext();
 
         public AccountController()
         {
@@ -26,6 +29,7 @@ namespace B_M.Controllers
             if (disposing)
             {
                 userRepository?.Dispose();
+                _db?.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -54,6 +58,358 @@ namespace B_M.Controllers
             return View(new LoginViewModel());
         }
 
+        // ======== CHANGE PASSWORD (Modal) ========
+        [Authorize]
+        public ActionResult ChangePassword()
+        {
+            int userId = (int)Session["UserID"];
+            var user = userRepository.GetUserById(userId);
+            
+            var model = new ChangePasswordViewModel();
+            if (user != null)
+            {
+                model.Username = user.UserName ?? "Chưa đặt";
+                model.Email = user.Email;
+            }
+            
+            return PartialView("_ChangePasswordPartial", model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return PartialView("_ChangePasswordPartial", model);
+
+            int userId = (int)Session["UserID"];
+            var user = userRepository.GetUserById(userId);
+            if (user == null) return Json(new { success = false, message = "Phiên làm việc đã hết hạn." });
+
+            if (!Helpers.PasswordHelper.VerifyPassword(model.CurrentPassword, user.PasswordHash))
+            {
+                return Json(new { success = false, message = "Mật khẩu hiện tại không đúng." });
+            }
+
+            user.PasswordHash = Helpers.PasswordHelper.HashPassword(model.NewPassword);
+            if (!userRepository.UpdateUser(user))
+            {
+                return Json(new { success = false, message = "Không thể cập nhật mật khẩu. Vui lòng thử lại." });
+            }
+
+            return Json(new { success = true, message = "Đổi mật khẩu thành công." });
+        }
+
+        // ======== EMAIL TEST (Debug only) ========
+        [AllowAnonymous]
+        public ActionResult TestEmailPage()
+        {
+            return View("TestEmail");
+        }
+        
+        [AllowAnonymous]
+        public ActionResult TestSimple()
+        {
+            return Json(new { 
+                success = true, 
+                message = "Simple test works!",
+                timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                config = new {
+                    host = System.Configuration.ConfigurationManager.AppSettings["EmailSmtpHost"],
+                    port = System.Configuration.ConfigurationManager.AppSettings["EmailSmtpPort"],
+                    username = System.Configuration.ConfigurationManager.AppSettings["EmailUsername"],
+                    passwordLength = System.Configuration.ConfigurationManager.AppSettings["EmailPassword"]?.Length ?? 0
+                }
+            }, JsonRequestBehavior.AllowGet);
+        }
+        
+        [AllowAnonymous]
+        public ActionResult TestEmail()
+        {
+            try
+            {
+                var email = new EmailService();
+                var result = email.SendEmail("dttthao.5354@gmail.com", "Test Email", "<h1>Test từ MomExchange</h1><p>Nếu nhận được email này, cấu hình SMTP đã hoạt động!</p>", true);
+                
+                return Json(new { 
+                    success = result.Success, 
+                    message = result.Message,
+                    timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { 
+                    success = false, 
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message,
+                    timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        
+        [AllowAnonymous]
+        public ActionResult TestSmtpConnection()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("[TEST SMTP] Starting SMTP connection test...");
+                
+                var password = System.Configuration.ConfigurationManager.AppSettings["EmailPassword"];
+                System.Diagnostics.Debug.WriteLine($"[TEST SMTP] Password length: {password?.Length ?? 0}");
+                
+                if (string.IsNullOrEmpty(password))
+                {
+                    return Json(new { 
+                        success = false, 
+                        message = "EmailPassword not found in Web.config",
+                        timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                    }, JsonRequestBehavior.AllowGet);
+                }
+                
+                using (var client = new System.Net.Mail.SmtpClient("smtp.gmail.com", 587))
+                {
+                    client.EnableSsl = true;
+                    client.UseDefaultCredentials = false;
+                    client.Credentials = new System.Net.NetworkCredential("dttthao.5354@gmail.com", password);
+                    client.Timeout = 10000;
+                    
+                    System.Diagnostics.Debug.WriteLine("[TEST SMTP] Attempting to connect...");
+                    
+                    // Test connection by sending a simple email
+                    using (var message = new System.Net.Mail.MailMessage())
+                    {
+                        message.From = new System.Net.Mail.MailAddress("dttthao.5354@gmail.com", "Test");
+                        message.To.Add("dttthao.5354@gmail.com");
+                        message.Subject = "Connection Test";
+                        message.Body = "Test";
+                        
+                        client.Send(message);
+                    }
+                    
+                    System.Diagnostics.Debug.WriteLine("[TEST SMTP] Connection successful!");
+                    
+                    return Json(new { 
+                        success = true, 
+                        message = "SMTP connection successful!",
+                        timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                    }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[TEST SMTP] Error: {ex.Message}");
+                if (ex.InnerException != null)
+                    System.Diagnostics.Debug.WriteLine($"[TEST SMTP] Inner: {ex.InnerException.Message}");
+                
+                return Json(new { 
+                    success = false, 
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message,
+                    timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // ======== FORGOT PASSWORD (Modals) ========
+        [AllowAnonymous]
+        public ActionResult ForgotPasswordRequest()
+        {
+            return PartialView("_ForgotPasswordRequestPartial", new ForgotPasswordRequestViewModel());
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult ForgotPasswordRequest(ForgotPasswordRequestViewModel model)
+        {
+            if (!ModelState.IsValid) return PartialView("_ForgotPasswordRequestPartial", model);
+
+            var user = userRepository.GetUserByEmailOrUsername(model.UsernameOrEmail);
+            
+            // Check if user exists first
+            if (user == null)
+            {
+                return Json(new { 
+                    success = false, 
+                    message = "Tài khoản không tồn tại. Vui lòng kiểm tra lại tên đăng nhập hoặc email." 
+                });
+            }
+
+            // Check if user has email
+            if (string.IsNullOrEmpty(user.Email) || user.Email.EndsWith("@local.temp"))
+            {
+                return Json(new { 
+                    success = false, 
+                    message = "Tài khoản này không có email hợp lệ. Vui lòng liên hệ hỗ trợ để đặt lại mật khẩu." 
+                });
+            }
+
+            // Invalidate previous active codes
+            var currentTime = DateTime.Now;
+            var actives = _db.PasswordResetCodes.Where(x => x.UserID == user.UserID && x.UsedAt == null && x.ExpiresAt > currentTime).ToList();
+            var expiredTime = DateTime.Now.AddMinutes(-1);
+            foreach (var a in actives) { a.ExpiresAt = expiredTime; }
+            _db.SaveChanges();
+
+            var code = new Random().Next(100000, 999999).ToString();
+            var pr = new PasswordResetCode
+            {
+                UserID = user.UserID,
+                Code = code,
+                Token = Guid.NewGuid().ToString("N"),
+                ExpiresAt = DateTime.Now.AddMinutes(10),
+                Attempts = 0
+            };
+            _db.PasswordResetCodes.Add(pr);
+            _db.SaveChanges();
+
+            var email = new EmailService();
+            var html = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
+                    <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>
+                        <h1 style='margin: 0;'>🔐 Đặt lại mật khẩu</h1>
+                    </div>
+                    <div style='background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none;'>
+                        <p>Xin chào <strong>{(user.UserDetails?.FullName ?? user.UserName ?? user.Email)}</strong>,</p>
+                        <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+                        <p>Mã xác thực của bạn là:</p>
+                        <div style='text-align: center; margin: 30px 0;'>
+                            <div style='font-size: 32px; font-weight: bold; letter-spacing: 8px; background: #f8f9fa; color: #007bff; padding: 20px; border-radius: 10px; border: 3px solid #007bff; display: inline-block;'>{code}</div>
+                        </div>
+                        <div style='background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;'>
+                            <p style='margin: 0;'><strong>⚠️ Lưu ý quan trọng:</strong></p>
+                            <ul style='margin: 10px 0 0 0;'>
+                                <li>Mã này chỉ có hiệu lực trong <strong>10 phút</strong></li>
+                                <li>Không chia sẻ mã này với bất kỳ ai</li>
+                                <li>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này</li>
+                            </ul>
+                        </div>
+                        <p>Trân trọng,<br><strong>Đội ngũ MomExchange</strong></p>
+                    </div>
+                    <div style='background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 10px 10px;'>
+                        <p>&copy; {DateTime.Now.Year} MomExchange. All rights reserved.</p>
+                    </div>
+                </div>";
+            
+            System.Diagnostics.Debug.WriteLine($"[FORGOT PASSWORD] Attempting to send email to: {user.Email}");
+            var emailResult = email.SendEmail(user.Email, "Mã xác thực đặt lại mật khẩu - MomExchange", html, true);
+            System.Diagnostics.Debug.WriteLine($"[EMAIL RESULT] Success: {emailResult.Success}, Message: {emailResult.Message}");
+            
+            if (!emailResult.Success)
+            {
+                System.Diagnostics.Debug.WriteLine($"[EMAIL FAILED] Failed to send reset code to {user.Email}: {emailResult.Message}");
+                return Json(new { 
+                    success = false, 
+                    message = "Không thể gửi email. Vui lòng thử lại sau hoặc liên hệ hỗ trợ." 
+                });
+            }
+
+            // Return success with next step URL - pass the actual email for display
+            var nextUrl = Url.Action("ForgotPasswordVerify", "Account", new { u = user.Email });
+            return Json(new { 
+                success = true, 
+                message = "Mã xác thực đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.",
+                next = nextUrl
+            });
+        }
+
+        [AllowAnonymous]
+        public ActionResult ForgotPasswordVerify(string u = null)
+        {
+            return PartialView("_ForgotPasswordVerifyPartial", new ForgotPasswordVerifyViewModel { UsernameOrEmail = u });
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult ForgotPasswordVerify(ForgotPasswordVerifyViewModel model)
+        {
+            if (!ModelState.IsValid) return PartialView("_ForgotPasswordVerifyPartial", model);
+
+            var user = userRepository.GetUserByEmailOrUsername(model.UsernameOrEmail);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Thông tin không hợp lệ.");
+                return PartialView("_ForgotPasswordVerifyPartial", model);
+            }
+
+            var code = _db.PasswordResetCodes
+                .Where(x => x.UserID == user.UserID && x.UsedAt == null)
+                .OrderByDescending(x => x.Id)
+                .FirstOrDefault();
+
+            var currentTime = DateTime.Now;
+            if (code == null || code.ExpiresAt < currentTime)
+            {
+                return Json(new { success = false, message = "Mã xác thực đã hết hạn. Vui lòng yêu cầu lại." });
+            }
+
+            if (!string.Equals(code.Code, model.Code))
+            {
+                code.Attempts += 1;
+                _db.SaveChanges();
+                if (code.Attempts >= 5)
+                {
+                    code.ExpiresAt = DateTime.Now.AddMinutes(-1);
+                    _db.SaveChanges();
+                    return Json(new { success = false, message = "Bạn đã nhập sai quá số lần cho phép. Vui lòng yêu cầu mã mới." });
+                }
+                return Json(new { success = false, message = "Mã xác thực không đúng." });
+            }
+
+            // Mark verified and allow reset within 10 minutes
+            code.UsedAt = DateTime.Now;
+            _db.SaveChanges();
+
+            var nextUrl = Url.Action("ResetPassword", "Account", new { u = model.UsernameOrEmail });
+            return Json(new { success = true, message = "Xác thực thành công.", next = nextUrl });
+        }
+
+        [AllowAnonymous]
+        public ActionResult ResetPassword(string u)
+        {
+            var model = new ResetPasswordViewModel { UsernameOrEmail = u };
+            
+            // Load user information to display
+            if (!string.IsNullOrEmpty(u))
+            {
+                var user = userRepository.GetUserByEmailOrUsername(u);
+                if (user != null)
+                {
+                    model.Username = user.UserName ?? "Chưa đặt";
+                    model.Email = user.Email;
+                }
+            }
+            
+            return PartialView("_ResetPasswordPartial", model);
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return PartialView("_ResetPasswordPartial", model);
+
+            var user = userRepository.GetUserByEmailOrUsername(model.UsernameOrEmail);
+            if (user == null) return Json(new { success = false, message = "Phiên xác thực không hợp lệ." });
+
+            // Only if a code was verified within last 10 minutes
+            var tenMinutesAgo = DateTime.Now.AddMinutes(-10);
+            var verified = _db.PasswordResetCodes
+                .Where(x => x.UserID == user.UserID && x.UsedAt != null && x.UsedAt > tenMinutesAgo)
+                .OrderByDescending(x => x.UsedAt)
+                .FirstOrDefault();
+
+            if (verified == null)
+                return Json(new { success = false, message = "Phiên đặt lại mật khẩu đã hết hạn. Vui lòng yêu cầu mã mới." });
+
+            user.PasswordHash = Helpers.PasswordHelper.HashPassword(model.NewPassword);
+            userRepository.UpdateUser(user);
+
+            return Json(new { success = true, message = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập." });
+        }
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
@@ -431,11 +787,12 @@ namespace B_M.Controllers
                             Session["TempFullName"] = createdUser.UserDetails?.FullName ?? name;
                             Session["TempRole"] = createdUser.Role;
 
-                            System.Diagnostics.Debug.WriteLine($"NEW USER CREATED: {createdUser.Email} - Redirecting to CompleteProfile");
+                            System.Diagnostics.Debug.WriteLine($"NEW USER CREATED: {createdUser.Email} - Redirecting to Home with Complete Profile Modal");
                             TempData["InfoMessage"] = $"Chào mừng, {createdUser.UserDetails?.FullName ?? name}! Hãy hoàn thiện thông tin để sử dụng đầy đủ tính năng.";
                             
-                            // Redirect to CompleteProfile instead of home
-                            return RedirectToAction("CompleteProfile");
+                            // Redirect to Home with flag to show Complete Profile Modal
+                            TempData["ShowCompleteProfileModal"] = true;
+                            return RedirectToAction("Index", "Home");
                         }
                         else
                         {
@@ -470,6 +827,7 @@ namespace B_M.Controllers
         }
 
         // GET: /Account/CompleteProfile
+        // This endpoint is only used for AJAX requests to load the modal content
         [AllowAnonymous]
         public ActionResult CompleteProfile()
         {
@@ -487,7 +845,8 @@ namespace B_M.Controllers
                 FullName = Session["TempFullName"]?.ToString()
             };
 
-            return View(model);
+            // Only return partial view for modal - no full page support
+            return PartialView("_CompleteProfilePartial", model);
         }
 
         // POST: /Account/CompleteProfile

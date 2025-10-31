@@ -1,8 +1,8 @@
-@model B_M.Models.AdminCategoryViewModel
+@model B_M.Models.CategoryTreeNode
 
 <div class="tree-node level-@Model.Level" id="category-@Model.CategoryID">
     <div class="tree-item level-@Model.Level">
-        @if (Model.SubCategories.Any())
+        @if (Model.Children.Any())
         {
             <i class="fas fa-chevron-right toggle-icon"></i>
         }
@@ -49,9 +49,9 @@
             {
                 <span class="badge c2c">C2C</span>
             }
-            @if (Model.SubCategoryCount > 0)
+            @if (Model.Children.Any())
             {
-                <span class="badge count">@Model.SubCategoryCount con</span>
+                <span class="badge count">@Model.Children.Count con</span>
             }
         </div>
 
@@ -68,10 +68,10 @@
         </div>
     </div>
 
-    @if (Model.SubCategories.Any())
+    @if (Model.Children.Any())
     {
         <div class="tree-children" style="display: none;">
-            @foreach (var subCategory in Model.SubCategories)
+            @foreach (var subCategory in Model.Children)
             {
                 @Html.Partial("_CategoryTreeNode", subCategory)
             }

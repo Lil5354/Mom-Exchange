@@ -159,6 +159,10 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Areas\Admin\Controllers\CategoryController.cs" />
+    <Compile Include="Areas\Admin\Controllers\MedicalRecordsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\MilkDonationController.cs" />
+    <Compile Include="Areas\Admin\Controllers\PostC2CController.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
     <Compile Include="Areas\Admin\Controllers\CategoryController.cs" />
@@ -175,6 +179,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MilkDonationController.cs" />
     <Compile Include="Controllers\C2CController.cs" />
+    <Compile Include="Controllers\CommunityController.cs" />
     <Compile Include="Controllers\NotificationApiController.cs" />
     <Compile Include="Controllers\OrderUserController.cs" />
     <Compile Include="Controllers\PaymentController.cs" />
@@ -193,6 +198,13 @@
     <Compile Include="Migrations\202510291319194_InitialCreate.Designer.cs">
       <DependentUpon>202510291319194_InitialCreate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202510300006395_AddImgUrlForMilk.cs" />
+    <Compile Include="Migrations\202510300006395_AddImgUrlForMilk.Designer.cs">
+      <DependentUpon>202510300006395_AddImgUrlForMilk.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202510300536010_AddPasswordResetCodes.cs" />
+    <Compile Include="Migrations\202510300536010_AddPasswordResetCodes.Designer.cs">
+      <DependentUpon>202510300536010_AddPasswordResetCodes.cs</DependentUpon>
     <Compile Include="Migrations\202510311041214_Update.cs" />
     <Compile Include="Migrations\202510311041214_Update.Designer.cs">
       <DependentUpon>202510311041214_Update.cs</DependentUpon>
@@ -200,9 +212,11 @@
     <Compile Include="Models\AdminCategoryViewModel.cs" />
     <Compile Include="Models\AdminCreateUserViewModel.cs" />
     <Compile Include="Models\AdminDashboardViewModel.cs" />
+    <Compile Include="Models\AdminImportCategoriesViewModel.cs" />
     <Compile Include="Models\AdminImportUsersViewModel.cs" />
     <Compile Include="Models\AdminMedicalRecordsViewModels.cs" />
     <Compile Include="Models\AdminMilkDonationViewModels.cs" />
+    <Compile Include="Models\AdminPostC2CViewModel.cs" />
     <Compile Include="Models\AdminPostsViewModel.cs" />
     <Compile Include="Models\AdminUserEditViewModel.cs" />
     <Compile Include="Models\AdminUsersViewModel.cs" />
@@ -239,6 +253,8 @@
     <Compile Include="Models\UserDetails.cs" />
     <Compile Include="Models\UserLifestyleSurvey.cs" />
     <Compile Include="Models\UserMedicalRecord.cs" />
+    <Compile Include="Models\PasswordResetCode.cs" />
+    <Compile Include="Models\AccountPasswordViewModels.cs" />
     <Compile Include="Models\ChatViewModel.cs" />
     <Compile Include="Models\ViewModels\BrandDetailViewModel.cs" />
     <Compile Include="Models\ViewModels\OrderUserIndexViewModel.cs" />
@@ -263,6 +279,9 @@
     <Content Include="Content\account-style.css" />
     <Content Include="Content\c2c-marketplace.css" />
     <Content Include="Content\milk-donation-style.css" />
+    <Content Include="Content\swap-style.css" />
+    <Content Include="Content\community.css" />
+    <Content Include="Content\puzzle-minigame.css" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-grid.rtl.css" />
@@ -289,6 +308,11 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\custom-cursor.js" />
+    <Content Include="Areas\Admin\Views\Category\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\Import.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\ImportResult.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\CreateUser.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\ImportResult.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\ImportUsers.cshtml" />
@@ -308,6 +332,9 @@
     <Content Include="Areas\Admin\Views\Brand\Delete.cshtml" />
     <Content Include="Areas\Admin\Views\MilkDonation\Details.cshtml" />
     <Content Include="Areas\Admin\Views\MilkDonation\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\CreateUser.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\ImportResult.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\ImportUsers.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Areas\Admin\Views\_ViewImports.cshtml" />
     <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
@@ -324,6 +351,10 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\trade-popup.js" />
+    <Content Include="Scripts\puzzle-minigame.js" />
+    <Content Include="videos\1.mp4" />
+    <Content Include="videos\2.mp4" />
+    <Content Include="videos\3.mp4" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -352,6 +383,13 @@
     <Content Include="Views\MilkDonation\_CreateRequestPartial.cshtml" />
     <Content Include="Views\MilkDonation\_MedicalRecordsPartial.cshtml" />
     <Compile Include="Models\MilkDonationRequest.cs" />
+    <Content Include="Views\Account\_ChangePasswordPartial.cshtml" />
+    <Content Include="Views\Account\_ForgotPasswordRequestPartial.cshtml" />
+    <Content Include="Views\Account\_ForgotPasswordVerifyPartial.cshtml" />
+    <Content Include="Views\Account\_ResetPasswordPartial.cshtml" />
+    <Content Include="Scripts\account-modals.js" />
+    <Compile Include="Models\MilkDonationRequest.cs" />
+    <Content Include="Views\MilkDonation\_MyPostsPartial.cshtml" />
     <Content Include="Views\MilkDonation\_WaitingListPartial.cshtml" />
     <Content Include="Views\MilkDonation\WaitingList.cshtml" />
     <Content Include="Views\Notification\Index.cshtml" />
@@ -375,10 +413,18 @@
     <Content Include="Views\OrderUser\_OrdersList.cshtml" />
     <Content Include="Views\Community\Index.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
-    <Content Include="Views\Account\CompleteProfile.cshtml" />
+    <Content Include="Views\Account\_CompleteProfilePartial.cshtml" />
     <Content Include="Views\Cart\Index.cshtml" />
     <Content Include="Views\Shared\NotFound.cshtml" />
     <Content Include="Views\Shared\ServerError.cshtml" />
+    <Content Include="Areas\Admin\web.config" />
+    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Admin\Views\_ViewImports.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\Users.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\UserDetails.cshtml" />
+    <Content Include="Areas\Admin\Views\Admin\Reports.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Views\MilkDonation\LifestyleSurvey.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -416,6 +462,11 @@
     <EmbeddedResource Include="Migrations\202510291319194_InitialCreate.resx">
       <DependentUpon>202510291319194_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202510300006395_AddImgUrlForMilk.resx">
+      <DependentUpon>202510300006395_AddImgUrlForMilk.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202510300536010_AddPasswordResetCodes.resx">
+      <DependentUpon>202510300536010_AddPasswordResetCodes.cs</DependentUpon>
     <EmbeddedResource Include="Migrations\202510311041214_Update.resx">
       <DependentUpon>202510311041214_Update.cs</DependentUpon>
     </EmbeddedResource>

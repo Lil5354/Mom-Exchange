@@ -2,158 +2,317 @@
         ViewBag.Title = "Trang Chủ";
     }
 
-    <section class="search-banner">
-        <div class="search-container" data-aos="fade-up">
-            <h2>Trao đổi đồ mẹ và bé, dễ dàng & nhanh chóng</h2>
-            <p>Tìm kiếm hàng ngàn sản phẩm từ cộng đồng các bà mẹ trên cả nước</p>
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Tìm xe đẩy, máy hút sữa, quần áo...">
-                <button type="submit">Tìm Kiếm</button>
+<!-- Include Swap Style CSS -->
+<link href="~/Content/swap-style.css" rel="stylesheet" />
+
+<!-- Top Notification Bar -->
+<div class="top-notification-bar">
+    💝 BẠN CÓ SỮA MUỐN TRAO ĐI? - THAM GIA CỘNG ĐỒNG MẸ VÀ BÉ NGAY HÔM NAY 💝
+</div>
+
+<!-- Hero Section -->
+<section class="swap-hero">
+    <div class="swap-container">
+        <div class="hero-content">
+            <h1 class="hero-title fade-in-up">MomExchange</h1>
+            <p class="hero-subtitle fade-in-up stagger-1">Trao đổi đồ mẹ và bé, dễ dàng & nhanh chóng</p>
+            <p class="hero-subtitle fade-in-up stagger-2">Tìm kiếm hàng ngàn sản phẩm từ cộng đồng các bà mẹ trên cả nước</p>
+            <div class="hero-search fade-in-up stagger-3">
+                <div class="search-input-wrapper">
+                    <input type="text" class="search-input" placeholder="Tìm xe đẩy, máy hút sữa, quần áo...">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i> Tìm Kiếm
+                    </button>
+                </div>
+            </div>
             </div>
         </div>
     </section>
 
-    <section class="category-section">
-        <div class="category-grid" data-aos="fade-up" data-aos-delay="200">
-            <a href="#" class="category-card">
-                <div class="category-icon"><i class="fas fa-baby-carriage"></i></div>
-                <p>Xe đẩy, Nôi, Cũi</p>
-            </a>
-            <a href="#" class="category-card">
-                <div class="category-icon"><i class="fas fa-tshirt"></i></div>
-                <p>Quần áo</p>
-            </a>
-            <a href="#" class="category-card">
-                <div class="category-icon"><i class="fas fa-shapes"></i></div>
-                <p>Đồ chơi</p>
-            </a>
-            <a href="#" class="category-card">
-                <div class="category-icon"><i class="fas fa-pump-medical"></i></div>
-                <p>Máy hút sữa</p>
-            </a>
-            <a href="#" class="category-card">
-                <div class="category-icon"><i class="fas fa-book-reader"></i></div>
-                <p>Sách, Truyện</p>
-            </a>
-            <a href="#" class="category-card">
-                <div class="category-icon"><i class="fas fa-chair"></i></div>
-                <p>Ghế ăn dặm</p>
-            </a>
-            <a href="#" class="category-card">
-                <div class="category-icon"><i class="fas fa-bath"></i></div>
-                <p>Đồ dùng tắm gội</p>
-            </a>
-            <a href="#" class="category-card">
-                <div class="category-icon"><i class="fas fa-ellipsis-h"></i></div>
-                <p>Các loại khác</p>
+<!-- Category Images Section -->
+<section class="category-images-section">
+    <div class="category-images-grid">
+        <a href="@Url.Action("Index", "C2C", new { category = "quan-ao" })" class="category-image-card fade-in-up stagger-1">
+            <img src="https://i.pinimg.com/736x/93/15/8c/93158cee16747272e27ffa21091f584f.jpg" alt="Quần áo trẻ em">
+            <div class="category-overlay">
+                <h3 class="category-title">Quần áo</h3>
+                <p class="category-subtitle">Thời trang cho bé yêu</p>
+            </div>
+        </a>
+        <a href="@Url.Action("Index", "C2C", new { category = "may-hut-sua" })" class="category-image-card fade-in-up stagger-2">
+            <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Đồ dùng cho mẹ">
+            <div class="category-overlay">
+                <h3 class="category-title">Đồ dùng mẹ</h3>
+                <p class="category-subtitle">Chăm sóc sức khỏe mẹ</p>
+            </div>
+        </a>
+        <a href="@Url.Action("Index", "C2C", new { category = "do-choi" })" class="category-image-card fade-in-up stagger-3">
+            <img src="https://images.unsplash.com/photo-1558060370-d644479cb6f7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Đồ chơi trẻ em">
+            <div class="category-overlay">
+                <h3 class="category-title">Đồ chơi</h3>
+                <p class="category-subtitle">Phát triển trí tuệ</p>
+            </div>
             </a>
         </div>
     </section>
 
+<!-- Promotional Banners -->
+<section class="promotional-section">
+    <div class="promo-banners-grid">
+        <div class="promo-banner">
+            <div class="promo-content">
+                <div class="promo-badge">Tham gia cộng đồng</div>
+                <div class="promo-title">Trao Đổi Đồ Cũ Cho Bé</div>
+                <div class="promo-buttons">
+                    <a href="@Url.Action("Index", "C2C", new { type = "exchange" })" class="promo-btn">Đồ sơ sinh</a>
+                    <a href="@Url.Action("Index", "C2C", new { type = "exchange" })" class="promo-btn">Đồ chơi</a>
+                </div>
+            </div>
+        </div>
+        <div class="promo-banner alt">
+            <div class="promo-content">
+                <div class="promo-badge">Chia sẻ yêu thương</div>
+                <div class="promo-title">Trao Tặng Sữa Mẹ</div>
+                <div class="promo-buttons">
+                    <a href="@Url.Action("Index", "MilkDonation")" class="promo-btn">Tìm sữa</a>
+                    <a href="@Url.Action("CreatePost", "MilkDonation")" class="promo-btn">Cho tặng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <section class="product-section">
-        <div class="section-header" data-aos="fade-up">
-            <h2>Thanh Lý Nổi Bật</h2>
-            <a href="#">Xem tất cả sản phẩm</a>
+<!-- Featured Exchange Section -->
+<section class="featured-section">
+    <div class="swap-container">
+        <div class="featured-header">
+            <div class="discount-badge">TRAO ĐỔI MIỄN PHÍ</div>
+            <h2 class="featured-title">Đồ Cũ Chất Lượng Cao</h2>
+            <p class="featured-subtitle">Trao đổi đồ sơ sinh và đồ chơi - Giúp bé phát triển khỏe mạnh</p>
         </div>
         <div class="product-grid">
-            <a href="@Url.Action("Details", "Product", new { id = 1 })" class="product-card-link">
-                <div class="product-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="card-image-container">
-                        <img src="https://www.kidsplaza.vn/media/catalog/product/a/p/aprica-kroon-hong.jpg" alt="Product">
-                        <div class="card-overlay">
-                            <span class="overlay-text">Xem chi tiết</span>
-                        </div>
-                    </div>
-                    <div class="card-text-content">
-                        <h3>Xe đẩy em bé Aprica</h3>
-                        <p class="brand">Đăng bởi: Mẹ Bắp</p>
-                        <p class="price">1.200.000₫</p>
+            <div class="product-card fade-in-up stagger-1">
+                <div class="product-image">
+                    <img src="https://vietnguyenmart.com/wp-content/uploads/2021/06/Xe-day-em-be-Chilux-nau.png" alt="Xe đẩy cho bé">
+                    <div class="product-badge exchange">Trao đổi</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Xe đẩy em bé Aprica - Còn mới 90%</h3>
+                    <p class="product-seller">Chia sẻ bởi: Mẹ Bắp</p>
+                    <div class="product-price">Trao đổi đồ chơi</div>
+                    <div class="product-actions">
+                        <button class="btn-primary">Trao đổi ngay</button>
+                        <button class="btn-secondary"><i class="fas fa-comments"></i></button>
                     </div>
                 </div>
-            </a>
+            </div>
+            
+            <div class="product-card fade-in-up stagger-2">
+                <div class="product-image">
+                    <img src="https://chilux.vn/wp-content/uploads/2023/02/may-HS.jpg" alt="Máy hút sữa">
+                    <div class="product-badge exchange">Trao đổi</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Máy hút sữa Medela - Chất lượng tốt</h3>
+                    <p class="product-seller">Chia sẻ bởi: Mẹ Gấu</p>
+                    <div class="product-price">Trao đổi quần áo</div>
+                    <div class="product-actions">
+                        <button class="btn-primary">Trao đổi ngay</button>
+                        <button class="btn-secondary"><i class="fas fa-comments"></i></button>
+                    </div>
+                        </div>
+                    </div>
+            
+            <div class="product-card fade-in-up stagger-3">
+                <div class="product-image">
+                    <img src="https://www.kidsplaza.vn/blog/wp-content/uploads/2017/07/body-so-sinh.jpg" alt="Quần áo trẻ em">
+                    <div class="product-badge exchange">Trao đổi</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Set body sơ sinh Organic Cotton</h3>
+                    <p class="product-seller">Chia sẻ bởi: Mẹ Sóc</p>
+                    <div class="product-price">Trao đổi đồ chơi</div>
+                    <div class="product-actions">
+                        <button class="btn-primary">Trao đổi ngay</button>
+                        <button class="btn-secondary"><i class="fas fa-exchange-alt"></i></button>
+                    </div>
+                    </div>
+                </div>
+            
+            <div class="product-card fade-in-up stagger-4">
+                <div class="product-image">
+                    <img src="https://mbmart.com.vn/100/329/420/products/ghe-an-dam-umoo-cao-cap-um-05117-3.jpg.webp" alt="Ghế ăn dặm">
+                    <div class="product-badge exchange">Trao đổi</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Ghế ăn dặm đa năng - Như mới</h3>
+                    <p class="product-seller">Chia sẻ bởi: Mẹ An</p>
+                    <div class="product-price">Trao đổi xe đẩy</div>
+                    <div class="product-actions">
+                        <button class="btn-primary">Trao đổi ngay</button>
+                        <button class="btn-secondary"><i class="fas fa-comments"></i></button>
+                    </div>
+                </div>
+            </div>
+                        </div>
+                    </div>
+</section>
 
-            <a href="@Url.Action("Details", "Product", new { id = 2 })" class="product-card-link">
-                <div class="product-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="card-image-container">
-                        <img src="https://www.moby.com.vn/data/bt6/may-hut-sua-dien-don-medela-swing-1594126735.png" alt="Product">
-                        <div class="card-overlay">
-                            <span class="overlay-text">Xem chi tiết</span>
-                        </div>
+<!-- Milk Donation Section -->
+<section class="featured-section bg-light">
+    <div class="swap-container">
+        <div class="featured-header">
+            <div class="discount-badge" style="background: linear-gradient(135deg, #17a2b8, #007bff);">CHO TẶNG SỮA MẸ</div>
+            <h2 class="featured-title">Chia Sẻ Yêu Thương</h2>
+            <p class="featured-subtitle">Trao tặng sữa mẹ - Giúp các bé có đủ dinh dưỡng phát triển</p>
+        </div>
+        <div class="product-grid">
+            <div class="product-card fade-in-up stagger-1">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Sữa mẹ">
+                    <div class="product-badge" style="background: #28a745;">Sữa tươi</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Sữa mẹ tươi - Dinh dưỡng đầy đủ</h3>
+                    <p class="product-seller">Chia sẻ bởi: Mẹ Linh</p>
+                    <div class="product-price">Cho tặng miễn phí</div>
+                    <div class="product-actions">
+                        <button class="btn-primary">Xin sữa ngay</button>
+                        <button class="btn-secondary"><i class="fas fa-comments"></i></button>
                     </div>
-                    <div class="card-text-content">
-                        <h3>Máy hút sữa Medela</h3>
-                        <p class="brand">Đăng bởi: Mẹ Gấu</p>
-                        <p class="price">850.000₫</p>
                     </div>
                 </div>
-            </a>
-
-            <a href="@Url.Action("Details", "Product", new { id = 3 })" class="product-card-link">
-                <div class="product-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="card-image-container">
-                        <img src="https://i.pinimg.com/1200x/78/29/91/7829917da73ef1917f7b50adc409a37a.jpg" alt="Product">
-                        <div class="card-overlay">
-                            <span class="overlay-text">Xem chi tiết</span>
+            
+            <div class="product-card fade-in-up stagger-2">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Đồ dùng cho mẹ">
+                <div class="product-badge" style="background: #28a745;">Sữa đông lạnh</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Sữa mẹ đông lạnh - Bảo quản tốt</h3>
+                    <p class="product-seller">Chia sẻ bởi: Mẹ Hoa</p>
+                    <div class="product-price">Cho tặng miễn phí</div>
+                    <div class="product-actions">
+                        <button class="btn-primary">Xin sữa ngay</button>
+                        <button class="btn-secondary"><i class="fas fa-comments"></i></button>
+                    </div>
                         </div>
                     </div>
-                    <div class="card-text-content">
-                        <h3>Set body sơ sinh</h3>
-                        <p class="brand">Đăng bởi: Mẹ Sóc</p>
-                        <p class="price">Trao đổi</p>
+            
+            <div class="product-card fade-in-up stagger-3">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Sản phẩm cho mẹ và bé">
+                    <div class="product-badge" style="background: #28a745;">Cần gấp</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Cần sữa mẹ gấp cho bé 2 tháng tuổi</h3>
+                    <p class="product-seller">Yêu cầu bởi: Mẹ Trang</p>
+                    <div class="product-price">Cần giúp đỡ</div>
+                    <div class="product-actions">
+                        <button class="btn-primary">Giúp đỡ ngay</button>
+                        <button class="btn-secondary"><i class="fas fa-comments"></i></button>
+                    </div>
                     </div>
                 </div>
-            </a>
-
-            <a href="@Url.Action("Details", "Product", new { id = 4 })" class="product-card-link">
-                <div class="product-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="card-image-container">
-                        <img src="https://songlongplastic.net/wp-content/uploads/2020/01/gh%E1%BA%BF-%C4%83n-%C4%91a-n%C4%83ng-tr%E1%BA%BB-em-song-long-2575-2.jpg" alt="Product">
-                        <div class="card-overlay">
-                            <span class="overlay-text">Xem chi tiết</span>
+            
+            <div class="product-card fade-in-up stagger-4">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Sữa mẹ">
+                    <div class="product-badge" style="background: #28a745;">Sữa tươi</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Sữa mẹ tươi hàng ngày - Chất lượng cao</h3>
+                    <p class="product-seller">Chia sẻ bởi: Mẹ Mai</p>
+                    <div class="product-price">Cho tặng miễn phí</div>
+                    <div class="product-actions">
+                        <button class="btn-primary">Xin sữa ngay</button>
+                        <button class="btn-secondary"><i class="fas fa-comments"></i></button>
                         </div>
                     </div>
-                    <div class="card-text-content">
-                        <h3>Ghế ăn dặm cho bé</h3>
-                        <p class="brand">Đăng bởi: Mẹ An</p>
-                        <p class="price">400.000₫</p>
                     </div>
                 </div>
-            </a>
         </div>
     </section>
 
-    <section class="community-section">
-        <h2 data-aos="fade-up">Góc Chia Sẻ Từ Cộng Đồng</h2>
-        <div class="quote-grid">
-            <div class="quote-card" data-aos="fade-up" data-aos-delay="100">
-                <p>"Mình đã thanh lý được chiếc nôi cũ không dùng đến và đổi được rất nhiều quần áo cho bé. Cảm ơn MomExchange đã tạo ra một nền tảng tuyệt vời!"</p>
-                <span class="author">- Mẹ Bắp, TP.HCM -</span>
+<!-- Community Section -->
+<section class="premium-section">
+    <div class="premium-banners-grid">
+        <div class="premium-banner">
+            <div class="premium-content">
+                <h2 class="premium-title">Cộng Đồng Mẹ</h2>
+                <p class="premium-subtitle">Kết nối với hàng nghìn bà mẹ cùng chia sẻ kinh nghiệm</p>
+                <a href="@Url.Action("Index", "Community")" class="premium-btn">Tham gia ngay</a>
             </div>
-            <div class="quote-card" data-aos="fade-up" data-aos-delay="200">
-                <p>"Lần đầu làm mẹ nhiều bỡ ngỡ, nhưng nhờ có cộng đồng, mình đã học hỏi được rất nhiều kinh nghiệm hay và không còn cảm thấy cô đơn nữa."</p>
-                <span class="author">- Mẹ Gấu, Hà Nội -</span>
             </div>
-            <div class="quote-card" data-aos="fade-up" data-aos-delay="300">
-                <p>"Tính năng cho tặng sữa mẹ thực sự rất nhân văn. Mình đã nhận được sự giúp đỡ kịp thời từ một mẹ khác. Thật sự biết ơn."</p>
-                <span class="author">- Mẹ An, Đà Nẵng -</span>
+        <div class="premium-banner alt">
+            <div class="premium-content">
+                <h2 class="premium-title">Cần Đồ Gấp?</h2>
+                <p class="premium-subtitle">Đăng tin cần tìm đồ cũ giá tốt cho bé yêu!</p>
+                <a href="@Url.Action("Create", "C2C")" class="premium-btn">Đăng tin ngay</a>
+            </div>
             </div>
         </div>
     </section>
 
-    <section class="hero-section">
-        <div class="hero-image" data-aos="fade-right">
-            <img src="https://i.pinimg.com/1200x/35/7a/55/357a55baf93b13e7f5f640edb6d36c1a.jpg" alt="Hành trình làm mẹ">
-        </div>
-        <div class="hero-text" data-aos="fade-left" data-aos-delay="200">
-            <h2>Trao đi cũ, nhận về mới</h2>
-            <div class="wavy-line">
-                <svg width="80" height="12" viewBox="0 0 100 15" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 8 C 20 0, 30 15, 50 8 S 70 0, 100 8" stroke="#4d4d4d" fill="transparent" stroke-width="2" />
-                </svg>
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="swap-container">
+        <div class="cta-content">
+            <h2 class="cta-title fade-in-up">Tham Gia Cộng Đồng</h2>
+            <p class="cta-subtitle fade-in-up stagger-1">Kết nối với hàng nghìn bà mẹ trên toàn quốc</p>
+            <a href="@Url.Action("Login", "Account")#signUp" class="cta-button fade-in-up stagger-2">
+                ĐĂNG KÝ NGAY
+            </a>
             </div>
-            <p>Chào mừng bạn đến với MomExchange - Nơi các bà mẹ kết nối, chia sẻ, trao đổi và tìm thấy những món đồ tuyệt vời cho hành trình nuôi con của mình.</p>
-            <a href="@Url.Action("Login", "Account")#signUp" class="cta-button">THAM GIA CỘNG ĐỒNG</a>
-        </div>
-    </section>
+    </div>
+</section>
+
+<!-- Keep existing puzzle minigame -->
+    <link href="~/Content/puzzle-minigame.css" rel="stylesheet" />
+    <script src="~/Scripts/puzzle-minigame.js"></script>
+
+<!-- Add Animation Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize animations
+    const animatedElements = document.querySelectorAll('.fade-in-up');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+    
+    animatedElements.forEach(el => {
+        observer.observe(el);
+    });
+    
+    // Search functionality
+    const searchInput = document.querySelector('.search-input');
+    const searchBtn = document.querySelector('.search-btn');
+    
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (query) {
+                window.location.href = '@Url.Action("Index", "C2C")' + '?search=' + encodeURIComponent(query);
+            }
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchBtn.click();
+            }
+        });
+    }
+});
+</script>

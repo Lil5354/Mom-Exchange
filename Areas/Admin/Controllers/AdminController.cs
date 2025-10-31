@@ -410,21 +410,27 @@ namespace B_M.Areas.Admin.Controllers
                 switch (chartType?.ToLower())
                 {
                     case "usergrowth":
+                    case "usergrowthchart":
                         data = GetUserGrowthData();
                         break;
                     case "roledistribution":
+                    case "roledistributionchart":
                         data = GetRoleDistributionData();
                         break;
                     case "monthlyactivity":
+                    case "monthlyactivitychart":
                         data = GetMonthlyActivityData();
                         break;
                     case "accountstatus":
+                    case "accountstatuschart":
                         data = GetAccountStatusData();
                         break;
                     case "posttrends":
+                    case "posttrendschart":
                         data = GetPostTrendsData();
                         break;
                     case "regionstats":
+                    case "regionstatschart":
                         data = GetRegionStatsData();
                         break;
                     default:
@@ -487,38 +493,65 @@ namespace B_M.Areas.Admin.Controllers
             };
         }
 
-        // Helper: Get monthly activity data
+        // Helper: Get monthly activity data from actual database
         private object GetMonthlyActivityData()
         {
-            var sixMonthsAgo = DateTime.Now.AddMonths(-6);
-            var users = userRepository.GetAllUsers();
-            
-            var monthlyData = Enumerable.Range(0, 6)
-                .Select(i =>
-                {
-                    var monthDate = sixMonthsAgo.AddMonths(i);
-                    var newUsersInMonth = users.Count(u => u.CreatedAt.Year == monthDate.Year && u.CreatedAt.Month == monthDate.Month);
-                    
-                    // Simulate posts and interactions data (would come from actual posts table)
-                    var posts = (int)(newUsersInMonth * 2.5);
-                    var interactions = (int)(newUsersInMonth * 5);
-                    
-                    return new
-                    {
-                        Month = "T" + monthDate.Month,
-                        NewUsers = newUsersInMonth,
-                        Posts = posts,
-                        Interactions = interactions
-                    };
-                }).ToList();
-            
-            return new
+            try
             {
-                months = monthlyData.Select(m => m.Month).ToArray(),
-                newUsers = monthlyData.Select(m => m.NewUsers).ToArray(),
-                posts = monthlyData.Select(m => m.Posts).ToArray(),
-                interactions = monthlyData.Select(m => m.Interactions).ToArray()
-            };
+                var sixMonthsAgo = DateTime.Now.AddMonths(-6);
+                var users = userRepository.GetAllUsers();
+                var db = new ApplicationDbContext();
+                
+                var c2cPosts = db.PostC2Cs.ToList();
+                var milkPosts = db.MilkDonationPosts.ToList();
+                var allPosts = c2cPosts.Select(p => new { CreatedAt = p.CreatedAt })
+                                      .Concat(milkPosts.Select(p => new { CreatedAt = p.CreatedAt }))
+                                      .ToList();
+                
+                var monthlyData = Enumerable.Range(0, 6)
+                    .Select(i =>
+                    {
+                        var monthDate = sixMonthsAgo.AddMonths(i);
+                        var startOfMonth = new DateTime(monthDate.Year, monthDate.Month, 1);
+                        var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+                        
+                        // Count actual new users in month
+                        var newUsersInMonth = users.Count(u => u.CreatedAt >= startOfMonth && u.CreatedAt <= endOfMonth);
+                        
+                        // Count actual posts in month
+                        var postsInMonth = allPosts.Count(p => p.CreatedAt >= startOfMonth && p.CreatedAt <= endOfMonth);
+                        
+                        // Simulate interactions based on posts (can be improved later)
+                        var interactions = postsInMonth * 3; // Each post generates ~3 interactions
+                        
+                        return new
+                        {
+                            Month = "T" + monthDate.Month,
+                            NewUsers = newUsersInMonth,
+                            Posts = postsInMonth,
+                            Interactions = interactions
+                        };
+                    }).ToList();
+                
+                return new
+                {
+                    months = monthlyData.Select(m => m.Month).ToArray(),
+                    newUsers = monthlyData.Select(m => m.NewUsers).ToArray(),
+                    posts = monthlyData.Select(m => m.Posts).ToArray(),
+                    interactions = monthlyData.Select(m => m.Interactions).ToArray()
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetMonthlyActivityData Error: {ex.Message}");
+                return new
+                {
+                    months = new string[0],
+                    newUsers = new int[0],
+                    posts = new int[0],
+                    interactions = new int[0]
+                };
+            }
         }
 
         // Helper: Get account status data
@@ -533,34 +566,53 @@ namespace B_M.Areas.Admin.Controllers
             };
         }
 
-        // Helper: Get post trends data
+        // Helper: Get post trends data from actual Posts tables
         private object GetPostTrendsData()
         {
-            var sixMonthsAgo = DateTime.Now.AddMonths(-6);
-            var users = userRepository.GetAllUsers();
-            
-            // Simulate post trends based on user growth
-            var monthlyPosts = Enumerable.Range(0, 6)
-                .Select(i =>
-                {
-                    var monthDate = sixMonthsAgo.AddMonths(i);
-                    var usersInMonth = users.Count(u => u.CreatedAt <= monthDate.AddMonths(1).AddDays(-1));
-                    
-                    // Estimate posts based on active users (each user ~2 posts per month on average)
-                    var estimatedPosts = (int)(usersInMonth * 0.6 * 2);
-                    
-                    return new
-                    {
-                        Month = "Tháng " + monthDate.Month,
-                        Posts = estimatedPosts
-                    };
-                }).ToList();
-            
-            return new
+            try
             {
-                months = monthlyPosts.Select(m => m.Month).ToArray(),
-                posts = monthlyPosts.Select(m => m.Posts).ToArray()
-            };
+                var sixMonthsAgo = DateTime.Now.AddMonths(-6);
+                
+                // Get actual posts from database
+                var db = new ApplicationDbContext();
+                var c2cPosts = db.PostC2Cs.ToList();
+                var milkPosts = db.MilkDonationPosts.ToList();
+                var allPosts = c2cPosts.Select(p => new { CreatedAt = p.CreatedAt })
+                                      .Concat(milkPosts.Select(p => new { CreatedAt = p.CreatedAt }))
+                                      .ToList();
+                
+                var monthlyPosts = Enumerable.Range(0, 6)
+                    .Select(i =>
+                    {
+                        var monthDate = sixMonthsAgo.AddMonths(i);
+                        var startOfMonth = new DateTime(monthDate.Year, monthDate.Month, 1);
+                        var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+                        
+                        // Count actual posts in this month
+                        var postsInMonth = allPosts.Count(p => p.CreatedAt >= startOfMonth && p.CreatedAt <= endOfMonth);
+                        
+                        return new
+                        {
+                            Month = "Tháng " + monthDate.Month,
+                            Posts = postsInMonth
+                        };
+                    }).ToList();
+                
+                return new
+                {
+                    months = monthlyPosts.Select(m => m.Month).ToArray(),
+                    posts = monthlyPosts.Select(m => m.Posts).ToArray()
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetPostTrendsData Error: {ex.Message}");
+                return new
+                {
+                    months = new string[0],
+                    posts = new int[0]
+                };
+            }
         }
 
         // Helper: Get region statistics data

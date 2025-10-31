@@ -52,6 +52,13 @@
                                     </div>
                                 </div>
 
+                                @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                {
+                                    <div class="post-image">
+                                        <img src="@post.ImageUrl" alt="Hình ảnh sữa mẹ" class="img-fluid" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+                                    </div>
+                                }
+
                                 <div class="post-content">
                                     <div class="post-info">
                                         <h4 class="post-title">

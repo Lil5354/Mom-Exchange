@@ -2,6 +2,7 @@
 using System;
 using System.Net;
 using System.Net.Mail;
+using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Configuration;
@@ -28,6 +29,10 @@ namespace B_M.Services
             _enableSsl = bool.Parse(ConfigurationManager.AppSettings["EmailEnableSsl"] ?? "true");
             _fromEmail = ConfigurationManager.AppSettings["EmailFromAddress"] ?? "noreply@momexchange.com";
             _fromName = ConfigurationManager.AppSettings["EmailFromName"] ?? "MomExchange System";
+            
+            // Debug log constructor values (mask password)
+            System.Diagnostics.Debug.WriteLine($"[EmailService Constructor] Host: {_smtpHost}, Port: {_smtpPort}, User: {_username}");
+            System.Diagnostics.Debug.WriteLine($"[EmailService Constructor] PassLen: {_password?.Length ?? 0}, SSL: {_enableSsl}, FromEmail: {_fromEmail}");
         }
 
         public EmailService(string smtpHost, int smtpPort, string username, string password, 
@@ -46,6 +51,10 @@ namespace B_M.Services
         {
             try
             {
+                // Debug ghi lại thông tin cấu hình đang sử dụng
+                System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] Host:{_smtpHost}, Port:{_smtpPort}, User:{_username}, PassLen:{_password?.Length ?? 0}, SSL:{_enableSsl}");
+                System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] FromEmail:{_fromEmail}, FromName:{_fromName}");
+                
                 // Validate email settings
                 if (string.IsNullOrEmpty(_smtpHost) || string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password))
                 {
@@ -56,34 +65,31 @@ namespace B_M.Services
                     };
                 }
 
-                // Force TLS 1.2 for Gmail (required)
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-                
-                // Trust all certificates (for development/testing only - remove in production if you have valid certs)
-                ServicePointManager.ServerCertificateValidationCallback = 
-                    delegate (object s, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) 
-                    { return true; };
+                System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] Starting email send using simplified method...");
 
-                System.Diagnostics.Debug.WriteLine($"[EmailService] Sending email - SSL: {_enableSsl}, Host: {_smtpHost}:{_smtpPort}");
-
-                using (var message = new MailMessage())
+                // Use the same approach as TestSmtpConnection (which works)
+                using (var client = new SmtpClient(_smtpHost, _smtpPort))
                 {
-                    message.From = new MailAddress(_fromEmail, _fromName);
-                    message.To.Add(new MailAddress(toEmail));
-                    message.Subject = subject;
-                    message.Body = body;
-                    message.IsBodyHtml = isHtml;
-                    message.Priority = MailPriority.Normal;
-
-                    using (var client = new SmtpClient(_smtpHost, _smtpPort))
+                    client.EnableSsl = _enableSsl;
+                    client.UseDefaultCredentials = false;
+                    client.Credentials = new NetworkCredential(_username, _password);
+                    client.Timeout = 30000;
+                    client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    
+                    System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] Creating message...");
+                    
+                    using (var message = new MailMessage())
                     {
-                        client.Credentials = new NetworkCredential(_username, _password);
-                        client.EnableSsl = _enableSsl;
-                        client.Timeout = 30000; // 30 seconds
-                        client.DeliveryMethod = SmtpDeliveryMethod.Network;
-                        client.UseDefaultCredentials = false;
+                        message.From = new MailAddress(_fromEmail, _fromName);
+                        message.To.Add(new MailAddress(toEmail));
+                        message.Subject = subject;
+                        message.Body = body;
+                        message.IsBodyHtml = isHtml;
+                        message.Priority = MailPriority.Normal;
 
+                        System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] Calling client.Send()...");
                         client.Send(message);
+                        System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] Send complete!");
                     }
                 }
 
@@ -95,7 +101,9 @@ namespace B_M.Services
             }
             catch (SmtpException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"SMTP Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] SMTP Error: {ex.Message}");
+                if (ex.InnerException != null)
+                    System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] SMTP Inner Exception: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
                 return new EmailResult
                 {
                     Success = false,
@@ -104,7 +112,9 @@ namespace B_M.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Email Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] General Error: {ex.Message}");
+                if (ex.InnerException != null)
+                    System.Diagnostics.Debug.WriteLine($"[EMAILDEBUG] General Inner Exception: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
                 return new EmailResult
                 {
                     Success = false,

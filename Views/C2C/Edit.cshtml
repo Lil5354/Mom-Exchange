@@ -5,93 +5,685 @@
     var id = ViewContext.RouteData.Values["id"]; 
 }
 
-<div class="container" style="padding-top:20px;">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card" style="padding:20px; border-radius:12px;">
-                <h3 style="color:#d63384;">Chỉnh sửa tin</h3>
-                @using (Html.BeginForm("Edit", "C2C", new { id = id }, FormMethod.Post, new { enctype = "multipart/form-data" }))
-                {
-                    @Html.AntiForgeryToken()
-                    <div class="form-group">
-                        <label>Danh mục <span style="color:red">*</span></label>
-                        @Html.DropDownListFor(m => m.CategoryID, (IEnumerable<SelectListItem>)ViewBag.Categories, "-- Chọn danh mục --", new { @class = "form-control", required = "required" })
-                        @Html.ValidationMessageFor(m => m.CategoryID, "", new { @class = "text-danger" })
+@section Styles {
+    <style>
+        .edit-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @@keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .edit-modal-container {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transform: scale(0.9);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @@keyframes slideIn {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .modal-header-modern {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 24px 32px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body-modern {
+            padding: 32px;
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f3f4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group-modern {
+            margin-bottom: 24px;
+        }
+
+        .form-label-modern {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .required-indicator {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .form-control-modern {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #fff;
+            width: 100%;
+        }
+
+        .form-control-modern:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+            outline: none;
+        }
+
+        .form-control-modern:hover {
+            border-color: #28a745;
+        }
+
+        .textarea-modern {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .radio-group-modern {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-weight: 500;
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .radio-option:hover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .radio-option.active {
+            border-color: #28a745;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
+            color: #28a745;
+        }
+
+        .radio-option input[type="radio"] {
+            margin: 0;
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-size: 14px;
+        }
+
+        .checkbox-option:hover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .checkbox-option.checked {
+            border-color: #28a745;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
+            color: #28a745;
+        }
+
+        .modal-actions {
+            padding: 24px 32px;
+            background: #f8f9fa;
+            border-radius: 0 0 16px 16px;
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+        }
+
+        .btn-submit-modern {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-submit-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-cancel-modern {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-cancel-modern:hover {
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            background: #5a6268;
+        }
+
+        .validation-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-group-modern.has-error .form-control-modern {
+            border-color: #dc3545;
+        }
+
+        .current-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .current-image-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .current-image-item:hover {
+            border-color: #28a745;
+        }
+
+        .current-image-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+        }
+
+        .image-controls {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-image-control {
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-image-control:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        @@media (max-width: 768px) {
+            .edit-modal-container {
+                width: 95%;
+                margin: 10px;
+                max-height: 95vh;
+            }
+
+            .modal-header-modern,
+            .modal-body-modern,
+            .modal-actions {
+                padding: 16px 20px;
+            }
+
+            .radio-group-modern {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn-submit-modern,
+            .btn-cancel-modern {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Smooth scrollbar */
+        .edit-modal-container {
+            scrollbar-width: thin;
+            scrollbar-color: #28a745 #f1f3f4;
+        }
+
+        .edit-modal-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .edit-modal-container::-webkit-scrollbar-track {
+            background: #f1f3f4;
+        }
+
+        .edit-modal-container::-webkit-scrollbar-thumb {
+            background: #28a745;
+            border-radius: 4px;
+        }
+    </style>
+}
+
+<div class="edit-modal-backdrop" id="editModal">
+    <div class="edit-modal-container">
+        <!-- Modal Header -->
+        <div class="modal-header-modern">
+            <h2 class="modal-title">
+                <i class="fas fa-edit"></i>
+                Chỉnh sửa tin đăng
+            </h2>
+            <button type="button" class="modal-close" onclick="closeEditModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body-modern">
+            @using (Html.BeginForm("Edit", "C2C", new { id = id }, FormMethod.Post, new { enctype = "multipart/form-data", id = "editForm" }))
+            {
+                @Html.AntiForgeryToken()
+                
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Thông tin cơ bản
+                    </h3>
+                    
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-list"></i>
+                            Danh mục <span class="required-indicator">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.CategoryID, (IEnumerable<SelectListItem>)ViewBag.Categories, "-- Chọn danh mục --", new { @class = "form-control-modern", required = "required" })
+                        @Html.ValidationMessageFor(m => m.CategoryID, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group">
-                        <label>Tiêu đề <span style="color:red">*</span></label>
-                        @Html.TextBoxFor(m => m.Title, new { @class = "form-control", maxlength = 255, required = "required" })
-                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-heading"></i>
+                            Tiêu đề <span class="required-indicator">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.Title, new { @class = "form-control-modern", maxlength = 255, required = "required", placeholder = "Nhập tiêu đề ngắn gọn, mô tả sản phẩm..." })
+                        @Html.ValidationMessageFor(m => m.Title, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group">
-                        <label>Nội dung <span style="color:red">*</span></label>
-                        @Html.TextAreaFor(m => m.Content, 6, 0, new { @class = "form-control", required = "required" })
-                        @Html.ValidationMessageFor(m => m.Content, "", new { @class = "text-danger" })
+
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-align-left"></i>
+                            Mô tả chi tiết <span class="required-indicator">*</span>
+                        </label>
+                        @Html.TextAreaFor(m => m.Content, new { @class = "form-control-modern textarea-modern", required = "required", placeholder = "Mô tả chi tiết tình trạng, phụ kiện kèm theo, lý do bán/đổi..." })
+                        @Html.ValidationMessageFor(m => m.Content, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group">
-                        <label>Tình trạng <span style="color:red">*</span></label>
-                        @Html.DropDownListFor(m => m.Condition, (IEnumerable<SelectListItem>)ViewBag.ConditionOptions, "-- Chọn tình trạng --", new { @class = "form-control", required = "required" })
-                        @Html.ValidationMessageFor(m => m.Condition, "", new { @class = "text-danger" })
+
+                    <div class="form-group-modern">
+                        <label class="form-label-modern">
+                            <i class="fas fa-star"></i>
+                            Tình trạng <span class="required-indicator">*</span>
+                        </label>
+                        @Html.DropDownListFor(m => m.Condition, (IEnumerable<SelectListItem>)ViewBag.ConditionOptions, "-- Chọn tình trạng --", new { @class = "form-control-modern", required = "required" })
+                        @Html.ValidationMessageFor(m => m.Condition, "", new { @class = "validation-error" })
                     </div>
-                    <div class="form-group">
-                        <label>Hình thức đăng <span style="color:red">*</span></label>
-                        <div class="d-flex" style="gap:10px;">
-                            <label class="radio-inline"><input type="radio" name="ListingType" value="1" @(Model.ListingType == 1 ? "checked" : "") /> Chỉ bán</label>
-                            <label class="radio-inline"><input type="radio" name="ListingType" value="2" @(Model.ListingType == 2 ? "checked" : "") /> Chỉ trao đổi</label>
-                            <label class="radio-inline"><input type="radio" name="ListingType" value="3" @(Model.ListingType == 3 ? "checked" : "") /> Bán hoặc trao đổi</label>
-                        </div>
-                    </div>
-                    <div class="form-group" id="priceGroup">
-                        <label>Giá (đ) <span style="color:red">*</span></label>
-                        @Html.TextBoxFor(m => m.Price, new { @class = "form-control", type = "number", step = "1000", min = "0" })
-                        @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger" })
-                    </div>
-                    <div class="form-group" id="exchangePrefs" style="display:none;">
-                        <label>Danh mục muốn đổi (chọn 2-5)</label>
-                        <div class="row">
-                            @foreach (var c in (IEnumerable<SelectListItem>)ViewBag.Categories)
-                            {
-                                var checkedAttr = (Model.ExchangeCategoryIDs != null && Model.ExchangeCategoryIDs.Contains(int.Parse(c.Value))) ? "checked" : "";
-                                <div class="col-md-6">
-                                    <label style="font-weight:400;">
-                                        <input type="checkbox" name="ExchangeCategoryIDs" value="@c.Value" @checkedAttr /> @c.Text
-                                    </label>
-                                </div>
-                            }
+                </div>
+
+                <!-- Listing Type Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-tag"></i>
+                        Hình thức đăng tin
+                    </h3>
+                    
+                    <div class="form-group-modern">
+                        <div class="radio-group-modern">
+                            <label class="radio-option">
+                                <input type="radio" name="ListingType" value="1" @(Model.ListingType == 1 || Model.ListingType == 3 ? "checked" : "") />
+                                <i class="fas fa-dollar-sign"></i>
+                                Thanh lý (Bán)
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="ListingType" value="2" @(Model.ListingType == 2 ? "checked" : "") />
+                                <i class="fas fa-exchange-alt"></i>
+                                Trao đổi
+                            </label>
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
-                        <a href="@Url.Action("Details", new { id = id })" class="btn btn-secondary">Hủy</a>
+                    <div class="form-group-modern" id="priceGroup">
+                        <label class="form-label-modern">
+                            <i class="fas fa-money-bill"></i>
+                            Giá bán (đ) <span class="required-indicator">*</span>
+                        </label>
+                        @Html.TextBoxFor(m => m.Price, new { @class = "form-control-modern", type = "number", step = "1000", min = "0", placeholder = "Nhập giá bán (VD: 150000)" })
+                        @Html.ValidationMessageFor(m => m.Price, "", new { @class = "validation-error" })
+                    </div>
+
+                    <div class="form-group-modern" id="exchangePrefs" style="display:none;">
+                        <label class="form-label-modern">
+                            <i class="fas fa-heart"></i>
+                            Danh mục muốn đổi (chọn 2-5 mục)
+                        </label>
+                        <div class="checkbox-grid">
+                            @foreach (var c in (IEnumerable<SelectListItem>)ViewBag.Categories)
+                            {
+                                var checkedAttr = (Model.ExchangeCategoryIDs != null && Model.ExchangeCategoryIDs.Contains(int.Parse(c.Value))) ? "checked" : "";
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="ExchangeCategoryIDs" value="@c.Value" @checkedAttr />
+                                    @c.Text
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Images Section -->
+                if (ViewBag.CurrentImages != null)
+                {
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-images"></i>
+                            Hình ảnh hiện tại
+                        </h3>
+                        
+                        <div class="current-images">
+                            @foreach (var img in (IEnumerable<dynamic>)ViewBag.CurrentImages)
+                            {
+                                <div class="current-image-item">
+                                    <img src="@img.ImageUrl" alt="Product Image" />
+                                    <div class="image-controls">
+                                        @if (img.IsPrimary)
+                                        {
+                                            <span class="btn-image-control" title="Ảnh chính">
+                                                <i class="fas fa-star"></i>
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div style="margin-top: 12px; padding: 12px; background: rgba(23, 162, 184, 0.1); border-radius: 8px; font-size: 14px; color: #0c5460;">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Lưu ý:</strong> Để thay đổi hình ảnh, vui lòng liên hệ quản trị viên hoặc tạo tin đăng mới.
+                        </div>
                     </div>
                 }
-            </div>
+            }
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="modal-actions">
+            <a href="@Url.Action("Details", new { id = id })" class="btn-cancel-modern">
+                <i class="fas fa-times"></i>
+                Hủy bỏ
+            </a>
+            <button type="submit" form="editForm" class="btn-submit-modern">
+                <i class="fas fa-save"></i>
+                Lưu thay đổi
+            </button>
         </div>
     </div>
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form
+        toggleFields();
+        initializeRadioOptions();
+        initializeCheckboxOptions();
+        
+        // Form validation
+        initializeFormValidation();
+    });
+
     function toggleFields() {
-        var type = document.querySelector('input[name="ListingType"]:checked');
-        var priceGroup = document.getElementById('priceGroup');
-        var exchangeGroup = document.getElementById('exchangePrefs');
+        const type = document.querySelector('input[name="ListingType"]:checked');
+        const priceGroup = document.getElementById('priceGroup');
+        const exchangeGroup = document.getElementById('exchangePrefs');
+        
         if (!type) return;
+        
         if (type.value === '2') {
+            // Trao đổi
             priceGroup.style.display = 'none';
             exchangeGroup.style.display = 'block';
-        } else if (type.value === '1') {
+        } else {
+            // Thanh lý (Bán)
             priceGroup.style.display = 'block';
             exchangeGroup.style.display = 'none';
-        } else {
-            priceGroup.style.display = 'block';
-            exchangeGroup.style.display = 'block';
         }
     }
-    document.querySelectorAll('input[name="ListingType"]').forEach(function (r) {
-        r.addEventListener('change', toggleFields);
-    });
-    document.addEventListener('DOMContentLoaded', toggleFields);
+
+    function initializeRadioOptions() {
+        const radioOptions = document.querySelectorAll('.radio-option');
+        const radioInputs = document.querySelectorAll('input[name="ListingType"]');
+        
+        radioInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                // Update visual state
+                radioOptions.forEach(option => option.classList.remove('active'));
+                this.closest('.radio-option').classList.add('active');
+                toggleFields();
+            });
+        });
+        
+        // Set initial state
+        const checkedInput = document.querySelector('input[name="ListingType"]:checked');
+        if (checkedInput) {
+            checkedInput.closest('.radio-option').classList.add('active');
+        }
+    }
+
+    function initializeCheckboxOptions() {
+        const checkboxOptions = document.querySelectorAll('.checkbox-option');
+        
+        checkboxOptions.forEach(function(option) {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            
+            option.addEventListener('click', function(e) {
+                if (e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
+                
+                if (checkbox.checked) {
+                    option.classList.add('checked');
+                } else {
+                    option.classList.remove('checked');
+                }
+            });
+            
+            // Set initial state
+            if (checkbox.checked) {
+                option.classList.add('checked');
+            }
+        });
+    }
+
+    function initializeFormValidation() {
+        const form = document.getElementById('editForm');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(function(input) {
+            input.addEventListener('blur', validateField);
+            input.addEventListener('input', clearValidationError);
+        });
+        
+        form.addEventListener('submit', function(e) {
+            let hasErrors = false;
+            
+            inputs.forEach(function(input) {
+                if (!validateField({ target: input })) {
+                    hasErrors = true;
+                }
+            });
+            
+            if (hasErrors) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = document.querySelector('.has-error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    }
+
+    function validateField(e) {
+        const field = e.target;
+        const formGroup = field.closest('.form-group-modern');
+        
+        if (!formGroup) return true;
+        
+        // Clear previous errors
+        formGroup.classList.remove('has-error');
+        
+        // Check if required field is empty
+        if (field.required && !field.value.trim()) {
+            formGroup.classList.add('has-error');
+            return false;
+        }
+        
+        return true;
+    }
+
+    function clearValidationError(e) {
+        const field = e.target;
+        const formGroup = field.closest('.form-group-modern');
+        
+        if (formGroup && field.value.trim()) {
+            formGroup.classList.remove('has-error');
+        }
+    }
+
+    function closeEditModal() {
+        if (confirm('Bạn có chắc muốn thoát? Các thay đổi chưa lưu sẽ bị mất.')) {
+            window.location.href = '@Url.Action("Details", new { id = id })';
+        }
+    }
 </script>
 
 

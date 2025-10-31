@@ -1,59 +1,617 @@
 @model IEnumerable<B_M.Models.PostC2C>
 @{
-    ViewBag.Title = "Tin đăng của tôi";
+    ViewBag.Title = "Quản lý tin đăng";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container" style="padding-top:20px;">
-    <div class="d-flex justify-content-between align-items-center" style="margin-bottom:10px;">
-        <h3 style="margin:0;">Tin đăng của tôi</h3>
-        <a href="@Url.Action("Create")" class="btn btn-primary">+ Đăng tin</a>
-    </div>
+@section Styles {
+    <style>
+        .my-posts-container {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
 
-    @if (Model != null && Model.Any())
-    {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Tiêu đề</th>
-                    <th>Hình thức</th>
-                    <th>Giá</th>
-                    <th>Trạng thái</th>
-                    <th>Ngày đăng</th>
-                    <th style="width:160px;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in Model)
+        .page-header {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-stats {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .btn-create-new {
+            background: linear-gradient(135deg, #d63384, #e91e63);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-create-new:hover {
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(214, 51, 132, 0.3);
+        }
+
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .post-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+        }
+
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+
+        .post-card-header {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .post-card:hover .post-image {
+            transform: scale(1.05);
+        }
+
+        .post-status-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .status-closed {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+
+        .listing-type-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-sell {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .type-exchange {
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+            color: white;
+        }
+
+        .type-both {
+            background: linear-gradient(135deg, #d63384, #e91e63);
+            color: white;
+        }
+
+        .post-card-body {
+            padding: 20px;
+        }
+
+        .post-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 8px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .post-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .post-title a:hover {
+            color: #d63384;
+            text-decoration: none;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .post-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #d63384;
+            margin-bottom: 16px;
+        }
+
+        .price-exchange {
+            color: #17a2b8;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 8px;
+            padding-top: 16px;
+            border-top: 1px solid #f1f3f4;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .btn-view:hover {
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .btn-close {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .btn-close:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            color: #dee2e6;
+            margin-bottom: 24px;
+        }
+
+        .empty-state-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 12px;
+        }
+
+        .empty-state-text {
+            color: #6c757d;
+            margin-bottom: 32px;
+            font-size: 16px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #d63384, #e91e63);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @@media (max-width: 768px) {
+            .my-posts-container {
+                padding: 10px 0;
+            }
+
+            .page-header {
+                padding: 16px 20px;
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .page-title {
+                font-size: 24px;
+                justify-content: center;
+            }
+
+            .btn-create-new {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .posts-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .post-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .btn-action {
+                width: 100%;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+}
+
+<div class="my-posts-container">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Quản lý tin đăng
+                </h1>
+                @if (Model != null && Model.Any())
                 {
-                    <tr>
-                        <td><a href="@Url.Action("Details", new { id = p.PostID })">@p.Title</a></td>
-                        <td>@p.ListingTypeText</td>
-                        <td>
-                            @if (p.ListingType == 2 && !p.Price.HasValue) { <text>Trao đổi</text>; } else { <text>@String.Format("{0:N0} đ", p.Price ?? 0)</text>; }
-                        </td>
-                        <td>@p.StatusText</td>
-                        <td>@p.CreatedAt.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            <a href="@Url.Action("Edit", new { id = p.PostID })" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            @if (p.Status == 1)
-                            {
-                                using (Html.BeginForm("Close", "C2C", new { id = p.PostID }, FormMethod.Post, new { style = "display:inline;" }))
-                                {
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Đóng</button>
-                                }
-                            }
-                        </td>
-                    </tr>
+                    <div class="page-stats">
+                        <i class="fas fa-info-circle"></i>
+                        Bạn có @Model.Count() tin đăng
+                    </div>
                 }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <div class="alert alert-info">Bạn chưa có tin đăng nào.</div>
-    }
+            </div>
+            <button type="button" class="btn-create-new" onclick="openCreateModal()">
+                <i class="fas fa-plus"></i>
+                Đăng tin mới
+            </button>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <!-- Statistics Row -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value">@Model.Count()</div>
+                    <div class="stat-label">Tổng tin đăng</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">@Model.Count(p => p.Status == 1)</div>
+                    <div class="stat-label">Đang mở</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">@Model.Count(p => p.Status == 2)</div>
+                    <div class="stat-label">Đã đóng</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">@Model.Count(p => p.ListingType == 2)</div>
+                    <div class="stat-label">Trao đổi</div>
+                </div>
+            </div>
+
+            <!-- Posts Grid -->
+            <div class="posts-grid">
+                @foreach (var post in Model.OrderByDescending(p => p.CreatedAt))
+                {
+                    <div class="post-card">
+                        <!-- Post Header with Image -->
+                        <div class="post-card-header">
+                            @{
+                                var primaryImage = post.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? 
+                                                 post.Images?.FirstOrDefault()?.ImageUrl ?? 
+                                                 "/images/no-image-placeholder.jpg";
+                            }
+                            <img src="@primaryImage" alt="@post.Title" class="post-image" />
+                            
+                            <!-- Status Badge -->
+                            <div class="post-status-badge @(post.Status == 1 ? "status-active" : "status-closed")">
+                                @if (post.Status == 1)
+                                {
+                                    <i class="fas fa-check-circle"></i> <text>Đang mở</text>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-times-circle"></i> <text>Đã đóng</text>
+                                }
+                            </div>
+
+                            <!-- Listing Type Badge -->
+                            <div class="listing-type-badge @(post.ListingType == 1 ? "type-sell" : post.ListingType == 2 ? "type-exchange" : "type-both")">
+                                @if (post.ListingType == 1)
+                                {
+                                    <i class="fas fa-dollar-sign"></i> <text>Bán</text>
+                                }
+                                else if (post.ListingType == 2)
+                                {
+                                    <i class="fas fa-exchange-alt"></i> <text>Đổi</text>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-balance-scale"></i> <text>Bán/Đổi</text>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Post Body -->
+                        <div class="post-card-body">
+                            <h3 class="post-title">
+                                <a href="@Url.Action("Details", new { id = post.PostID })">@post.Title</a>
+                            </h3>
+
+                            <div class="post-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-calendar"></i>
+                                    @post.CreatedAt.ToString("dd/MM/yyyy")
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-list-alt"></i>
+                                    @post.ListingTypeText
+                                </div>
+                            </div>
+
+                            <div class="post-price @(post.ListingType == 2 && !post.Price.HasValue ? "price-exchange" : "")">
+                                @if (post.ListingType == 2 && !post.Price.HasValue)
+                                {
+                                    <i class="fas fa-exchange-alt"></i> <text>Trao đổi</text>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-tag"></i> <text>@String.Format("{0:N0} đ", post.Price ?? 0)</text>
+                                }
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="post-actions">
+                                <a href="@Url.Action("Details", new { id = post.PostID })" class="btn-action btn-view">
+                                    <i class="fas fa-eye"></i>
+                                    Xem
+                                </a>
+                                @if (post.Status == 1)
+                                {
+                                    <button type="button" class="btn-action btn-edit" onclick="openEditModal(@post.PostID)">
+                                        <i class="fas fa-edit"></i>
+                                        Sửa
+                                    </button>
+                                    using (Html.BeginForm("Close", "C2C", new { id = post.PostID }, FormMethod.Post, new { style = "flex: 1;" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-action btn-close" onclick="return confirm('Bạn có chắc muốn đóng tin đăng này?')">
+                                            <i class="fas fa-times"></i>
+                                            Đóng
+                                        </button>
+                                    }
+                                }
+                                else
+                                {
+                                    <button class="btn-action btn-disabled" disabled>
+                                        <i class="fas fa-lock"></i>
+                                        Đã đóng
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h2 class="empty-state-title">Chưa có tin đăng nào</h2>
+                <p class="empty-state-text">
+                    Bạn chưa đăng tin nào. Hãy tạo tin đăng đầu tiên để bắt đầu thanh lý hoặc trao đổi đồ dùng của bạn!
+                </p>
+                <button type="button" class="btn-create-new" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i>
+                    Đăng tin đầu tiên
+                </button>
+            </div>
+        }
+    </div>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth animations to cards
+        const cards = document.querySelectorAll('.post-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
 
+        // Enhance form submission
+        const closeForms = document.querySelectorAll('form[action*="Close"]');
+        closeForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const button = this.querySelector('button[type="submit"]');
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                button.disabled = true;
+            });
+        });
+
+        // Add loading state to action buttons
+        const actionButtons = document.querySelectorAll('.btn-action');
+        actionButtons.forEach(button => {
+            if (button.tagName === 'A') {
+                button.addEventListener('click', function() {
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+                });
+            }
+        });
+    });
+
+     // Open create modal function
+     function openCreateModal() {
+         window.location.href = '@Url.Action("Create", "C2C")';
+     }
+
+     // Open edit modal function
+     function openEditModal(postId) {
+         window.location.href = '@Url.Action("Edit", "C2C")/' + postId;
+     }
+ 
+     // Smooth scroll to top when creating new post
+     document.querySelectorAll('.btn-create-new').forEach(button => {
+         button.addEventListener('click', function() {
+             window.scrollTo({ top: 0, behavior: 'smooth' });
+         });
+     });
+</script>

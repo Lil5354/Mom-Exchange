@@ -33,16 +33,37 @@ namespace B_M.Controllers
         }
 
         // GET: MilkDonation
-        public ActionResult Index()
+        public ActionResult Index(int page = 1, string province = "", string tier = "")
         {
             try
             {
+                const int pageSize = 3;
+                
                 // Lấy posts từ MilkDonationPosts table
-                var milkPosts = db.MilkDonationPosts
-                    .Where(p => p.Status == 1) // Open posts only
+                var query = db.MilkDonationPosts
+                    .Include(p => p.User)
+                    .Include(p => p.User.UserDetails)
+                    .Where(p => p.Status == 1); // Open posts only
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(province))
+                {
+                    query = query.Where(p => p.User.UserDetails != null && p.User.UserDetails.Address.Contains(province));
+                }
+
+                if (!string.IsNullOrEmpty(tier) && int.TryParse(tier, out int tierValue))
+                {
+                    query = query.Where(p => p.VerificationTier == tierValue);
+                }
+
+                var totalPosts = query.Count();
+                var totalPages = (int)Math.Ceiling((double)totalPosts / pageSize);
+
+                var milkPosts = query
                     .OrderByDescending(p => p.VerificationTier) // Ưu tiên Tầng 2 (Health Verified)
                     .ThenByDescending(p => p.CreatedAt)
-                    .Take(20)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToList();
 
                 List<MilkDonationPostViewModel> posts = new List<MilkDonationPostViewModel>();
@@ -53,7 +74,8 @@ namespace B_M.Controllers
                     var content = milkPost.Content ?? "";
                     var lines = content.Split('\n');
                     
-                    var location = ExtractValueFromContent(lines, "Địa điểm:");
+                    // Get location from UserDetails.Address instead of Content
+                    var location = milkPost.User?.UserDetails?.Address ?? "Không có thông tin địa chỉ";
                     var dateStr = ExtractValueFromContent(lines, "Ngày vắt:");
                     var dietInfo = ExtractValueFromContent(lines, "Chế độ ăn:");
                     var storageInfo = ExtractValueFromContent(lines, "Bảo quản:");
@@ -66,12 +88,14 @@ namespace B_M.Controllers
                         Id = (int)milkPost.PostID,
                         DonorUserId = milkPost.UserID,
                         DonorName = milkPost.User?.UserDetails?.FullName ?? "Người dùng",
+                        Title = milkPost.Title,
                         Location = location,
                         DateOfExpression = expressionDate != DateTime.MinValue ? expressionDate : milkPost.CreatedAt.Date,
                         DietInfo = dietInfo,
                         StorageInfo = storageInfo,
                         Note = note,
                         DonorAvatarUrl = milkPost.User?.UserDetails?.ProfilePictureURL ?? "/images/avatar-default.jpg",
+                        ImageUrl = milkPost.ImageUrl,
                         VerificationTier = milkPost.VerificationTier,
                         PostedAt = milkPost.CreatedAt,
                         Status = milkPost.Status
@@ -82,15 +106,36 @@ namespace B_M.Controllers
                 if (!posts.Any())
                 {
                     posts = GetSamplePosts();
+                    totalPosts = posts.Count;
+                    totalPages = 1;
                 }
 
-                return View(posts);
+                var viewModel = new MilkDonationIndexViewModel
+                {
+                    Posts = posts,
+                    CurrentPage = page,
+                    TotalPages = totalPages,
+                    TotalPosts = totalPosts,
+                    ProvinceFilter = province,
+                    TierFilter = tier
+                };
+
+                return View(viewModel);
             }
             catch (Exception ex)
             {
                 // Fallback to sample data on error
-            var posts = GetSamplePosts();
-            return View(posts);
+                var posts = GetSamplePosts();
+                var viewModel = new MilkDonationIndexViewModel
+                {
+                    Posts = posts,
+                    CurrentPage = 1,
+                    TotalPages = 1,
+                    TotalPosts = posts.Count,
+                    ProvinceFilter = province,
+                    TierFilter = tier
+                };
+                return View(viewModel);
             }
         }
 
@@ -131,22 +176,41 @@ namespace B_M.Controllers
                     var existingRequest = db.MilkDonationRequests
                         .FirstOrDefault(r => r.PostID == id && r.RecipientUserID == currentUser.UserID);
                     
+                    // Load health declaration data for tier 1 and tier 2 posts
+                    UserLifestyleSurvey healthDeclaration = null;
+                    if (post.VerificationTier == 1 || post.VerificationTier == 3)
+                    {
+                        healthDeclaration = db.UserLifestyleSurveys
+                            .FirstOrDefault(s => s.UserID == post.UserID);
+                    }
+                    
                     var viewModel = new MilkDonationPostViewModel
                     {
                         Id = (int)post.PostID,
                         DonorUserId = post.UserID,
                         DonorName = post.User?.UserDetails?.FullName ?? "Người dùng",
+                        Title = post.Title,
                         Location = location,
                         DateOfExpression = expressionDate != DateTime.MinValue ? expressionDate : post.CreatedAt.Date,
                         DietInfo = dietInfo,
                         StorageInfo = storageInfo,
                         Note = note,
                         DonorAvatarUrl = post.User?.UserDetails?.ProfilePictureURL ?? "/images/avatar-default.jpg",
+                        ImageUrl = post.ImageUrl,
                         VerificationTier = post.VerificationTier,
                         PostedAt = post.CreatedAt,
                         Status = post.Status,
                         HasUserRequested = existingRequest != null,
-                        UserRequestStatus = existingRequest?.Status
+                        UserRequestStatus = existingRequest?.Status,
+                        // Health declaration data
+                        HasHealthDeclaration = healthDeclaration != null,
+                        IsSmoker = healthDeclaration?.IsSmoker,
+                        UsesAlcohol = healthDeclaration?.UsesAlcohol,
+                        UsesMedication = healthDeclaration?.UsesMedication,
+                        MedicationDetails = healthDeclaration?.MedicationDetails,
+                        CommitNoDrugs = healthDeclaration?.CommitNoDrugs,
+                        CommitNoInfectiousDiseases = healthDeclaration?.CommitNoInfectiousDiseases,
+                        HealthDeclarationSubmittedAt = healthDeclaration?.SubmittedAt
                     };
 
                     return View(viewModel);
@@ -175,51 +239,8 @@ namespace B_M.Controllers
 
         private List<MilkDonationPostViewModel> GetSamplePosts()
         {
-            return new List<MilkDonationPostViewModel>
-            {
-                new MilkDonationPostViewModel {
-                    Id = 1,
-                    DonorUserId = 1,
-                    DonorName = "Mẹ An Nhiên",
-                    Location = "Quận 1, TP.HCM",
-                    DateOfExpression = new DateTime(2025, 10, 22),
-                    DietInfo = "Ăn uống đa dạng, đủ chất, không sử dụng chất kích thích. Uống vitamin tổng hợp.",
-                    StorageInfo = "Sữa được hút bằng máy Medela, trữ trong túi ZipLock chuyên dụng và cấp đông ngay trong tủ đông -18°C.",
-                    Note = "Mình có nhiều sữa nên muốn chia sẻ cho các bé có nhu cầu. Chỉ nhận trao đổi tại nhà.",
-                    DonorAvatarUrl = "https://i.pinimg.com/1200x/7e/43/35/7e4335dbd0265d9b027ee31ca69e2702.jpg",
-                    VerificationTier = 3, // Community Donor
-                    PostedAt = DateTime.Now.AddHours(-2),
-                    Status = 1 // Open
-                },
-                new MilkDonationPostViewModel {
-                    Id = 2,
-                    DonorUserId = 2,
-                    DonorName = "Mẹ Bối Bối",
-                    Location = "Quận Ba Đình, Hà Nội",
-                    DateOfExpression = new DateTime(2025, 10, 20),
-                    DietInfo = "Chế độ ăn uống bình thường, lành mạnh.",
-                    StorageInfo = "Trữ đông trong tủ lạnh gia đình.",
-                    Note = "Sữa cho bé trai, mong muốn tặng cho các mẹ có hoàn cảnh khó khăn.",
-                    DonorAvatarUrl = "https://i.pinimg.com/1200x/8f/d7/d6/8fd7d605b7a9ba192913746bf692865b.jpg",
-                    VerificationTier = 2, // Health Verified
-                    PostedAt = DateTime.Now.AddHours(-5),
-                    Status = 1 // Open
-                },
-                new MilkDonationPostViewModel {
-                    Id = 3,
-                    DonorUserId = 3,
-                    DonorName = "Mẹ Thúy Hằng",
-                    Location = "Quận 7, TP.HCM",
-                    DateOfExpression = new DateTime(2025, 10, 25),
-                    DietInfo = "Ăn chay trường, bổ sung đầy đủ vitamin và khoáng chất theo chỉ định bác sĩ.",
-                    StorageInfo = "Hút bằng máy điện, bảo quản ngay lập tức trong tủ đông -20°C.",
-                    Note = "Lần đầu tặng sữa, mong được các mẹ hỗ trợ kinh nghiệm. Sẵn sàng gặp mặt trực tiếp.",
-                    DonorAvatarUrl = "https://i.pinimg.com/1200x/b1/a2/c3/b1a2c3d4e5f6789012345678901234ab.jpg",
-                    VerificationTier = 3, // Community Donor
-                    PostedAt = DateTime.Now.AddMinutes(-30),
-                    Status = 1 // Open
-                }
-            };
+            // Không dùng sample post nữa
+            return new List<MilkDonationPostViewModel>();
         }
 
         // ===== TIER 1 VERIFICATION ACTIONS =====
@@ -558,7 +579,8 @@ namespace B_M.Controllers
                 {
                     UserID = user.UserID,
                     DonorName = user.UserDetails?.FullName ?? "",
-                    VerificationTier = user.MilkDonationStatus
+                    VerificationTier = user.MilkDonationStatus,
+                    Location = user.UserDetails?.Address ?? "" // Pre-fill address from user profile
                 };
 
                 return View(viewModel);
@@ -611,6 +633,7 @@ namespace B_M.Controllers
                              $"Chế độ ăn: {model.MotherDietInfo}\n" +
                              $"Bảo quản: {model.StorageMethod}\n" +
                              $"Ghi chú: {model.Note}",
+                    ImageUrl = model.ImageUrl,
                     VerificationTier = tierToSave, // Snapshot tier
                     Status = 1, // Open
                     CreatedAt = DateTime.Now
@@ -668,24 +691,75 @@ namespace B_M.Controllers
                         Id = (int)post.PostID,
                         DonorUserId = post.UserID,
                         DonorName = post.User?.UserDetails?.FullName ?? "Người dùng",
+                        Title = post.Title,
                         Location = location,
                         DateOfExpression = expressionDate != DateTime.MinValue ? expressionDate : post.CreatedAt.Date,
                         DietInfo = dietInfo,
                         StorageInfo = storageInfo,
                         Note = note,
                         DonorAvatarUrl = post.User?.UserDetails?.ProfilePictureURL ?? "/images/avatar-default.jpg",
+                        ImageUrl = post.ImageUrl,
                         VerificationTier = post.VerificationTier,
                         PostedAt = post.CreatedAt,
                         Status = post.Status
                     });
                 }
 
-                return View(posts);
+                if (Request.IsAjaxRequest())
+                {
+                    return PartialView("_MyPostsPartial", posts);
+                }
+
+                var viewModel = new MilkDonationIndexViewModel
+                {
+                    Posts = posts,
+                    TotalPosts = posts.Count,
+                    TotalPages = 1,
+                    CurrentPage = 1,
+                    ProvinceFilter = "",
+                    TierFilter = ""
+                };
+
+                return View(viewModel);
             }
             catch (Exception ex)
             {
+                if (Request.IsAjaxRequest())
+                {
+                    return PartialView("_ErrorPartial", new { Message = "Có lỗi xảy ra: " + ex.Message });
+                }
+                
                 TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
                 return RedirectToAction("Index", "Profile");
+            }
+        }
+
+        // GET: MilkDonation/PendingRequestCount
+        [HttpGet]
+        [Authorize]
+        public ActionResult PendingRequestCount(long postId)
+        {
+            try
+            {
+                var userIdentity = User.Identity.Name;
+                var user = userRepository.GetUserByEmail(userIdentity) ?? userRepository.GetUserByUsername(userIdentity);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thông tin người dùng." }, JsonRequestBehavior.AllowGet);
+                }
+
+                var post = db.MilkDonationPosts.FirstOrDefault(p => p.PostID == postId && p.UserID == user.UserID);
+                if (post == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy bài đăng." }, JsonRequestBehavior.AllowGet);
+                }
+
+                var count = db.MilkDonationRequests.Count(r => r.PostID == postId && r.Status == 0);
+                return Json(new { success = true, count = count }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -712,10 +786,22 @@ namespace B_M.Controllers
                     return Json(new { success = false, message = "Không tìm thấy bài đăng." });
                 }
 
+                // Đóng bài đăng
                 post.Status = 2; // Closed
+
+                // Từ chối toàn bộ yêu cầu đang chờ (nếu có)
+                var pendingRequests = db.MilkDonationRequests
+                    .Where(r => r.PostID == postId && r.Status == 0)
+                    .ToList();
+                foreach (var req in pendingRequests)
+                {
+                    req.Status = 2; // Declined
+                    db.Entry(req).State = EntityState.Modified;
+                }
+
                 db.SaveChanges();
 
-                return Json(new { success = true, message = "Đã ẩn bài đăng thành công." });
+                return Json(new { success = true, message = "Đã ẩn bài đăng thành công.", declined = pendingRequests.Count });
             }
             catch (Exception ex)
             {

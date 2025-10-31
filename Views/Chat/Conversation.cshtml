@@ -62,6 +62,30 @@
 }
 
 @section Scripts {
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBG1i1dO8XYTV0RdA_XVQ2cfvLSP0Oeog4",
+        authDomain: "momexchangechat.firebaseapp.com",
+        databaseURL: "https://momexchangechat-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "momexchangechat",
+        storageBucket: "momexchangechat.firebasestorage.app",
+        messagingSenderId: "266940378899",
+        appId: "1:266940378899:web:abc50cee8c4697dbdbf4e6",
+        measurementId: "G-ECMV6KC1Q5"
+      };
+      firebase.initializeApp(firebaseConfig);
+      // Biến thông tin user hiện tại để JS sử dụng:
+      window.CURRENT_USER_ID = @Model.CurrentUserID;
+      window.CURRENT_USER_NAME = "@Model.CurrentUserName";
+      window.CURRENT_USER_AVATAR = "@Model.CurrentUserAvatar";
+      window.OTHER_USER_ID = @Model.OtherUserID;
+      window.OTHER_USER_NAME = "@Model.OtherUserName";
+    </script>
+    <script src="/Scripts/chat-firebase.js"></script>
     <script>
         $(document).ready(function() {
             var lastMessageId = @(Model.Messages.Any() ? Model.Messages.Max(m => m.MessageID) : 0);

@@ -1,0 +1,139 @@
+@{
+    ViewBag.Title = "Test Email";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-envelope"></i> Test Email Configuration</h3>
+                </div>
+                <div class="card-body">
+                    <p>Click nút bên dưới để test gửi email với cấu hình hiện tại:</p>
+                    
+                    <button id="testEmailBtn" class="btn btn-primary me-2">
+                        <i class="fas fa-paper-plane"></i> Test Gửi Email
+                    </button>
+                    
+                    <button id="testSmtpBtn" class="btn btn-secondary me-2">
+                        <i class="fas fa-plug"></i> Test SMTP Connection
+                    </button>
+                    
+                    <button id="testSimpleBtn" class="btn btn-info">
+                        <i class="fas fa-cog"></i> Test Config
+                    </button>
+                    
+                    <div id="emailResult" class="mt-3" style="display: none;">
+                        <div class="alert" id="resultAlert">
+                            <div id="resultContent"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Debug Information:</h5>
+                        <p><strong>Email sẽ gửi tới:</strong> dttthao.5354@gmail.com</p>
+                        <p><strong>Kiểm tra:</strong> Output/Debug window trong Visual Studio để xem log chi tiết</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function testConnection(url, btnId, loadingText, successIcon, originalText) {
+    const btn = document.getElementById(btnId);
+    const resultDiv = document.getElementById('emailResult');
+    const resultAlert = document.getElementById('resultAlert');
+    const resultContent = document.getElementById('resultContent');
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = loadingText;
+    
+    // Hide previous results
+    resultDiv.style.display = 'none';
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Show result
+        resultDiv.style.display = 'block';
+        
+        if (data.success) {
+            resultAlert.className = 'alert alert-success';
+            let configInfo = '';
+            if (data.config) {
+                configInfo = `
+                    <div class="mt-3">
+                        <h6>Configuration:</h6>
+                        <ul>
+                            <li><strong>Host:</strong> ${data.config.host}</li>
+                            <li><strong>Port:</strong> ${data.config.port}</li>
+                            <li><strong>Username:</strong> ${data.config.username}</li>
+                            <li><strong>Password Length:</strong> ${data.config.passwordLength}</li>
+                        </ul>
+                    </div>
+                `;
+            }
+            resultContent.innerHTML = `
+                <h5>${successIcon} Thành công!</h5>
+                <p><strong>Message:</strong> ${data.message}</p>
+                <p><strong>Time:</strong> ${data.timestamp}</p>
+                ${url.includes('TestEmail') ? '<p>Kiểm tra hộp thư của bạn!</p>' : ''}
+                ${configInfo}
+            `;
+        } else {
+            resultAlert.className = 'alert alert-danger';
+            resultContent.innerHTML = `
+                <h5><i class="fas fa-exclamation-triangle"></i> Thất bại!</h5>
+                <p><strong>Error:</strong> ${data.message}</p>
+                ${data.innerException ? `<p><strong>Inner Exception:</strong> ${data.innerException}</p>` : ''}
+                <p><strong>Time:</strong> ${data.timestamp}</p>
+                <p><em>Kiểm tra Output/Debug window để xem log chi tiết.</em></p>
+            `;
+        }
+    })
+    .catch(error => {
+        resultDiv.style.display = 'block';
+        resultAlert.className = 'alert alert-danger';
+        resultContent.innerHTML = `
+            <h5><i class="fas fa-exclamation-triangle"></i> Lỗi kết nối!</h5>
+            <p><strong>Error:</strong> ${error.message}</p>
+        `;
+    })
+    .finally(() => {
+        // Re-enable button
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+
+document.getElementById('testEmailBtn').addEventListener('click', function() {
+    testConnection('/Account/TestEmail', 'testEmailBtn', 
+        '<i class="fas fa-spinner fa-spin"></i> Đang gửi...', 
+        '<i class="fas fa-check-circle"></i>', 
+        '<i class="fas fa-paper-plane"></i> Test Gửi Email');
+});
+
+document.getElementById('testSmtpBtn').addEventListener('click', function() {
+    testConnection('/Account/TestSmtpConnection', 'testSmtpBtn', 
+        '<i class="fas fa-spinner fa-spin"></i> Đang kết nối...', 
+        '<i class="fas fa-plug"></i>', 
+        '<i class="fas fa-plug"></i> Test SMTP Connection');
+});
+
+document.getElementById('testSimpleBtn').addEventListener('click', function() {
+    testConnection('/Account/TestSimple', 'testSimpleBtn', 
+        '<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...', 
+        '<i class="fas fa-cog"></i>', 
+        '<i class="fas fa-cog"></i> Test Config');
+});
+</script>

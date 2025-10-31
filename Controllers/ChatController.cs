@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using System.Data.Entity;
 
 namespace B_M.Controllers
 {
@@ -153,8 +154,19 @@ namespace B_M.Controllers
                     userName = c.OtherUserName,
                     userAvatar = c.OtherUserAvatar,
                     lastMessage = c.LastMessage,
+                    lastMessageTime = c.TimeDisplay,
                     unreadCount = c.UnreadCount,
-                    isOnline = c.IsOnline
+                    isOnline = c.IsOnline,
+                    relatedProducts = c.RelatedProducts?.Select(p => new {
+                        postID = p.PostID,
+                        postTitle = p.PostTitle,
+                        postType = p.PostType,
+                        postTypeDisplay = p.PostTypeDisplay,
+                        priceDisplay = p.PriceDisplay,
+                        imageUrl = p.ImageUrl,
+                        status = p.Status,
+                        statusText = p.StatusText
+                    }).Cast<object>().ToList() ?? new List<object>()
                 }).Cast<object>().ToList() ?? new List<object>();
                 
                 return Json(new { success = true, conversations = conversationData }, JsonRequestBehavior.AllowGet);
@@ -405,6 +417,9 @@ namespace B_M.Controllers
                     .Where(m => m.SenderID == userId && m.ReceiverID == currentUserId && !m.IsRead)
                     .Count();
 
+                // Get related products for this conversation
+                var relatedProducts = GetRelatedProducts(currentUserId, userId);
+
                 conversations.Add(new ConversationSummary
                 {
                     OtherUserID = userId,
@@ -415,11 +430,84 @@ namespace B_M.Controllers
                     LastMessage = lastMessage?.Content ?? "",
                     LastMessageTime = lastMessage?.SentAt ?? DateTime.MinValue,
                     UnreadCount = unreadCount,
-                    IsOnline = true // Tạm thời hard-code
+                    IsOnline = true, // Tạm thời hard-code
+                    RelatedProducts = relatedProducts
                 });
             }
 
             return conversations.OrderByDescending(c => c.LastMessageTime).ToList();
+        }
+
+        private List<ProductContext> GetRelatedProducts(int user1Id, int user2Id)
+        {
+            try
+            {
+                var relatedProducts = new List<ProductContext>();
+
+                // Get C2C posts between these users
+                var c2cPosts = db.PostC2Cs
+                    .Include(p => p.Images)
+                    .Where(p => 
+                        (p.UserID == user1Id) || (p.UserID == user2Id))
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(3) // Limit to recent posts
+                    .ToList();
+
+                foreach (var post in c2cPosts)
+                {
+                    string postTypeDisplay = "Thanh lý";
+                    if (post.ListingType == 2)
+                        postTypeDisplay = "Trao đổi";
+                    else if (post.ListingType == 3)
+                        postTypeDisplay = "Bán/Trao đổi";
+
+                    relatedProducts.Add(new ProductContext
+                    {
+                        PostID = post.PostID,
+                        PostTitle = post.Title,
+                        PostType = "c2c",
+                        PostTypeDisplay = postTypeDisplay,
+                        Price = post.Price,
+                        ListingType = post.ListingType,
+                        ImageUrl = post.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? 
+                                  post.Images?.FirstOrDefault()?.ImageUrl ?? 
+                                  "/images/avatar-default.jpg",
+                        PostDate = post.CreatedAt,
+                        Status = post.Status
+                    });
+                }
+
+                // Get Milk Donation posts between these users
+                var milkPosts = db.MilkDonationPosts
+                    .Where(p => 
+                        (p.UserID == user1Id) || (p.UserID == user2Id))
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(3) // Limit to recent posts
+                    .ToList();
+
+                foreach (var post in milkPosts)
+                {
+                    relatedProducts.Add(new ProductContext
+                    {
+                        PostID = post.PostID,
+                        PostTitle = post.Title,
+                        PostType = "milk-donation",
+                        PostTypeDisplay = "Cho tặng sữa mẹ",
+                        Price = null,
+                        ListingType = null,
+                        ImageUrl = !string.IsNullOrEmpty(post.ImageUrl) ? post.ImageUrl : "/images/avatar-default.jpg",
+                        PostDate = post.CreatedAt,
+                        Status = post.Status
+                    });
+                }
+
+                return relatedProducts.OrderByDescending(p => p.PostDate).ToList();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in GetRelatedProducts: {ex.Message}");
+                return new List<ProductContext>();
+            }
         }
 
         // GET: Chat/GetMessagesSimple - Alternative method

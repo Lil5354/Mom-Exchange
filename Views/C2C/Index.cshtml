@@ -1,110 +1,634 @@
 @model IEnumerable<B_M.Models.C2CPostCardViewModel>
 @{
-    ViewBag.Title = "Chợ C2C";
+    ViewBag.Title = "Thanh lý & Trao đổi";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section Styles {
-    <link href="~/Content/c2c-marketplace.css" rel="stylesheet" />
+    <style>
+        .c2c-container {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        .filter-sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .filter-title {
+            color: #d63384;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .form-control {
+            border: 1px solid #e3e6ea;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #d63384;
+            box-shadow: 0 0 0 0.2rem rgba(214, 51, 132, 0.25);
+        }
+
+        .btn-apply-filter {
+            background: linear-gradient(135deg, #d63384, #e91e63);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-apply-filter:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(214, 51, 132, 0.3);
+        }
+
+        .btn-create-post {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            width: 100%;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-create-post:hover {
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .listings-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .listings-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #6c757d;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tab.active {
+            background: #d63384;
+            color: white;
+            border-color: #d63384;
+        }
+
+        .filter-tab:hover {
+            color: #d63384;
+            border-color: #d63384;
+            text-decoration: none;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            border: none;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .product-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #2c3e50;
+            margin: 0 0 8px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .product-meta {
+            color: #6c757d;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .listing-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-exchange {
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+            color: white;
+        }
+
+        .badge-sell {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .product-price {
+            font-weight: 700;
+            color: #d63384;
+            font-size: 18px;
+            margin: 8px 0;
+        }
+
+        .product-location {
+            color: #6c757d;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .exchange-info {
+            color: #17a2b8;
+            font-size: 12px;
+            background: rgba(23, 162, 184, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-view {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d63384;
+            background: white;
+            color: #d63384;
+            border-radius: 6px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view:hover {
+            background: #d63384;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-chat {
+            flex: 1;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-chat:hover {
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .no-results-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 16px;
+        }
+
+        @@media (max-width: 768px) {
+            .filter-sidebar {
+                position: static;
+            }
+            
+            .listings-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .filter-tabs {
+                margin-top: 0;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .product-card {
+                margin-bottom: 16px;
+            }
+        }
+    </style>
 }
 
-<div class="container" style="padding: 20px 0;">
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card" style="padding: 15px; border-radius: 12px;">
-                <h4 style="color:#d63384;">Bộ lọc</h4>
-                @using (Html.BeginForm("Index", "C2C", FormMethod.Get))
-                {
-                    <div class="form-group">
-                        <label>Hình thức</label>
-                        <select name="filter" class="form-control">
-                            <option value="">Tất cả</option>
-                            <option value="sell" @(string.Equals(ViewBag.Filter as string, "sell") ? "selected" : "")>Thanh lý (bán)</option>
-                            <option value="exchange" @(string.Equals(ViewBag.Filter as string, "exchange") ? "selected" : "")>Trao đổi</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Danh mục</label>
-                        @Html.DropDownList("categoryId", (IEnumerable<SelectListItem>)ViewBag.Categories, "Tất cả danh mục", new { @class = "form-control" })
-                    </div>
-                    <div class="form-group">
-                        <label>Tình trạng</label>
-                        @Html.DropDownList("condition", (IEnumerable<SelectListItem>)ViewBag.ConditionOptions, "Tất cả", new { @class = "form-control" })
-                    </div>
-                    <div class="form-group">
-                        <label>Tỉnh/Thành</label>
-                        @Html.DropDownList("province", (IEnumerable<SelectListItem>)ViewBag.Provinces, "Tất cả", new { @class = "form-control" })
-                    </div>
-                    <div class="form-group">
-                        <label>Giá từ</label>
-                        <input type="number" name="minPrice" step="1000" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Giá đến</label>
-                        <input type="number" name="maxPrice" step="1000" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Từ khóa</label>
-                        <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="Tìm theo tiêu đề, nội dung" />
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%">Áp dụng</button>
-                }
-                <hr />
-                <a href="@Url.Action("Create", "C2C")" class="btn btn-gradient" style="background: linear-gradient(135deg, #d63384, #e91e63); color: #fff; width:100%">+ Đăng tin</a>
-            </div>
-        </div>
-        <div class="col-md-9">
-            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
-                <h3 style="margin:0;">Danh sách tin đăng (@(ViewBag.TotalCount ?? 0))</h3>
-                <div class="btn-group" role="group" aria-label="Filter">
-                    <a href="@Url.Action("Index", new { filter = (string)null })" class="btn btn-outline-secondary @(string.IsNullOrEmpty(ViewBag.Filter as string) ? "active" : "")">Tất cả</a>
-                    <a href="@Url.Action("Index", new { filter = "sell" })" class="btn btn-outline-secondary @(string.Equals(ViewBag.Filter as string, "sell") ? "active" : "")">Thanh lý</a>
-                    <a href="@Url.Action("Index", new { filter = "exchange" })" class="btn btn-outline-secondary @(string.Equals(ViewBag.Filter as string, "exchange") ? "active" : "")">Trao đổi</a>
-                </div>
-            </div>
-            @if (Model != null && Model.Any())
-            {
-                <div class="row">
-                    @foreach (var item in Model)
+<div class="c2c-container">
+    <div class="container">
+        <div class="row">
+            <!-- Filter Sidebar -->
+            <div class="col-lg-3 col-md-4">
+                <div class="filter-sidebar">
+                    <h4 class="filter-title">
+                        <i class="fas fa-filter"></i> Bộ lọc
+                    </h4>
+                    @using (Html.BeginForm("Index", "C2C", FormMethod.Get))
                     {
-                        <div class="col-md-4" style="margin-bottom: 20px;">
-                            <div class="card" style="border-radius: 12px; overflow:hidden;">
-                                <a href="@Url.Action("Details", new { id = item.PostID })">
-                                    <img src="@item.PrimaryImageUrl" alt="@item.Title" style="width:100%; height:180px; object-fit:cover;" />
-                                </a>
-                                <div class="card-body" style="padding: 12px;">
-                                    <h5 style="margin:0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@item.Title</h5>
-                                    <div style="color:#6c757d; font-size:13px; margin-bottom:6px;">@item.Condition • @item.ListingTypeText</div>
-                                    <div style="font-weight:700; color:#d63384; margin-bottom:6px;">
-                                        @if (item.ListingType == 2 && !item.Price.HasValue)
-                                        {
-                                            <text>Trao đổi</text>
-                                        }
-                                        else
-                                        {
-                                            <text>@String.Format("{0:N0} đ", item.Price ?? 0)</text>
-                                        }
-                                    </div>
-                                    <div style="font-size:12px; color:#6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        <i class="fas fa-map-marker-alt"></i> @item.Location
-                                    </div>
-                                    <div style="font-size:12px; color:#6c757d; margin-top:4px; display:@(((item.ListingType == 2 || item.ListingType == 3) && item.ExchangeCategoryNames != null && item.ExchangeCategoryNames.Any()) ? "block" : "none");">
-                                        <i class="fas fa-right-left"></i> Muốn đổi: @string.Join(", ", item.ExchangeCategoryNames ?? Enumerable.Empty<string>())
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center" style="margin-top:8px;">
-                                        <a href="@Url.Action("Details", new { id = item.PostID })" class="btn btn-outline-primary btn-sm">Xem</a>
-                                        <a href="@Url.Action("Conversation", "Chat", new { userId = item.SellerUserID })" class="btn btn-primary btn-sm">Chat</a>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-list"></i> Danh mục</label>
+                            @Html.DropDownList("categoryId", (IEnumerable<SelectListItem>)ViewBag.Categories, "Tất cả danh mục", new { @class = "form-control" })
                         </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-star"></i> Tình trạng</label>
+                            @Html.DropDownList("condition", (IEnumerable<SelectListItem>)ViewBag.ConditionOptions, "Tất cả", new { @class = "form-control" })
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-map-marker-alt"></i> Tỉnh/Thành</label>
+                            @Html.DropDownList("province", (IEnumerable<SelectListItem>)ViewBag.Provinces, "Tất cả", new { @class = "form-control" })
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-money-bill"></i> Giá từ</label>
+                            <input type="number" name="minPrice" step="1000" class="form-control" placeholder="0 đ" />
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-money-bill"></i> Giá đến</label>
+                            <input type="number" name="maxPrice" step="1000" class="form-control" placeholder="1.000.000 đ" />
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-search"></i> Từ khóa</label>
+                            <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="Tìm theo tiêu đề, nội dung..." />
+                        </div>
+                        <button type="submit" class="btn-apply-filter">
+                            <i class="fas fa-filter"></i> Áp dụng bộ lọc
+                        </button>
                     }
+                    <hr style="margin: 20px 0; border-color: #f0f0f0;" />
+                    <button type="button" class="btn-create-post" onclick="openCreateModal()">
+                        <i class="fas fa-plus"></i> Đăng tin mới
+                    </button>
                 </div>
-            }
-            else
-            {
-                <div class="alert alert-info">Chưa có tin đăng nào phù hợp.</div>
-            }
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <!-- Header with filters -->
+                <div class="listings-header">
+                    <div>
+                        <h3 class="listings-title">
+                            <i class="fas fa-store"></i> Danh sách tin đăng (@(ViewBag.TotalCount ?? 0))
+                        </h3>
+                        <div class="filter-tabs">
+                            <a href="@Url.Action("Index", new { filter = (string)null })" class="filter-tab @(string.IsNullOrEmpty(ViewBag.Filter as string) ? "active" : "")">
+                                <i class="fas fa-th-large"></i> Tất cả
+                            </a>
+                            <a href="@Url.Action("Index", new { filter = "sell" })" class="filter-tab @(string.Equals(ViewBag.Filter as string, "sell") ? "active" : "")">
+                                <i class="fas fa-tag"></i> Thanh lý
+                            </a>
+                            <a href="@Url.Action("Index", new { filter = "exchange" })" class="filter-tab @(string.Equals(ViewBag.Filter as string, "exchange") ? "active" : "")">
+                                <i class="fas fa-exchange-alt"></i> Trao đổi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Grid -->
+                @if (Model != null && Model.Any())
+                {
+                    <div class="row">
+                        @foreach (var item in Model)
+                        {
+                            <div class="col-lg-4 col-md-4 col-sm-6">
+                                <div class="product-card">
+                                    <div style="position: relative; overflow: hidden;">
+                                        <a href="@Url.Action("Details", new { id = item.PostID })">
+                                            <img src="@item.PrimaryImageUrl" alt="@item.Title" class="product-image" />
+                                        </a>
+                                        <div style="position: absolute; top: 8px; right: 8px;">
+                                            @if (item.ListingType == 2)
+                                            {
+                                                <span class="listing-badge badge-exchange">Trao đổi</span>
+                                            }
+                                            else if (item.ListingType == 1)
+                                            {
+                                                <span class="listing-badge badge-sell">Thanh lý</span>
+                                            }
+                                            else if (item.ListingType == 3)
+                                            {
+                                                <span class="listing-badge badge-sell">Bán/Đổi</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <h5 class="product-title">@item.Title</h5>
+                                        
+                                        <div class="product-meta">
+                                            <span>@item.Condition</span>
+                                            <span>•</span>
+                                            <span>@item.ListingTypeText</span>
+                                        </div>
+                                        
+                                        <div class="product-price">
+                                            @if (item.ListingType == 2 && !item.Price.HasValue)
+                                            {
+                                                <text><i class="fas fa-exchange-alt"></i> Trao đổi</text>
+                                            }
+                                            else
+                                            {
+                                                <text><i class="fas fa-tag"></i> @String.Format("{0:N0} đ", item.Price ?? 0)</text>
+                                            }
+                                        </div>
+                                        
+                                        <div class="product-location">
+                                            <i class="fas fa-map-marker-alt"></i> @item.Location
+                                        </div>
+                                        
+                                        @if ((item.ListingType == 2 || item.ListingType == 3) && item.ExchangeCategoryNames != null && item.ExchangeCategoryNames.Any())
+                                        {
+                                            <div class="exchange-info">
+                                                <i class="fas fa-exchange-alt"></i> Muốn đổi: @string.Join(", ", item.ExchangeCategoryNames)
+                                            </div>
+                                        }
+                                        
+                                        <div class="card-actions">
+                                            <a href="@Url.Action("Details", new { id = item.PostID })" class="btn-view">
+                                                <i class="fas fa-eye"></i> Xem
+                                            </a>
+                                            <a href="#" class="btn-chat open-chat-modal"
+                                               data-chat-userid="@item.SellerUserID"
+                                               data-chat-username="@item.SellerName"  
+                                               data-chat-useravatar="@item.SellerAvatar"
+                                               data-chat-postid="@item.PostID"
+                                               data-chat-posttitle="@item.Title"
+                                               data-chat-posttype="c2c">
+                                                <i class="fas fa-comments"></i> Chat
+                                            </a>
+                                        </div>
+                                    </div>
+        </div>
+    </div>
+}
+</div>
+
+<style>
+/* ===== PINK PAGINATION STYLES ===== */
+.pagination-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 25px auto 40px !important;
+    max-width: fit-content !important;
+}
+
+.pagination-wrapper {
+    padding: 15px 20px !important;
+    gap: 15px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.pagination-info {
+    background: transparent !important;
+    padding: 8px 15px !important;
+    border-radius: 15px !important;
+    border: none !important;
+    color: #666 !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+    margin-bottom: 12px !important;
+    font-size: 14px !important;
+}
+
+.pagination-nav .pagination {
+    display: flex !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+.pagination .page-item {
+    display: flex !important;
+}
+
+.pagination .page-link {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px 16px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 14px !important;
+    color: #495057 !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    background: linear-gradient(135deg, #ffffff, #f8f9fa) !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.pagination .page-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 20, 147, 0.15), transparent);
+    transition: left 0.5s;
+}
+
+.pagination .page-link:hover::before {
+    left: 100%;
+}
+
+.pagination .page-link:hover {
+    border-color: #ff1493 !important;
+    background: linear-gradient(135deg, #fff, #ffebf0) !important;
+    color: #ff1493 !important;
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 12px 25px rgba(255, 20, 147, 0.3) !important;
+    text-decoration: none !important;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #ff1493, #ff69b4) !important;
+    border-color: #ff1493 !important;
+    color: white !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 20px rgba(255, 20, 147, 0.5) !important;
+    transform: translateY(-2px) scale(1.02) !important;
+}
+
+.pagination .page-item.active .page-link:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 12px 30px rgba(255, 20, 147, 0.6) !important;
+    background: linear-gradient(135deg, #e91e63, #ff1493) !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #adb5bd !important;
+    background: #f8f9fa !important;
+    border-color: #e9ecef !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+    box-shadow: none !important;
+}
+
+.pagination .page-item.disabled .page-link:hover {
+    transform: none !important;
+    border-color: #e9ecef !important;
+    background: #f8f9fa !important;
+    color: #adb5bd !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+.pagination .page-item.disabled .page-link::before {
+    display: none;
+}
+
+/* Mobile Responsive */
+@@media (max-width: 768px) {
+    .pagination-wrapper {
+        padding: 10px 15px !important;
+        gap: 10px !important;
+    }
+    
+    .pagination-info {
+        font-size: 12px !important;
+        padding: 6px 12px !important;
+    }
+    
+    .pagination .page-link {
+        padding: 8px 12px !important;
+        min-width: 36px !important;
+        height: 36px !important;
+        font-size: 12px !important;
+    }
+    
+    .pagination {
+        gap: 4px !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+}
+</style>
+                }
+                else
+                {
+                    <div class="no-results">
+                        <div class="no-results-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h4 style="color: #6c757d; margin-bottom: 8px;">Không tìm thấy tin đăng nào</h4>
+                        <p style="color: #6c757d; margin-bottom: 20px;">Hãy thử điều chỉnh bộ lọc hoặc tạo tin đăng mới.</p>
+                        <button type="button" class="btn-create-post" style="width: auto; display: inline-block; padding: 12px 24px;" onclick="openCreateModal()">
+                            <i class="fas fa-plus"></i> Đăng tin đầu tiên
+                        </button>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>
@@ -114,6 +638,7 @@
         var filterSelect = document.querySelector('select[name="filter"]');
         var minPrice = document.querySelector('input[name="minPrice"]');
         var maxPrice = document.querySelector('input[name="maxPrice"]');
+        
         function togglePrice() {
             if (!filterSelect || !minPrice || !maxPrice) return;
             var isExchange = filterSelect.value === 'exchange';
@@ -121,12 +646,183 @@
             maxPrice.disabled = isExchange;
             minPrice.parentElement.style.opacity = isExchange ? 0.5 : 1;
             maxPrice.parentElement.style.opacity = isExchange ? 0.5 : 1;
+            
+            if (isExchange) {
+                minPrice.placeholder = "Không áp dụng cho trao đổi";
+                maxPrice.placeholder = "Không áp dụng cho trao đổi";
+            } else {
+                minPrice.placeholder = "0 đ";
+                maxPrice.placeholder = "1.000.000 đ";
+            }
         }
+        
         if (filterSelect) {
             filterSelect.addEventListener('change', togglePrice);
             togglePrice();
         }
+
+        // Add smooth scroll effect for filter application
+        document.querySelector('.btn-apply-filter').addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tìm...';
+        });
     })();
+
+    // Open create modal function
+    function openCreateModal() {
+        window.location.href = '@Url.Action("Create", "C2C")';
+    }
 </script>
 
+<!-- Pagination -->
+@{
+    int totalCount = ViewBag.TotalCount ?? 0;
+    int currentPage = ViewBag.Page ?? 1;
+    int pageSize = ViewBag.PageSize ?? 6;
+    int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+}
 
+@if (totalPages > 1)
+{
+    <div class="pagination-container">
+        <div class="container">
+            <div class="pagination-wrapper">
+                <div class="pagination-info">
+                    <span>Hiển thị @((currentPage - 1) * pageSize + 1) - @(Math.Min(currentPage * pageSize, totalCount)) trong tổng số @totalCount tin đăng</span>
+                </div>
+                
+                <nav class="pagination-nav">
+                    <ul class="pagination">
+                        <!-- Previous Page -->
+                        @if (currentPage > 1)
+                        {
+                            <li class="page-item">
+                                @Html.ActionLink("‹", "Index", new { 
+                                    page = currentPage - 1,
+                                    filter = ViewBag.Filter,
+                                    categoryId = ViewBag.CategoryID,
+                                    listingType = ViewBag.ListingType,
+                                    minPrice = ViewBag.MinPrice,
+                                    maxPrice = ViewBag.MaxPrice,
+                                    province = ViewBag.Province,
+                                    condition = ViewBag.SelectedCondition,
+                                    q = ViewBag.Query
+                                }, new { @class = "page-link", title = "Trang trước" })
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">‹</span>
+                            </li>
+                        }
+                        
+                        <!-- Page Numbers -->
+                        @{
+                            int startPage = Math.Max(1, currentPage - 2);
+                            int endPage = Math.Min(totalPages, currentPage + 2);
+                            
+                            // Show first page if not in range
+                            if (startPage > 1)
+                            {
+                                <li class="page-item">
+                                    @Html.ActionLink("1", "Index", new { 
+                                        page = 1,
+                                        filter = ViewBag.Filter,
+                                        categoryId = ViewBag.CategoryID,
+                                        listingType = ViewBag.ListingType,
+                                        minPrice = ViewBag.MinPrice,
+                                        maxPrice = ViewBag.MaxPrice,
+                                        province = ViewBag.Province,
+                                        condition = ViewBag.SelectedCondition,
+                                        q = ViewBag.Query
+                                    }, new { @class = "page-link" })
+                                </li>
+                                if (startPage > 2)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+                            
+                            // Show page numbers in range
+                            for (int i = startPage; i <= endPage; i++)
+                            {
+                                if (i == currentPage)
+                                {
+                                    <li class="page-item active">
+                                        <span class="page-link">@i</span>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item">
+                                        @Html.ActionLink(i.ToString(), "Index", new { 
+                                            page = i,
+                                            filter = ViewBag.Filter,
+                                            categoryId = ViewBag.CategoryID,
+                                            listingType = ViewBag.ListingType,
+                                            minPrice = ViewBag.MinPrice,
+                                            maxPrice = ViewBag.MaxPrice,
+                                            province = ViewBag.Province,
+                                            condition = ViewBag.SelectedCondition,
+                                            q = ViewBag.Query
+                                        }, new { @class = "page-link" })
+                                    </li>
+                                }
+                            }
+                            
+                            // Show last page if not in range
+                            if (endPage < totalPages)
+                            {
+                                if (endPage < totalPages - 1)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    @Html.ActionLink(totalPages.ToString(), "Index", new { 
+                                        page = totalPages,
+                                        filter = ViewBag.Filter,
+                                        categoryId = ViewBag.CategoryID,
+                                        listingType = ViewBag.ListingType,
+                                        minPrice = ViewBag.MinPrice,
+                                        maxPrice = ViewBag.MaxPrice,
+                                        province = ViewBag.Province,
+                                        condition = ViewBag.SelectedCondition,
+                                        q = ViewBag.Query
+                                    }, new { @class = "page-link" })
+                                </li>
+                            }
+                        }
+                        
+                        <!-- Next Page -->
+                        @if (currentPage < totalPages)
+                        {
+                            <li class="page-item">
+                                @Html.ActionLink("›", "Index", new { 
+                                    page = currentPage + 1,
+                                    filter = ViewBag.Filter,
+                                    categoryId = ViewBag.CategoryID,
+                                    listingType = ViewBag.ListingType,
+                                    minPrice = ViewBag.MinPrice,
+                                    maxPrice = ViewBag.MaxPrice,
+                                    province = ViewBag.Province,
+                                    condition = ViewBag.SelectedCondition,
+                                    q = ViewBag.Query
+                                }, new { @class = "page-link", title = "Trang sau" })
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">›</span>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+}

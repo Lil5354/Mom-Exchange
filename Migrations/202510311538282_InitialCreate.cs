@@ -13,10 +13,47 @@
                     {
                         BrandID = c.Int(nullable: false, identity: true),
                         BrandName = c.String(nullable: false, maxLength: 255),
+                        Description = c.String(nullable: false),
                         LogoUrl = c.String(maxLength: 1024),
-                        Description = c.String(),
                     })
                 .PrimaryKey(t => t.BrandID);
+            
+            CreateTable(
+                "dbo.Products",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Name = c.String(nullable: false),
+                        Category = c.String(),
+                        Price = c.String(),
+                        StockQuantity = c.Int(nullable: false),
+                        ShortDescription = c.String(),
+                        DetailedDescription = c.String(),
+                        Condition = c.String(),
+                        BrandId = c.Int(nullable: false),
+                        Location = c.String(),
+                        SellerName = c.String(),
+                        SellerAvatarUrl = c.String(),
+                        SellerRating = c.Double(nullable: false),
+                        SellerReviewCount = c.Int(nullable: false),
+                        IsActive = c.Boolean(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.Brands", t => t.BrandId, cascadeDelete: true)
+                .Index(t => t.BrandId);
+            
+            CreateTable(
+                "dbo.Product_Images",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        ProductId = c.Int(nullable: false),
+                        ImageUrl = c.String(nullable: false, maxLength: 500),
+                        SortOrder = c.Int(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.Products", t => t.ProductId, cascadeDelete: true)
+                .Index(t => t.ProductId);
             
             CreateTable(
                 "dbo.Categories",
@@ -160,6 +197,7 @@
                         VerificationTier = c.Int(nullable: false),
                         Status = c.Int(nullable: false),
                         CreatedAt = c.DateTime(nullable: false, precision: 7, storeType: "datetime2"),
+                        ImageUrl = c.String(maxLength: 500),
                     })
                 .PrimaryKey(t => t.PostID)
                 .ForeignKey("dbo.Users", t => t.UserID)
@@ -203,6 +241,88 @@
                 .PrimaryKey(t => t.NotificationID)
                 .ForeignKey("dbo.Users", t => t.UserID, cascadeDelete: true)
                 .Index(t => t.UserID);
+            
+            CreateTable(
+                "dbo.OrderItems",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        OrderId = c.Int(nullable: false),
+                        ProductId = c.Int(),
+                        ProductName = c.String(maxLength: 200),
+                        ProductPrice = c.String(maxLength: 100),
+                        ProductImageUrl = c.String(maxLength: 500),
+                        Quantity = c.Int(nullable: false),
+                        UnitPrice = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        TotalPrice = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        CreatedAt = c.DateTime(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.Orders", t => t.OrderId, cascadeDelete: true)
+                .ForeignKey("dbo.Products", t => t.ProductId)
+                .Index(t => t.OrderId)
+                .Index(t => t.ProductId);
+            
+            CreateTable(
+                "dbo.Orders",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        OrderCode = c.String(nullable: false, maxLength: 20),
+                        CustomerId = c.Int(nullable: false),
+                        BrandId = c.Int(nullable: false),
+                        Status = c.Byte(nullable: false),
+                        ShippingName = c.String(nullable: false, maxLength: 200),
+                        ShippingPhone = c.String(nullable: false, maxLength: 15),
+                        ShippingAddress = c.String(nullable: false, maxLength: 500),
+                        SubTotal = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        Commission = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        TotalAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        CreatedAt = c.DateTime(nullable: false),
+                        PaidAt = c.DateTime(),
+                        ConfirmedAt = c.DateTime(),
+                        ShippedAt = c.DateTime(),
+                        DeliveredAt = c.DateTime(),
+                        Note = c.String(maxLength: 500),
+                        PaymentMethod = c.String(maxLength: 100),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.Brands", t => t.BrandId)
+                .ForeignKey("dbo.Users", t => t.CustomerId)
+                .Index(t => t.CustomerId)
+                .Index(t => t.BrandId);
+            
+            CreateTable(
+                "dbo.PasswordResetCodes",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        UserID = c.Int(nullable: false),
+                        Code = c.String(nullable: false, maxLength: 6),
+                        Token = c.String(maxLength: 200),
+                        ExpiresAt = c.DateTime(nullable: false),
+                        Attempts = c.Int(nullable: false),
+                        UsedAt = c.DateTime(),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.Users", t => t.UserID, cascadeDelete: true)
+                .Index(t => t.UserID);
+            
+            CreateTable(
+                "dbo.PayOSPaymentLinks",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        PayOSLinkId = c.String(maxLength: 50),
+                        OrderCode = c.String(nullable: false, maxLength: 20),
+                        CheckoutUrl = c.String(maxLength: 500),
+                        QrCode = c.String(maxLength: 2000),
+                        Status = c.Byte(nullable: false),
+                        Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        CreatedAt = c.DateTime(nullable: false),
+                        PaidAt = c.DateTime(),
+                    })
+                .PrimaryKey(t => t.Id);
             
             CreateTable(
                 "dbo.SystemSettings",
@@ -263,6 +383,11 @@
             DropForeignKey("dbo.UserMedicalRecords", "UserID", "dbo.Users");
             DropForeignKey("dbo.UserMedicalRecords", "AdminReviewerID", "dbo.Users");
             DropForeignKey("dbo.UserLifestyleSurveys", "UserID", "dbo.Users");
+            DropForeignKey("dbo.PasswordResetCodes", "UserID", "dbo.Users");
+            DropForeignKey("dbo.OrderItems", "ProductId", "dbo.Products");
+            DropForeignKey("dbo.OrderItems", "OrderId", "dbo.Orders");
+            DropForeignKey("dbo.Orders", "CustomerId", "dbo.Users");
+            DropForeignKey("dbo.Orders", "BrandId", "dbo.Brands");
             DropForeignKey("dbo.Notifications", "UserID", "dbo.Users");
             DropForeignKey("dbo.MilkDonationRequests", "RecipientUserID", "dbo.Users");
             DropForeignKey("dbo.MilkDonationRequests", "PostID", "dbo.MilkDonationPosts");
@@ -280,9 +405,16 @@
             DropForeignKey("dbo.Post_C2C_ExchangePreferences", "CategoryID", "dbo.Categories");
             DropForeignKey("dbo.Posts_C2C", "CategoryID", "dbo.Categories");
             DropForeignKey("dbo.Categories", "ParentCategoryID", "dbo.Categories");
+            DropForeignKey("dbo.Product_Images", "ProductId", "dbo.Products");
+            DropForeignKey("dbo.Products", "BrandId", "dbo.Brands");
             DropIndex("dbo.UserMedicalRecords", new[] { "AdminReviewerID" });
             DropIndex("dbo.UserMedicalRecords", new[] { "UserID" });
             DropIndex("dbo.UserLifestyleSurveys", new[] { "UserID" });
+            DropIndex("dbo.PasswordResetCodes", new[] { "UserID" });
+            DropIndex("dbo.Orders", new[] { "BrandId" });
+            DropIndex("dbo.Orders", new[] { "CustomerId" });
+            DropIndex("dbo.OrderItems", new[] { "ProductId" });
+            DropIndex("dbo.OrderItems", new[] { "OrderId" });
             DropIndex("dbo.Notifications", new[] { "UserID" });
             DropIndex("dbo.MilkDonationRequests", new[] { "DonorUserID" });
             DropIndex("dbo.MilkDonationRequests", new[] { "RecipientUserID" });
@@ -300,9 +432,15 @@
             DropIndex("dbo.Posts_C2C", new[] { "CategoryID" });
             DropIndex("dbo.Posts_C2C", new[] { "UserID" });
             DropIndex("dbo.Categories", new[] { "ParentCategoryID" });
+            DropIndex("dbo.Product_Images", new[] { "ProductId" });
+            DropIndex("dbo.Products", new[] { "BrandId" });
             DropTable("dbo.UserMedicalRecords");
             DropTable("dbo.UserLifestyleSurveys");
             DropTable("dbo.SystemSettings");
+            DropTable("dbo.PayOSPaymentLinks");
+            DropTable("dbo.PasswordResetCodes");
+            DropTable("dbo.Orders");
+            DropTable("dbo.OrderItems");
             DropTable("dbo.Notifications");
             DropTable("dbo.MilkDonationRequests");
             DropTable("dbo.MilkDonationPosts");
@@ -314,6 +452,8 @@
             DropTable("dbo.Post_C2C_ExchangePreferences");
             DropTable("dbo.Posts_C2C");
             DropTable("dbo.Categories");
+            DropTable("dbo.Product_Images");
+            DropTable("dbo.Products");
             DropTable("dbo.Brands");
         }
     }

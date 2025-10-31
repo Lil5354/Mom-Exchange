@@ -67,3 +67,7 @@ firebase-debug.log
 package-lock.json
 yarn.lock
 old_code_base/
+images/brands/
+images/products/
+!images/brands/.gitkeep
+!images/products/.gitkeep

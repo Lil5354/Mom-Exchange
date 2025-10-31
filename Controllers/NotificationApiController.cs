@@ -28,7 +28,7 @@ namespace B_M.Controllers
                 var userIdentity = User?.Identity?.Name;
                 if (!string.IsNullOrEmpty(userIdentity))
                 {
-                    var user = db.Users.FirstOrDefault(u => u.Email == userIdentity || u.Username == userIdentity);
+                    var user = db.Users.FirstOrDefault(u => u.Email == userIdentity || u.Email == userIdentity);
                     if (user != null) return user.UserID;
                 }
             }
@@ -87,7 +87,7 @@ namespace B_M.Controllers
                         Message = n.Message,
                         IsRead = n.IsRead,
                         CreatedAt = n.CreatedAt,
-                        Link = n.Link
+                        Type = n.Type
                     });
 
                 return Json(new { success = true, data = items }, JsonRequestBehavior.AllowGet);

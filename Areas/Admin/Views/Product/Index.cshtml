@@ -2,6 +2,22 @@
 
 @{
     ViewBag.Title = "Quản lý Sản phẩm B2C";
+
+    // Helper: format Price string to VND with thousand separators
+    Func<string, string> FormatPrice = (price) =>
+    {
+        if (string.IsNullOrWhiteSpace(price)) return "0₫";
+        // Remove non-digit except dot and comma
+        var clean = System.Text.RegularExpressions.Regex.Replace(price, @"[^\d.,]", "");
+        decimal value;
+        // Try parsing invariant, then vi-VN
+        if (decimal.TryParse(clean, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out value) ||
+            decimal.TryParse(clean, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.GetCultureInfo("vi-VN"), out value))
+        {
+            return value.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + "₫";
+        }
+        return price;
+    };
 }
 
 <div class="container-fluid">
@@ -85,7 +101,7 @@
                                         <div class="text-muted" style="font-size:12px;">Brand: @(product.Brand?.BrandName ?? "-")</div>
                                     </td>
                                     <td><span class="badge bg-info">@product.Category</span></td>
-                                    <td>@product.Price</td>
+                                    <td>@FormatPrice(product.Price)</td>
                                     <td>
                                         @if (product.IsActive)
                                         { <span class="badge bg-success">Đang bán</span> }

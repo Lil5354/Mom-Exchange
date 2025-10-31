@@ -46,6 +46,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Migrations\202510311538282_InitialCreate.cs" />
+    <Compile Include="Migrations\202510311538282_InitialCreate.Designer.cs">
+      <DependentUpon>202510311538282_InitialCreate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\ViewModels\ProductCreateViewModel.cs" />
     <Compile Include="Models\ViewModels\ProductEditViewModel.cs" />
     <Compile Include="Areas\Admin\Controllers\ProductController.cs" />
@@ -154,6 +158,7 @@
     <Content Include="Areas\Admin\Views\Product\Create.cshtml" />
     <Content Include="Areas\Admin\Views\Product\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\Product\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Product\Delete.cshtml" />
     <Content Include="Areas\Admin\Views\Order\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Order\Details.cshtml" />
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -165,9 +170,6 @@
     <Compile Include="Areas\Admin\Controllers\PostC2CController.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminController.cs" />
-    <Compile Include="Areas\Admin\Controllers\CategoryController.cs" />
-    <Compile Include="Areas\Admin\Controllers\MedicalRecordsController.cs" />
-    <Compile Include="Areas\Admin\Controllers\MilkDonationController.cs" />
     <Compile Include="Areas\Admin\Controllers\BrandController.cs" />
     <Compile Include="Areas\Admin\Controllers\OrderController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -194,21 +196,6 @@
     <Compile Include="Helpers\CartHelper.cs" />
     <Compile Include="Helpers\QRCodeHelper.cs" />
     <Compile Include="Filters\AdminAuthorizeAttribute.cs" />
-    <Compile Include="Migrations\202510291319194_InitialCreate.cs" />
-    <Compile Include="Migrations\202510291319194_InitialCreate.Designer.cs">
-      <DependentUpon>202510291319194_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202510300006395_AddImgUrlForMilk.cs" />
-    <Compile Include="Migrations\202510300006395_AddImgUrlForMilk.Designer.cs">
-      <DependentUpon>202510300006395_AddImgUrlForMilk.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202510300536010_AddPasswordResetCodes.cs" />
-    <Compile Include="Migrations\202510300536010_AddPasswordResetCodes.Designer.cs">
-      <DependentUpon>202510300536010_AddPasswordResetCodes.cs</DependentUpon>
-    <Compile Include="Migrations\202510311041214_Update.cs" />
-    <Compile Include="Migrations\202510311041214_Update.Designer.cs">
-      <DependentUpon>202510311041214_Update.cs</DependentUpon>
-    </Compile>
     <Compile Include="Models\AdminCategoryViewModel.cs" />
     <Compile Include="Models\AdminCreateUserViewModel.cs" />
     <Compile Include="Models\AdminDashboardViewModel.cs" />
@@ -313,6 +300,7 @@
     <Content Include="Areas\Admin\Views\Category\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Category\Import.cshtml" />
     <Content Include="Areas\Admin\Views\Category\ImportResult.cshtml" />
+    <Content Include="Areas\Admin\Views\Category\_CategoryTreeNode.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\CreateUser.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\ImportResult.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\ImportUsers.cshtml" />
@@ -320,10 +308,8 @@
     <Content Include="Areas\Admin\Views\Admin\Reports.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\UserDetails.cshtml" />
     <Content Include="Areas\Admin\Views\Admin\Users.cshtml" />
-    <Content Include="Areas\Admin\Views\Category\Create.cshtml" />
-    <Content Include="Areas\Admin\Views\Category\Edit.cshtml" />
-    <Content Include="Areas\Admin\Views\Category\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\Category\_CategoryTreeNode.cshtml" />
+    <Content Include="Areas\Admin\Views\PostC2C\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\PostC2C\Details.cshtml" />
     <Content Include="Areas\Admin\Views\MedicalRecords\Details.cshtml" />
     <Content Include="Areas\Admin\Views\MedicalRecords\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Brand\Index.cshtml" />
@@ -332,13 +318,6 @@
     <Content Include="Areas\Admin\Views\Brand\Delete.cshtml" />
     <Content Include="Areas\Admin\Views\MilkDonation\Details.cshtml" />
     <Content Include="Areas\Admin\Views\MilkDonation\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\CreateUser.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\ImportResult.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\ImportUsers.cshtml" />
-    <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
-    <Content Include="Areas\Admin\Views\_ViewImports.cshtml" />
-    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
-    <Content Include="Areas\Admin\web.config" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -382,7 +361,6 @@
     <Content Include="Views\MilkDonation\_LifestyleSurveyPartial.cshtml" />
     <Content Include="Views\MilkDonation\_CreateRequestPartial.cshtml" />
     <Content Include="Views\MilkDonation\_MedicalRecordsPartial.cshtml" />
-    <Compile Include="Models\MilkDonationRequest.cs" />
     <Content Include="Views\Account\_ChangePasswordPartial.cshtml" />
     <Content Include="Views\Account\_ForgotPasswordRequestPartial.cshtml" />
     <Content Include="Views\Account\_ForgotPasswordVerifyPartial.cshtml" />
@@ -420,11 +398,6 @@
     <Content Include="Areas\Admin\web.config" />
     <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
     <Content Include="Areas\Admin\Views\_ViewImports.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\Users.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\UserDetails.cshtml" />
-    <Content Include="Areas\Admin\Views\Admin\Reports.cshtml" />
-    <Content Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Views\MilkDonation\LifestyleSurvey.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -459,16 +432,8 @@
     <Content Include="Scripts\jquery-3.7.0.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202510291319194_InitialCreate.resx">
-      <DependentUpon>202510291319194_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202510300006395_AddImgUrlForMilk.resx">
-      <DependentUpon>202510300006395_AddImgUrlForMilk.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202510300536010_AddPasswordResetCodes.resx">
-      <DependentUpon>202510300536010_AddPasswordResetCodes.cs</DependentUpon>
-    <EmbeddedResource Include="Migrations\202510311041214_Update.resx">
-      <DependentUpon>202510311041214_Update.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202510311538282_InitialCreate.resx">
+      <DependentUpon>202510311538282_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

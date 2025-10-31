@@ -138,12 +138,64 @@ namespace B_M.Areas.Admin.Controllers
 
             if (!string.IsNullOrWhiteSpace(model.DeletedImageUrls))
             {
-                var toDelete = model.DeletedImageUrls.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
-                if (toDelete.Any())
+                var rawList = model.DeletedImageUrls
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => HttpUtility.UrlDecode(s.Trim()))
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .ToList();
+
+                if (rawList.Any())
                 {
-                    var imgs = db.ProductImages.Where(pi => pi.ProductId == product.Id && toDelete.Contains(pi.ImageUrl)).ToList();
+                    // Build a normalized set of relative urls and filenames to match against DB
+                    var normalizedUrlSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var deleteFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var u in rawList)
+                    {
+                        try
+                        {
+                            var url = u;
+                            // If absolute URL, take local path
+                            Uri uri;
+                            if (Uri.TryCreate(u, UriKind.Absolute, out uri))
+                            {
+                                url = uri.LocalPath; // e.g., /images/products/abc.png
+                            }
+                            // Ensure starts with ~/ or /
+                            if (url.StartsWith("~/", StringComparison.Ordinal)) normalizedUrlSet.Add(url);
+                            else if (url.StartsWith("/", StringComparison.Ordinal)) normalizedUrlSet.Add(url);
+                            else normalizedUrlSet.Add("~/" + url.TrimStart('/'));
+
+                            deleteFileNames.Add(Path.GetFileName(url));
+                        }
+                        catch
+                        {
+                            // Fallback just filename
+                            deleteFileNames.Add(Path.GetFileName(u));
+                        }
+                    }
+
+                    var imgs = db.ProductImages
+                        .Where(pi => pi.ProductId == product.Id)
+                        .ToList()
+                        .Where(pi => normalizedUrlSet.Contains(pi.ImageUrl) ||
+                                     normalizedUrlSet.Contains("/" + pi.ImageUrl.TrimStart('~')) ||
+                                     normalizedUrlSet.Contains("~/" + pi.ImageUrl.TrimStart('/')) ||
+                                     deleteFileNames.Contains(Path.GetFileName(pi.ImageUrl)))
+                        .ToList();
+
                     foreach (var img in imgs)
                     {
+                        try
+                        {
+                            // Attempt to delete physical file if present
+                            var physicalPath = Server.MapPath(img.ImageUrl);
+                            if (System.IO.File.Exists(physicalPath))
+                            {
+                                System.IO.File.Delete(physicalPath);
+                            }
+                        }
+                        catch { /* ignore file IO errors */ }
+
                         db.ProductImages.Remove(img);
                     }
                     db.SaveChanges();

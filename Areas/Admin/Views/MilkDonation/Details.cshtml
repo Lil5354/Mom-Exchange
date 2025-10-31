@@ -46,7 +46,18 @@
                         <h5 class="mb-1">@Model.DonorName</h5>
                         <p class="text-muted mb-3">@Model.DonorEmail</p>
                         
-                        <span class="badge @Model.VerificationTierClass mb-2">@Model.VerificationTierText</span>
+                        @if (Model.VerificationTier == 1)
+                        {
+                            <span class="badge badge-warning mb-2">Tầng 1 - Khai báo cơ bản</span>
+                        }
+                        else if (Model.VerificationTier == 3)
+                        {
+                            <span class="badge badge-success mb-2">Tầng 2 - Đã xác thực y tế</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary mb-2">Chưa xác định</span>
+                        }
                     </div>
                 </div>
             </div>
@@ -66,17 +77,31 @@
                             </div>
                             <div class="col-md-6">
                                 <strong>Ngày vắt:</strong><br/>
-                                <i class="fas fa-calendar text-primary"></i> @Model.DateOfExpression.ToString("dd/MM/yyyy")
+                                <i class="fas fa-calendar text-primary"></i> @(Model.DateOfExpression.HasValue ? Model.DateOfExpression.Value.ToString("dd/MM/yyyy") : "Chưa có")
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <strong>Tầng xác thực:</strong><br/>
-                                <span class="badge @Model.VerificationTierClass">@Model.VerificationTierText</span>
+                                @if (Model.VerificationTier == 1)
+                                {
+                                    <span class="badge badge-warning">Tầng 1</span>
+                                }
+                                else if (Model.VerificationTier == 3)
+                                {
+                                    <span class="badge badge-success">Tầng 2</span>
+                                }
                             </div>
                             <div class="col-md-6">
                                 <strong>Trạng thái:</strong><br/>
-                                <span class="badge @Model.StatusClass">@Model.StatusText</span>
+                                @if (Model.Status == 1)
+                                {
+                                    <span class="badge badge-success">Đang mở</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-secondary">Đã đóng</span>
+                                }
                             </div>
                         </div>
                         <hr>
@@ -203,57 +228,3 @@ function deletePost(postId) {
 </script>
 }
 
-<style>
-    .page-header {
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-
-    .page-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .badge {
-        font-size: 11px;
-        padding: 6px 10px;
-    }
-
-    .badge.tier-basic {
-        background-color: #fef3c7;
-        color: #92400e;
-    }
-
-    .badge.tier-verified {
-        background-color: #d1fae5;
-        color: #065f46;
-    }
-
-    .badge.tier-none {
-        background-color: #f3f4f6;
-        color: #6b7280;
-    }
-
-    .alert {
-        border: none;
-        border-radius: 8px;
-    }
-
-    .alert-danger {
-        background: linear-gradient(135deg, #fef2f2, #fee2e2);
-        color: #dc2626;
-    }
-
-    .btn-lg {
-        padding: 12px 20px;
-        font-size: 16px;
-    }
-</style>

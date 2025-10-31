@@ -366,10 +366,7 @@
             $.ajax({
                 url: '@Url.Action("Delete")',
                 type: 'POST',
-                data: { 
-                    id: id,
-                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
-                },
+                data: { id: id },
                 success: function (response) {
                     if (response.success) {
                         // Show success message

@@ -15,7 +15,7 @@
                 <div class="page-actions">
                     <a href="@Url.Action("Index", "MilkDonation", new { area = "Admin" })" 
                        class="btn btn-outline-primary btn-lg">
-                        <i class="fas fa-baby"></i> Quản Lý Bài Đăng
+                        <i class="fas fa-baby-carriage"></i> Quản Lý Bài Đăng
                     </a>
                 </div>
             </div>
@@ -39,9 +39,9 @@
                         <label class="mr-2">Trạng thái:</label>
                         <select name="statusFilter" class="form-control" onchange="this.form.submit()">
                             <option value="">Tất cả</option>
-                            <option value="0" @(Model.StatusFilter == 0 ? "selected" : "")>Đang chờ duyệt</option>
-                            <option value="1" @(Model.StatusFilter == 1 ? "selected" : "")>Đã được duyệt</option>
-                            <option value="2" @(Model.StatusFilter == 2 ? "selected" : "")>Bị từ chối</option>
+                            <option value="0" @(Model.StatusFilter == "0" ? "selected" : "")>Đang chờ duyệt</option>
+                            <option value="1" @(Model.StatusFilter == "1" ? "selected" : "")>Đã được duyệt</option>
+                            <option value="2" @(Model.StatusFilter == "2" ? "selected" : "")>Bị từ chối</option>
                         </select>
                     </div>
                     <a href="@Url.Action("Index", "MedicalRecords", new { Area = "Admin" })" class="btn btn-secondary">
@@ -96,22 +96,40 @@
                                         </td>
                                         <td>@record.UploadedAt.ToString("dd/MM/yyyy")</td>
                                         <td>
-                                            <span class="badge @record.VerificationStatusClass">@record.VerificationStatusText</span>
+                                            @if (record.VerificationStatus == 0)
+                                            {
+                                                <span class="badge badge-warning">Đang chờ duyệt</span>
+                                            }
+                                            else if (record.VerificationStatus == 1)
+                                            {
+                                                <span class="badge badge-success">Đã được duyệt</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Bị từ chối</span>
+                                            }
                                         </td>
                                         <td>
-                                            <span class="badge @switch(record.UserMilkDonationStatus)
+                                            @if (record.MilkDonationStatus == 1)
                                             {
-                                                case 1: <text>badge-warning</text>
-                                                    break;
-                                                case 2: <text>badge-info</text>
-                                                    break;
-                                                case 3: <text>badge-success</text>
-                                                    break;
-                                                case 4: <text>badge-danger</text>
-                                                    break;
-                                                default: <text>badge-secondary</text>
-                                                    break;
-                                            }">@record.UserMilkDonationStatusText</span>
+                                                <span class="badge badge-warning">Tầng 1</span>
+                                            }
+                                            else if (record.MilkDonationStatus == 2)
+                                            {
+                                                <span class="badge badge-info">Đang chờ duyệt</span>
+                                            }
+                                            else if (record.MilkDonationStatus == 3)
+                                            {
+                                                <span class="badge badge-success">Tầng 2</span>
+                                            }
+                                            else if (record.MilkDonationStatus == 4)
+                                            {
+                                                <span class="badge badge-secondary">Bị từ chối</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary">Chưa đăng ký</span>
+                                            }
                                         </td>
                                         <td>
                                             @if (record.AdminReviewerID.HasValue)
@@ -136,7 +154,7 @@
                     </div>
 
                     <!-- Pagination -->
-                    @if (Model.TotalPages > 1)
+                    if (Model.TotalPages > 1)
                     {
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
@@ -175,85 +193,3 @@
     </div>
 </div>
 
-<style>
-    .page-header {
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-
-    .page-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .form-inline {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .form-group {
-        display: flex;
-        align-items: center;
-        margin: 0;
-    }
-
-    .form-control {
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        padding: 8px 12px;
-    }
-
-    .table {
-        margin-bottom: 0;
-    }
-
-    .table th {
-        background-color: #f8fafc;
-        border-bottom: 2px solid #e2e8f0;
-        font-weight: 600;
-        color: #374151;
-    }
-
-    .table td {
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: #f8fafc;
-    }
-
-    .badge {
-        font-size: 11px;
-        padding: 4px 8px;
-    }
-
-    .btn-sm {
-        padding: 4px 8px;
-        font-size: 12px;
-    }
-
-    .alert {
-        border: none;
-        border-radius: 8px;
-    }
-
-    .alert-danger {
-        background: linear-gradient(135deg, #fef2f2, #fee2e2);
-        color: #dc2626;
-    }
-
-    .alert-info {
-        background: linear-gradient(135deg, #eff6ff, #dbeafe);
-        color: #1d4ed8;
-    }
-</style>

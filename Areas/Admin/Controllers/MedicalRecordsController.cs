@@ -55,15 +55,20 @@ namespace B_M.Areas.Admin.Controllers
                         UserID = r.UserID,
                         UserName = r.User?.UserDetails?.FullName ?? "Chưa cập nhật",
                         UserEmail = r.User?.Email ?? "",
+                        UserPhone = r.User?.PhoneNumber ?? "",
+                        UserFullName = r.User?.UserDetails?.FullName ?? "Chưa cập nhật",
                         UserAvatarUrl = r.User?.UserDetails?.ProfilePictureURL,
                         FileName = r.FileName,
-                        FileUrl = r.FileUrl,
+                        FilePath = r.FileUrl,
                         VerificationStatus = r.VerificationStatus,
                         ReviewNotes = r.ReviewNotes,
                         UploadedAt = r.UploadedAt,
                         AdminReviewerID = r.AdminReviewerID,
+                        ReviewedAt = null, // Not available in current data structure
                         AdminReviewerName = r.AdminReviewer?.UserDetails?.FullName ?? "",
-                        UserMilkDonationStatus = r.User?.MilkDonationStatus ?? 0
+                        MilkDonationStatus = r.User?.MilkDonationStatus ?? 0,
+                        UserCreatedAt = r.User?.CreatedAt ?? DateTime.MinValue,
+                        IsUserActive = r.User?.IsActive ?? false
                     })
                     .ToList();
 
@@ -73,7 +78,7 @@ namespace B_M.Areas.Admin.Controllers
                     CurrentPage = pageNumber,
                     TotalPages = (int)Math.Ceiling((double)totalRecords / pageSize),
                     TotalRecords = totalRecords,
-                    StatusFilter = statusFilter
+                    StatusFilter = statusFilter?.ToString() ?? "all"
                 };
 
                 return View(viewModel);
@@ -109,6 +114,12 @@ namespace B_M.Areas.Admin.Controllers
                 var pendingCount = db.UserMedicalRecords
                     .Count(r => r.UserID == record.UserID && r.VerificationStatus == 0);
 
+                // Get all user's medical records for context
+                var allUserRecords = db.UserMedicalRecords
+                    .Where(r => r.UserID == record.UserID)
+                    .OrderByDescending(r => r.UploadedAt)
+                    .ToList();
+
                 // Tạo full path để hiển thị file
                 string filePath = Server.MapPath("~/App_Data/MedicalRecords/" + record.FileUrl);
                 filePath = filePath.Replace("/", "\\");
@@ -119,18 +130,23 @@ namespace B_M.Areas.Admin.Controllers
                     UserID = record.UserID,
                     UserName = record.User?.UserDetails?.FullName ?? "Chưa cập nhật",
                     UserEmail = record.User?.Email ?? "",
+                    UserPhone = record.User?.PhoneNumber ?? "",
+                    UserFullName = record.User?.UserDetails?.FullName ?? "Chưa cập nhật",
                     UserAvatarUrl = record.User?.UserDetails?.ProfilePictureURL,
+                    UserAddress = record.User?.UserDetails?.Address ?? "",
                     FileName = record.FileName,
-                    FileUrl = record.FileUrl,
-                    FullFilePath = filePath,
+                    FilePath = record.FileUrl,
                     VerificationStatus = record.VerificationStatus,
                     ReviewNotes = record.ReviewNotes,
                     UploadedAt = record.UploadedAt,
                     AdminReviewerID = record.AdminReviewerID,
                     AdminReviewerName = record.AdminReviewer?.UserDetails?.FullName ?? "",
-                    UserMilkDonationStatus = record.User?.MilkDonationStatus ?? 0,
-                    UserApprovedRecordsCount = approvedCount,
-                    UserPendingRecordsCount = pendingCount
+                    ReviewedAt = null, // Not available in current data structure
+                    MilkDonationStatus = record.User?.MilkDonationStatus ?? 0,
+                    UserCreatedAt = record.User?.CreatedAt ?? DateTime.MinValue,
+                    IsUserActive = record.User?.IsActive ?? false,
+                    ReputationScore = record.User?.UserDetails?.ReputationScore ?? 0.0,
+                    AllUserRecords = allUserRecords
                 };
 
                 return View(viewModel);
@@ -367,3 +383,4 @@ namespace B_M.Areas.Admin.Controllers
         }
     }
 }
+

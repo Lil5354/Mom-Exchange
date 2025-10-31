@@ -54,18 +54,20 @@ namespace B_M.Areas.Admin.Controllers
                 // Load parent category info if creating subcategory
                 if (parentId.HasValue)
                 {
-                    var parentCategory = db.Categories.Find(parentId.Value);
-                    if (parentCategory != null)
+                    var parent = db.Categories.Find(parentId.Value);
+                    if (parent != null)
                     {
-                        model.ParentCategoryName = parentCategory.CategoryName;
+                        model.ParentCategoryName = parent.CategoryName;
                     }
                 }
 
-                // Load available parent categories (exclude current category and its descendants)
-                model.AvailableParentCategories = db.Categories
-                    .Where(c => c.ParentCategoryID == null) // Only root categories can be parents
-                    .ToList();
-
+                // Load available parent categories for dropdown - CHỈ KHI KHÔNG CÓ PARENT
+                // Vì View chỉ hiển thị dropdown này khi !ParentCategoryID.HasValue
+                if (!parentId.HasValue)
+                {
+                    LoadParentCategoriesDropdown(null);
+                }
+                
                 return View(model);
             }
             catch (Exception ex)
@@ -82,29 +84,35 @@ namespace B_M.Areas.Admin.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(model.CategoryName))
                 {
-                    // Reload available parent categories
-                    model.AvailableParentCategories = db.Categories
-                        .Where(c => c.ParentCategoryID == null)
-                        .ToList();
-                    return View(model);
+                    ModelState.AddModelError("CategoryName", "Tên danh mục là bắt buộc");
                 }
 
-                // Check for duplicate category name
-                bool isDuplicate = db.Categories.Any(c => 
+                // Validate permissions
+                if (!model.IsB2CEnabled && !model.IsC2CEnabled)
+                {
+                    ModelState.AddModelError("", "Phải chọn ít nhất một quyền: B2C hoặc C2C");
+                }
+
+                // Check for duplicate name at same level
+                var isDuplicate = db.Categories.Any(c => 
                     c.CategoryName.ToLower() == model.CategoryName.ToLower() &&
                     c.ParentCategoryID == model.ParentCategoryID);
 
                 if (isDuplicate)
                 {
-                    ModelState.AddModelError("CategoryName", "Tên danh mục đã tồn tại trong cùng cấp.");
-                    model.AvailableParentCategories = db.Categories
-                        .Where(c => c.ParentCategoryID == null)
-                        .ToList();
+                    ModelState.AddModelError("CategoryName", "Tên danh mục đã tồn tại ở cùng cấp này");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    LoadParentCategoriesDropdown(model.ParentCategoryID);
                     return View(model);
                 }
 
+                // Create new category
                 var category = new Category
                 {
                     CategoryName = model.CategoryName.Trim(),
@@ -117,15 +125,14 @@ namespace B_M.Areas.Admin.Controllers
                 db.Categories.Add(category);
                 db.SaveChanges();
 
-                TempData["SuccessMessage"] = "Tạo danh mục thành công!";
+                TempData["SuccessMessage"] = $"Đã tạo danh mục '{category.CategoryName}' thành công!";
                 return RedirectToAction("Index");
+                
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có lỗi khi tạo danh mục: " + ex.Message;
-                model.AvailableParentCategories = db.Categories
-                    .Where(c => c.ParentCategoryID == null)
-                    .ToList();
+                ModelState.AddModelError("", "Có lỗi khi lưu danh mục: " + ex.Message);
+                LoadParentCategoriesDropdown(model.ParentCategoryID);
                 return View(model);
             }
         }
@@ -138,7 +145,7 @@ namespace B_M.Areas.Admin.Controllers
                 var category = db.Categories.Find(id);
                 if (category == null)
                 {
-                    TempData["ErrorMessage"] = "Không tìm thấy danh mục.";
+                    TempData["ErrorMessage"] = "Không tìm thấy danh mục!";
                     return RedirectToAction("Index");
                 }
 
@@ -152,21 +159,14 @@ namespace B_M.Areas.Admin.Controllers
                     IsC2CEnabled = category.IsC2CEnabled
                 };
 
-                // Load parent category info
+                // Load parent name for display
                 if (category.ParentCategoryID.HasValue)
                 {
-                    var parentCategory = db.Categories.Find(category.ParentCategoryID.Value);
-                    if (parentCategory != null)
-                    {
-                        model.ParentCategoryName = parentCategory.CategoryName;
-                    }
+                    var parent = db.Categories.Find(category.ParentCategoryID.Value);
+                    model.ParentCategoryName = parent?.CategoryName;
                 }
 
-                // Load available parent categories (exclude current category and its descendants)
-                model.AvailableParentCategories = db.Categories
-                    .Where(c => c.CategoryID != id && c.ParentCategoryID == null)
-                    .ToList();
-
+                LoadParentCategoriesDropdown(model.ParentCategoryID, id);
                 return View(model);
             }
             catch (Exception ex)
@@ -183,36 +183,51 @@ namespace B_M.Areas.Admin.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    model.AvailableParentCategories = db.Categories
-                        .Where(c => c.CategoryID != model.CategoryID && c.ParentCategoryID == null)
-                        .ToList();
-                    return View(model);
-                }
-
                 var category = db.Categories.Find(model.CategoryID);
                 if (category == null)
                 {
-                    TempData["ErrorMessage"] = "Không tìm thấy danh mục.";
+                    TempData["ErrorMessage"] = "Không tìm thấy danh mục!";
                     return RedirectToAction("Index");
                 }
 
-                // Check for duplicate category name (exclude current category)
-                bool isDuplicate = db.Categories.Any(c => 
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(model.CategoryName))
+                {
+                    ModelState.AddModelError("CategoryName", "Tên danh mục là bắt buộc");
+                }
+
+                // Validate permissions
+                if (!model.IsB2CEnabled && !model.IsC2CEnabled)
+                {
+                    ModelState.AddModelError("", "Phải chọn ít nhất một quyền: B2C hoặc C2C");
+                }
+
+                // Prevent setting parent to itself or its children
+                if (model.ParentCategoryID.HasValue && 
+                    (model.ParentCategoryID.Value == model.CategoryID || 
+                     IsDescendantOf(model.CategoryID, model.ParentCategoryID.Value)))
+                {
+                    ModelState.AddModelError("ParentCategoryID", "Không thể chọn chính nó hoặc danh mục con làm danh mục cha");
+                }
+
+                // Check for duplicate name at same level (excluding current category)
+                var isDuplicate = db.Categories.Any(c => 
                     c.CategoryID != model.CategoryID &&
                     c.CategoryName.ToLower() == model.CategoryName.ToLower() &&
                     c.ParentCategoryID == model.ParentCategoryID);
 
                 if (isDuplicate)
                 {
-                    ModelState.AddModelError("CategoryName", "Tên danh mục đã tồn tại trong cùng cấp.");
-                    model.AvailableParentCategories = db.Categories
-                        .Where(c => c.CategoryID != model.CategoryID && c.ParentCategoryID == null)
-                        .ToList();
+                    ModelState.AddModelError("CategoryName", "Tên danh mục đã tồn tại ở cùng cấp này");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    LoadParentCategoriesDropdown(model.ParentCategoryID, model.CategoryID);
                     return View(model);
                 }
 
+                // Update category
                 category.CategoryName = model.CategoryName.Trim();
                 category.Description = model.Description?.Trim();
                 category.ParentCategoryID = model.ParentCategoryID;
@@ -221,52 +236,47 @@ namespace B_M.Areas.Admin.Controllers
 
                 db.SaveChanges();
 
-                TempData["SuccessMessage"] = "Cập nhật danh mục thành công!";
+                TempData["SuccessMessage"] = $"Đã cập nhật danh mục '{category.CategoryName}' thành công!";
                 return RedirectToAction("Index");
+                
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có lỗi khi cập nhật danh mục: " + ex.Message;
-                model.AvailableParentCategories = db.Categories
-                    .Where(c => c.CategoryID != model.CategoryID && c.ParentCategoryID == null)
-                    .ToList();
+                ModelState.AddModelError("", "Có lỗi khi cập nhật danh mục: " + ex.Message);
+                LoadParentCategoriesDropdown(model.ParentCategoryID, model.CategoryID);
                 return View(model);
             }
         }
 
         // POST: Admin/Category/Delete/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public JsonResult Delete(int id)
         {
             try
             {
-                var category = db.Categories
-                    .Include(c => c.SubCategories)
-                    .Include(c => c.PostC2Cs)
-                    .FirstOrDefault(c => c.CategoryID == id);
-
+                var category = db.Categories.Find(id);
                 if (category == null)
                 {
-                    return Json(new { success = false, message = "Không tìm thấy danh mục." });
+                    return Json(new { success = false, message = "Không tìm thấy danh mục!" });
                 }
 
-                // Check if category has subcategories
-                if (category.SubCategories.Any())
+                // Check if has children
+                if (db.Categories.Any(c => c.ParentCategoryID == id))
                 {
-                    return Json(new { success = false, message = "Không thể xóa danh mục có danh mục con. Vui lòng xóa các danh mục con trước." });
+                    return Json(new { success = false, message = "Không thể xóa danh mục có danh mục con!" });
                 }
 
-                // Check if category has posts
-                if (category.PostC2Cs.Any())
+                // Check if category has C2C posts
+                if (db.PostC2Cs.Any(p => p.CategoryID == id))
                 {
-                    return Json(new { success = false, message = "Không thể xóa danh mục đang có bài đăng. Vui lòng di chuyển hoặc xóa các bài đăng trước." });
+                    return Json(new { success = false, message = "Không thể xóa danh mục đang có bài đăng C2C." });
                 }
 
+                // Remove category
                 db.Categories.Remove(category);
                 db.SaveChanges();
 
-                return Json(new { success = true, message = "Xóa danh mục thành công!" });
+                return Json(new { success = true, message = $"Đã xóa danh mục '{category.CategoryName}' thành công!" });
             }
             catch (Exception ex)
             {
@@ -274,12 +284,12 @@ namespace B_M.Areas.Admin.Controllers
             }
         }
 
-        // Helper method to build category tree
-        private List<CategoryTreeNode> BuildCategoryTree(List<Category> categories, int? parentId, int level = 0)
+        // Helper Methods
+        private List<AdminCategoryViewModel> BuildCategoryTree(List<Category> allCategories, int? parentId, int level = 0)
         {
-            return categories
+            return allCategories
                 .Where(c => c.ParentCategoryID == parentId)
-                .Select(c => new CategoryTreeNode
+                .Select(c => new AdminCategoryViewModel
                 {
                     CategoryID = c.CategoryID,
                     CategoryName = c.CategoryName,
@@ -288,9 +298,62 @@ namespace B_M.Areas.Admin.Controllers
                     IsB2CEnabled = c.IsB2CEnabled,
                     IsC2CEnabled = c.IsC2CEnabled,
                     Level = level,
-                    Children = BuildCategoryTree(categories, c.CategoryID, level + 1)
+                    SubCategories = BuildCategoryTree(allCategories, c.CategoryID, level + 1),
+                    SubCategoryCount = allCategories.Count(sub => sub.ParentCategoryID == c.CategoryID)
                 })
+                .OrderBy(c => c.CategoryName)
                 .ToList();
+        }
+
+        private void LoadParentCategoriesDropdown(int? selectedId, int? excludeId = null)
+        {
+            try
+            {
+                var categories = db.Categories
+                    .Where(c => !excludeId.HasValue || c.CategoryID != excludeId.Value)
+                    .OrderBy(c => c.CategoryName)
+                    .ToList()
+                    .Select(c => new
+                    {
+                        c.CategoryID,
+                        DisplayName = GetCategoryPath(c.CategoryID)
+                    })
+                    .ToList();
+
+                ViewBag.ParentCategories = new SelectList(categories, "CategoryID", "DisplayName", selectedId);
+            }
+            catch (Exception)
+            {
+                ViewBag.ParentCategories = new SelectList(new List<object>(), "CategoryID", "DisplayName");
+            }
+        }
+
+        private string GetCategoryPath(int categoryId)
+        {
+            var path = new List<string>();
+            var category = db.Categories.Find(categoryId);
+
+            while (category != null)
+            {
+                path.Insert(0, category.CategoryName);
+                category = category.ParentCategoryID.HasValue 
+                    ? db.Categories.Find(category.ParentCategoryID.Value) 
+                    : null;
+            }
+
+            return string.Join(" > ", path);
+        }
+
+        private bool IsDescendantOf(int ancestorId, int descendantId)
+        {
+            var category = db.Categories.Find(descendantId);
+            while (category?.ParentCategoryID.HasValue == true)
+            {
+                if (category.ParentCategoryID.Value == ancestorId)
+                    return true;
+                category = db.Categories.Find(category.ParentCategoryID.Value);
+            }
+            return false;
         }
 
         protected override void Dispose(bool disposing)

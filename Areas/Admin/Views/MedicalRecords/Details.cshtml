@@ -15,7 +15,7 @@
                 <div class="page-actions">
                     <a href="@Url.Action("Index", "MilkDonation", new { area = "Admin" })" 
                        class="btn btn-outline-primary mr-2">
-                        <i class="fas fa-baby"></i> Quản Lý Bài Đăng
+                        <i class="fas fa-baby-carriage"></i> Quản Lý Bài Đăng
                     </a>
                     <a href="@Url.Action("Index", "MedicalRecords", new { Area = "Admin" })" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Quay lại
@@ -46,27 +46,34 @@
                         <h5 class="mb-1">@Model.UserName</h5>
                         <p class="text-muted mb-3">@Model.UserEmail</p>
                         
-                        <span class="badge @switch(Model.UserMilkDonationStatus)
+                        @if (Model.MilkDonationStatus == 1)
                         {
-                            case 1: <text>badge-warning</text>
-                                break;
-                            case 2: <text>badge-info</text>
-                                break;
-                            case 3: <text>badge-success</text>
-                                break;
-                            case 4: <text>badge-danger</text>
-                                break;
-                            default: <text>badge-secondary</text>
-                                break;
-                        } mb-2">@Model.UserMilkDonationStatusText</span>
+                            <span class="badge badge-warning mb-2">Tầng 1 - Khai báo cơ bản</span>
+                        }
+                        else if (Model.MilkDonationStatus == 2)
+                        {
+                            <span class="badge badge-info mb-2">Đang chờ duyệt hồ sơ</span>
+                        }
+                        else if (Model.MilkDonationStatus == 3)
+                        {
+                            <span class="badge badge-success mb-2">Tầng 2 - Đã xác thực y tế</span>
+                        }
+                        else if (Model.MilkDonationStatus == 4)
+                        {
+                            <span class="badge badge-danger mb-2">Bị từ chối</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary mb-2">Chưa đăng ký</span>
+                        }
 
                         <hr>
                         <div class="text-left">
                             <small class="d-block mb-2">
-                                <i class="fas fa-check-circle text-success"></i> Đã duyệt: <strong>@Model.UserApprovedRecordsCount</strong> hồ sơ
+                                <i class="fas fa-check-circle text-success"></i> Đã duyệt: <strong>@Model.ApprovedRecordsCount</strong> hồ sơ
                             </small>
                             <small class="d-block mb-2">
-                                <i class="fas fa-clock text-warning"></i> Đang chờ: <strong>@Model.UserPendingRecordsCount</strong> hồ sơ
+                                <i class="fas fa-clock text-warning"></i> Đang chờ: <strong>@Model.PendingRecordsCount</strong> hồ sơ
                             </small>
                             <small class="d-block">
                                 <i class="fas fa-info-circle text-info"></i> Cần ít nhất 2 hồ sơ được duyệt để lên Tầng 2
@@ -87,6 +94,10 @@
                             {
                                 <small class="text-muted mt-2 d-block">
                                     <i class="fas fa-user"></i> @Model.AdminReviewerName
+                                    @if (Model.ReviewedAt.HasValue)
+                                    {
+                                        <br/><i class="fas fa-clock"></i> @Model.ReviewedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
                                 </small>
                             }
                         </div>
@@ -124,13 +135,7 @@
                         <div class="mb-3">
                             <strong>Nội dung file:</strong>
                             <div class="mt-2">
-                                @{
-                                    var fileExt = System.IO.Path.GetExtension(Model.FileName)?.ToLower();
-                                    var isPdf = fileExt == ".pdf";
-                                    var isImage = new[] { ".jpg", ".jpeg", ".png", ".gif" }.Contains(fileExt);
-                                }
-                                
-                                @if (isPdf)
+                                @if (Model.IsFilePdf)
                                 {
                                     <iframe src="@Url.Action("ViewFile", "MedicalRecords", new { Area = "Admin", id = Model.RecordID })" 
                                             style="width: 100%; height: 600px; border: 1px solid #ddd;"></iframe>
@@ -141,7 +146,7 @@
                                         </a>
                                     </div>
                                 }
-                                else if (isImage)
+                                else if (Model.IsFileImage)
                                 {
                                     <img src="@Url.Action("ViewFile", "MedicalRecords", new { Area = "Admin", id = Model.RecordID })" 
                                          alt="@Model.FileName" 
@@ -214,7 +219,7 @@
                                 @if (Model.VerificationStatus == 1)
                                 {
                                     <span class="text-success">
-                                        <br/><br/>User này hiện có <strong>@Model.UserApprovedRecordsCount</strong> hồ sơ được duyệt.
+                                        <br/><br/>User này hiện có <strong>@Model.ApprovedRecordsCount</strong> hồ sơ được duyệt.
                                     </span>
                                 }
                             </p>
@@ -280,52 +285,3 @@ function rejectRecord(recordId) {
 </script>
 }
 
-<style>
-    .page-header {
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-
-    .page-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .badge {
-        font-size: 11px;
-        padding: 6px 10px;
-    }
-
-    .alert {
-        border: none;
-        border-radius: 8px;
-    }
-
-    .alert-danger {
-        background: linear-gradient(135deg, #fef2f2, #fee2e2);
-        color: #dc2626;
-    }
-
-    .alert-info {
-        background: linear-gradient(135deg, #eff6ff, #dbeafe);
-        color: #1d4ed8;
-    }
-
-    .form-control {
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-    }
-
-    .btn-lg {
-        padding: 12px 20px;
-        font-size: 16px;
-    }
-</style>

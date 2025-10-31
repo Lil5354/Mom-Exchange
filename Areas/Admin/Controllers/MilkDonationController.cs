@@ -55,7 +55,7 @@ namespace B_M.Areas.Admin.Controllers
                             DietInfo = ExtractValue(lines, "Chế độ ăn:"),
                             StorageInfo = ExtractValue(lines, "Bảo quản:"),
                             VerificationTier = p.VerificationTier,
-                            Status = p.Status,
+                            Status = p.Status, // 1 = Open, 2 = Closed
                             CreatedAt = p.CreatedAt
                         };
                     })
@@ -69,7 +69,7 @@ namespace B_M.Areas.Admin.Controllers
                     CurrentPage = pageNumber,
                     TotalPages = (int)Math.Ceiling((double)totalPosts / pageSize),
                     TotalPosts = totalPosts,
-                    StatusFilter = statusFilter
+                    StatusFilter = statusFilter?.ToString() ?? "all"
                 };
 
                 return View(viewModel);
@@ -222,3 +222,4 @@ namespace B_M.Areas.Admin.Controllers
         }
     }
 }
+

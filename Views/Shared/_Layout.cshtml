@@ -1601,6 +1601,23 @@
         measurementId: "G-ECMV6KC1Q5"
     };
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    
+    // ======= MINIGAME FIREBASE CONFIG (SECOND APP) =======
+    const minigameFirebaseConfig = {
+        apiKey: "AIzaSyBENFl9c4AIPJ7t7UlqsPyEuov_kYIp_No",
+        authDomain: "minigame-mebe.firebaseapp.com",
+        databaseURL: "https://minigame-mebe-default-rtdb.firebaseio.com",
+        projectId: "minigame-mebe",
+        storageBucket: "minigame-mebe.appspot.com",
+        messagingSenderId: "280836935793",
+        appId: "1:280836935793:web:1a4f8c35911dbd2a7d4bd0",
+        measurementId: "G-Q9TT4BVWZ7"
+    };
+    
+    // Initialize second Firebase app for minigame
+    const minigameApp = firebase.initializeApp(minigameFirebaseConfig, "minigame");
+    window.firebaseDb = firebase.database(minigameApp);
+    
     // Khai báo biến context user toàn cục cho Chat
     window.CURRENT_USER_ID = '@Session["UserID"]';
     window.CURRENT_USER_NAME = '@Html.Raw(Session["FullName"] ?? "Khách")';

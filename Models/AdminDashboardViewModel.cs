@@ -4,6 +4,7 @@ namespace B_M.Models
 {
     public class AdminDashboardViewModel
     {
+        // User Statistics
         public int TotalUsers { get; set; }
         public int ActiveUsers { get; set; }
         public int AdminUsers { get; set; }

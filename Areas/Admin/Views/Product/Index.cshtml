@@ -1,0 +1,131 @@
+@model List<B_M.Models.Entities.Product>
+
+@{
+    ViewBag.Title = "Quản lý Sản phẩm B2C";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="fas fa-boxes"></i> Quản lý sản phẩm</h3>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" href="@Url.Action("Create")"><i class="fas fa-plus"></i> Thêm sản phẩm</a>
+            <a class="btn btn-success disabled" title="Sẽ bổ sung"><i class="fas fa-file-excel"></i> Import từ Excel</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "Product", new { area = "Admin" }, FormMethod.Get, new { @class = "row g-3" }))
+            {
+                <div class="col-md-4">
+                    <label class="form-label">Tìm kiếm</label>
+                    @Html.TextBox("q", Request["q"], new { @class = "form-control", @placeholder = "Tên sản phẩm, mô tả..." })
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Danh mục</label>
+                    @Html.DropDownList("category", new SelectList((IEnumerable<SelectListItem>)ViewBag.Categories, "Value", "Text", Request["category"]), "Tất cả danh mục", new { @class = "form-control" })
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Nhãn hàng</label>
+                    @Html.DropDownList("brand", (SelectList)ViewBag.Brands, "Tất cả nhãn hàng", new { @class = "form-control" })
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-search"></i> Lọc
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title"><i class="fas fa-list"></i> Danh sách sản phẩm (@Model.Count() sản phẩm)</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Hình ảnh</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Danh mục</th>
+                                <th>Giá</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (product.ImageUrls != null && product.ImageUrls.Any())
+                                        {
+                                            <img src="@Url.Content(product.ImageUrls.First())" alt="@product.Name" style="width:60px;height:60px;object-fit:cover;border-radius:8px;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="text-muted" style="width:60px;height:60px;display:flex;align-items:center;justify-content:center;border:1px dashed #ddd;border-radius:8px;">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div style="font-weight:600;">@product.Name</div>
+                                        <div class="text-muted" style="font-size:12px;">@product.ShortDescription</div>
+                                        <div class="text-muted" style="font-size:12px;">Brand: @(product.Brand?.BrandName ?? "-")</div>
+                                    </td>
+                                    <td><span class="badge bg-info">@product.Category</span></td>
+                                    <td>@product.Price</td>
+                                    <td>
+                                        @if (product.IsActive)
+                                        { <span class="badge bg-success">Đang bán</span> }
+                                        else
+                                        { <span class="badge bg-secondary">Tạm dừng</span> }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Details", new { id = product.Id })">Xem</a>
+                                            <a class="btn btn-sm btn-outline-warning" href="@Url.Action("Edit", new { id = product.Id })">Sửa</a>
+                                            @using (Html.BeginForm("ToggleStatus", "Product", new { area = "Admin", id = product.Id }, FormMethod.Post, new { @class = "d-inline" }))
+                                            {
+                                                <button type="submit" class="btn btn-sm @(product.IsActive ? "btn-outline-warning" : "btn-outline-success")" onclick="return confirm('Bạn có chắc chắn muốn @(product.IsActive ? "tạm dừng" : "kích hoạt") sản phẩm này?')">
+                                                    <i class="fas fa-@(product.IsActive ? "pause" : "play")"></i>
+                                                </button>
+                                            }
+                                            @using (Html.BeginForm("Delete", "Product", new { area = "Admin", id = product.Id }, FormMethod.Post, new { @class = "d-inline" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-box-open" style="font-size:48px;"></i>
+                    <div class="mt-2">Chưa có sản phẩm nào.</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+ 

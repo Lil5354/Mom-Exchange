@@ -29,7 +29,7 @@ namespace B_M
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional },
-                namespaces: new[] { "B_M.Controllers" } // Chỉ tìm controller trong namespace này, loại trừ Admin area
+                namespaces: new[] { "B_M.Controllers" }
             );
         }
     }

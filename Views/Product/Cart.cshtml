@@ -1,0 +1,134 @@
+@model List<B_M.Helpers.CartItem>
+
+@{
+    ViewBag.Title = "Giỏ hàng";
+}
+
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <h2 style="margin-bottom: 30px;">
+        <i class="fa-solid fa-shopping-cart"></i> Giỏ hàng của bạn
+    </h2>
+    
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            <div class="col-md-8">
+                <div class="cart-items">
+                    @foreach (var item in Model)
+                    {
+                        <div class="cart-item" style="display: flex; align-items: center; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 15px; background: white;">
+                            <img src="@Url.Content(item.ProductImageUrl)" alt="@item.ProductName" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-right: 20px;">
+                            
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 10px 0; color: #333;">@item.ProductName</h4>
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div>
+                                        <label style="margin-right: 10px;">Số lượng:</label>
+                                        <input type="number" value="@item.Quantity" min="1" 
+                                               class="item-quantity" 
+                                               data-product-id="@item.ProductId"
+                                               style="width: 60px; padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
+                                    </div>
+                                    <div>
+                                        <strong style="color: #d63384; font-size: 18px;">
+                                            @item.UnitPrice.ToString("N0")₫
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: right; margin-left: 20px;">
+                                <div style="font-weight: bold; font-size: 18px; color: #d63384; margin-bottom: 10px;">
+                                    @item.TotalPrice.ToString("N0")₫
+                                </div>
+                                <button onclick="removeItem(@item.ProductId)" 
+                                        style="background: #dc3545; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">
+                                    <i class="fa-solid fa-trash"></i> Xóa
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="cart-summary" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #e0e0e0; position: sticky; top: 20px;">
+                    <h3 style="margin-bottom: 20px;">Tóm tắt đơn hàng</h3>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Số sản phẩm:</span>
+                        <span>@Model.Sum(x => x.Quantity)</span>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #ddd;">
+                        <span>Tổng cộng:</span>
+                        <strong style="font-size: 20px; color: #d63384;">
+                            @ViewBag.CartTotal.ToString("N0")₫
+                        </strong>
+                    </div>
+                    
+                    <button onclick="proceedToCheckout()" 
+                            style="background: linear-gradient(135deg, #d63384, #e91e63); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 10px;">
+                        <i class="fa-solid fa-credit-card"></i> Thanh toán
+                    </button>
+                    
+                    <a href="@Url.Action("Index", "Home")" 
+                       style="display: block; text-align: center; padding: 10px; color: #666; text-decoration: none; border: 1px solid #ddd; border-radius: 10px;">
+                        <i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 60px 20px;">
+            <i class="fa-solid fa-shopping-cart" style="font-size: 80px; color: #ddd; margin-bottom: 20px;"></i>
+            <h3>Giỏ hàng trống</h3>
+            <p>Hãy thêm sản phẩm vào giỏ hàng của bạn!</p>
+            <a href="@Url.Action("Index", "Home")" class="cta-button primary" style="margin-top: 20px; display: inline-block;">
+                Về trang chủ
+            </a>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+    <script>
+        function removeItem(productId) {
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+            $.ajax({
+                url: '@Url.Action("RemoveFromCart", "Product")',
+                type: 'POST',
+                data: { productId: productId },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                }
+            });
+        }
+    }
+    
+    $('.item-quantity').on('change', function() {
+        var productId = $(this).data('product-id');
+        var quantity = $(this).val();
+        
+        $.ajax({
+            url: '@Url.Action("UpdateCartItem", "Product")',
+            type: 'POST',
+            data: { productId: productId, quantity: quantity },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            }
+        });
+    });
+    
+    function proceedToCheckout() {
+        window.location.href = '@Url.Action("Checkout", "Product")';
+    }
+    </script>
+}

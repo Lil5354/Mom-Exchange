@@ -66,3 +66,4 @@ firebase-debug.log
 # Package lock files (tùy chọn)
 package-lock.json
 yarn.lock
+old_code_base/

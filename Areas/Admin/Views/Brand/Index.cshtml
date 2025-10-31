@@ -1,0 +1,67 @@
+@model IEnumerable<B_M.Models.Entities.Brand>
+@{
+    ViewBag.Title = "Quản lý Nhãn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5><i class="fas fa-tags"></i> @ViewBag.Title</h5>
+        <a href="@Url.Action("Create")" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm nhãn hàng</a>
+    </div>
+    <div class="admin-card-body">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+
+        @using (Html.BeginForm("Index", "Brand", new { area = "Admin" }, FormMethod.Get, new { id = "brandSearchForm", style = "margin-bottom:15px;" }))
+        {
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div style="flex:1; min-width:220px;">
+                    <input type="text" name="search" value="@ViewBag.Search" placeholder="Tìm theo tên nhãn hàng, mô tả..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px;" />
+                </div>
+                <button type="submit" class="btn-admin" style="padding:10px 20px;">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+                <a href="@Url.Action("Index", "Brand", new { area = "Admin" })" class="btn-admin-secondary" style="padding:10px 20px; text-decoration:none;">
+                    <i class="fas fa-refresh"></i> Làm mới
+                </a>
+                <span style="color:#7f8c8d; font-size:14px;">Hiển thị: @Model.Count() nhãn hàng</span>
+            </div>
+        }
+
+        <table class="table table-bordered table-striped table-admin">
+            <thead>
+                <tr>
+                    <th style="width:140px; text-align:center;">Logo</th>
+                    <th>Tên nhãn hàng</th>
+                    <th>Mô tả</th>
+                    <th style="width: 140px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var b in Model)
+                {
+                    <tr>
+                        <td style="text-align:center; vertical-align:middle;">
+                            @{
+                                var hasLogo = !string.IsNullOrEmpty(b.LogoUrl);
+                                var logoSrc = hasLogo ? Url.Content(b.LogoUrl) : Url.Content("~/images/logo-aptamil.png");
+                            }
+                            <img src="@logoSrc" alt="@b.BrandName" style="height:72px; width:72px; object-fit:cover; border-radius:50%; box-shadow:0 6px 16px rgba(14,165,233,0.18); border:3px solid #e5e7eb; background:#fff;" />
+                        </td>
+                        <td style="vertical-align:middle; font-weight:600; color:#1e293b">@b.BrandName</td>
+                        <td style="vertical-align:middle; color:#4b5563">@b.Description</td>
+                        <td>
+                            <a class="btn btn-sm btn-primary" href="@Url.Action("Edit", new { id = b.BrandID })"><i class="fas fa-edit"></i></a>
+                            <a class="btn btn-sm btn-danger" href="@Url.Action("Delete", new { id = b.BrandID })"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+

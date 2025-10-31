@@ -1,0 +1,181 @@
+@model B_M.Models.ViewModels.OrderUserIndexViewModel
+
+@{
+    ViewBag.Title = "Đơn hàng của tôi";
+    var allOrders = Model?.AllOrders ?? new List<B_M.Models.Entities.Order>();
+    var pendingOrders = Model?.PendingOrders ?? new List<B_M.Models.Entities.Order>();
+    var paidOrders = Model?.PaidOrders ?? new List<B_M.Models.Entities.Order>();
+    var processingOrders = Model?.ProcessingOrders ?? new List<B_M.Models.Entities.Order>();
+    var shippedOrders = Model?.ShippedOrders ?? new List<B_M.Models.Entities.Order>();
+    var completedOrders = Model?.CompletedOrders ?? new List<B_M.Models.Entities.Order>();
+    var cancelledOrders = Model?.CancelledOrders ?? new List<B_M.Models.Entities.Order>();
+    
+    Func<byte, (string Text, string Class)> GetStatusInfo = (status) =>
+    {
+        switch (status)
+        {
+            case 0: return ("Chờ thanh toán", "warning");
+            case 1: return ("Đã thanh toán", "info");
+            case 2: return ("Đang xử lý", "primary");
+            case 3: return ("Đã gửi hàng", "success");
+            case 4: return ("Đã hoàn thành", "success");
+            case 5: return ("Đã hủy", "danger");
+            default: return ("Không xác định", "secondary");
+        }
+    };
+}
+
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <h2 style="margin-bottom: 30px;">
+        <i class="fa-solid fa-shopping-bag"></i> Đơn hàng của tôi
+    </h2>
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">
+            <i class="fa-solid fa-info-circle"></i> @TempData["Info"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row" style="margin-bottom: 30px;">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold;">@(Model?.TotalCount ?? 0)</div>
+                <div>Tổng đơn hàng</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; color: white; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold;">@(Model?.PendingCount ?? 0)</div>
+                <div>Chờ thanh toán</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 10px; color: white; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold;">@(Model?.ProcessingCount ?? 0)</div>
+                <div>Đang xử lý</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 20px; border-radius: 10px; color: white; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold;">@(Model?.CompletedCount ?? 0)</div>
+                <div>Đã hoàn thành</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách tất cả đơn hàng -->
+    @{
+        var isDemo = Request["demo"] == "1";
+    }
+    @Html.Partial("_OrdersList", allOrders, new ViewDataDictionary { { "Demo", isDemo && allOrders.Count == 0 }, { "SampleStatus", -1 } })
+</div>
+
+@* Helper removed; using partial _OrdersList *@
+
+@section scripts {
+    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+    <script src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script>
+        // No tabs; keep only cancelOrder
+
+        // Cancel order function
+        function cancelOrder(orderId) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác!')) {
+                $.ajax({
+                    url: '@Url.Action("CancelOrder", "OrderUser")',
+                    type: 'POST',
+                    data: { orderId: orderId },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Đã xảy ra lỗi. Vui lòng thử lại.');
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+<style>
+    .stat-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    
+    .order-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    
+    .nav-tabs .nav-link {
+        color: #666;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 12px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: #d63384;
+        border-bottom-color: #d63384;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #d63384;
+        border-bottom-color: #d63384;
+        background-color: transparent;
+    }
+    
+    /* Use default Bootstrap tab visibility */
+    
+    .badge {
+        font-size: 11px;
+        padding: 4px 8px;
+        margin-left: 5px;
+    }
+    
+    .btn {
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #d63384, #e91e63);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(214, 51, 132, 0.4);
+    }
+    
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>

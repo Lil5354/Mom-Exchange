@@ -1,0 +1,378 @@
+@model B_M.Models.Entities.Product
+
+@{
+    ViewBag.Title = "Chi tiết sản phẩm";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-eye"></i>
+            Chi tiết sản phẩm
+        </h1>
+        <div class="page-actions">
+            @Html.ActionLink("Sửa", "Edit", "Product", new { area = "Admin", id = Model.Id }, new { @class = "btn btn-warning" })
+            @Html.ActionLink("Quay lại", "Index", "Product", new { area = "Admin" }, new { @class = "btn btn-secondary" })
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-box"></i>
+                        @Model.Name
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Product Images -->
+                    @if (Model.ImageUrls != null && Model.ImageUrls.Any())
+                    {
+                        <div class="product-images">
+                            <div class="main-image">
+                                <img id="mainImage" src="@Url.Content(Model.ImageUrls.First())" alt="@Model.Name" class="img-fluid" />
+                            </div>
+                            @if (Model.ImageUrls.Count > 1)
+                            {
+                                <div class="thumbnail-images">
+                                    @foreach (var imageUrl in Model.ImageUrls)
+                                    {
+                                        <img src="@Url.Content(imageUrl)" alt="@Model.Name" class="thumbnail" onclick="changeMainImage(this.src)" />
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-image-placeholder">
+                            <i class="fas fa-image"></i>
+                            <p>Chưa có hình ảnh</p>
+                        </div>
+                    }
+
+                    <!-- Product Details -->
+                    <div class="product-details mt-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <label>Tên sản phẩm:</label>
+                                    <span>@Model.Name</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Danh mục:</label>
+                                    <span class="badge badge-info" style="color: white !important;">@Model.Category</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Giá:</label>
+                                    <span class="price">@string.Format("{0:N0}", Model.Price) VND</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Tình trạng:</label>
+                                    <span class="badge badge-primary">@Model.Condition</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <label>Trạng thái bán:</label>
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">Đang bán</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger" style="color: white !important;">Tạm dừng</span>
+                                    }
+                                </div>
+                                <div class="detail-item">
+                                    <label>Vị trí:</label>
+                                    <span>@(string.IsNullOrEmpty(Model.Location) ? "Chưa cập nhật" : Model.Location)</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>ID sản phẩm:</label>
+                                    <span>#@Model.Id</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Số hình ảnh:</label>
+                                    <span>@(Model.ImageUrls?.Count ?? 0) hình</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descriptions -->
+                    <div class="product-descriptions mt-4">
+                        <div class="description-section">
+                            <h6><i class="fas fa-align-left"></i> Mô tả ngắn</h6>
+                            <p>@(string.IsNullOrEmpty(Model.ShortDescription) ? "Chưa có mô tả ngắn" : Model.ShortDescription)</p>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.DetailedDescription))
+                        {
+                            <div class="description-section">
+                                <h6><i class="fas fa-align-justify"></i> Mô tả chi tiết</h6>
+                                <p>@Model.DetailedDescription</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-bolt"></i>
+                        Thao tác nhanh
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @Html.ActionLink("Chỉnh sửa sản phẩm", "Edit", "Product", new { area = "Admin", id = Model.Id }, new { @class = "btn btn-warning" })
+                        
+                        @using (Html.BeginForm("ToggleStatus", "Product", new { area = "Admin", id = Model.Id }, FormMethod.Post, new { @class = "d-inline" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn @(Model.IsActive ? "btn-outline-warning" : "btn-outline-success") w-100" 
+                                    onclick="return confirm('Bạn có chắc chắn muốn @(Model.IsActive ? "tạm dừng" : "kích hoạt") sản phẩm này?')">
+                                <i class="fas fa-@(Model.IsActive ? "pause" : "play")"></i>
+                                @(Model.IsActive ? "Tạm dừng bán" : "Kích hoạt bán")
+                            </button>
+                        }
+                        
+                        @using (Html.BeginForm("Delete", "Product", new { area = "Admin", id = Model.Id }, FormMethod.Post, new { @class = "d-inline" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger w-100" 
+                                    onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác!')">
+                                <i class="fas fa-trash"></i>
+                                Xóa sản phẩm
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Stats -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Thống kê
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <label>Lượt xem:</label>
+                        <span>0</span>
+                    </div>
+                    <div class="stat-item">
+                        <label>Lượt thích:</label>
+                        <span>0</span>
+                    </div>
+                    <div class="stat-item">
+                        <label>Đã bán:</label>
+                        <span>0</span>
+                    </div>
+                    <div class="stat-item">
+                        <label>Đánh giá:</label>
+                        <span>Chưa có</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Thông tin bổ sung
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <label>Ngày tạo:</label>
+                        <span>@DateTime.Now.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Cập nhật lần cuối:</label>
+                        <span>@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Thương hiệu:</label>
+                        <span>@(Model.Brand?.BrandName ?? "-")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-images {
+    margin-bottom: 20px;
+}
+
+.main-image {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.main-image img {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.thumbnail-images {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.thumbnail:hover {
+    border-color: #007bff;
+    transform: scale(1.05);
+}
+
+.no-image-placeholder {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    color: #6c757d;
+}
+
+.no-image-placeholder i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.product-details {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.detail-item span {
+    color: #7f8c8d;
+}
+
+.price {
+    font-weight: 700;
+    color: #e74c3c;
+    font-size: 18px;
+}
+
+.product-descriptions {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.description-section {
+    margin-bottom: 20px;
+}
+
+.description-section:last-child {
+    margin-bottom: 0;
+}
+
+.description-section h6 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.description-section p {
+    color: #7f8c8d;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.stat-item, .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.stat-item:last-child, .info-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item label, .info-item label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    font-size: 14px;
+}
+
+.stat-item span, .info-item span {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.badge {
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
+.d-grid {
+    display: grid;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.w-100 {
+    width: 100% !important;
+}
+</style>
+
+<script>
+function changeMainImage(src) {
+    document.getElementById('mainImage').src = src;
+}
+</script>

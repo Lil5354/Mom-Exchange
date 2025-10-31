@@ -1,99 +1,286 @@
-﻿// Controllers/ProductController.cs
-using B_M.Models;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
+using B_M.Models;
+using B_M.Models.Entities;
+using B_M.Helpers;
+using B_M.Services;
+using CartItemAlias = B_M.Helpers.CartItem;
 
-namespace B_M.Controllers // Namespace của bạn có thể khác
+namespace B_M.Controllers
 {
     public class ProductController : Controller
     {
-        // GET: Product/Details/5
+        private readonly ApplicationDbContext db = new ApplicationDbContext();
+        private readonly PayOSService payOSService = new PayOSService();
+
+        // GET: /Product/Details/5
         public ActionResult Details(int id)
         {
-            // Lấy danh sách sản phẩm giả lập
-            var allProducts = GetSampleProducts();
+            var product = db.Products
+                .Include(p => p.Brand)
+                .Include(p => p.ProductImages)
+                .FirstOrDefault(p => p.Id == id && p.IsActive);
 
-            // Tìm sản phẩm có Id khớp với id được truyền vào
-            var product = allProducts.FirstOrDefault(p => p.Id == id);
-
-            // Nếu không tìm thấy sản phẩm, trả về lỗi 404
             if (product == null)
             {
                 return HttpNotFound();
             }
 
-            // Nếu tìm thấy, truyền đối tượng sản phẩm (Model) cho View
             return View(product);
         }
 
-        // --- Danh sách sản phẩm giả lập (thay cho cơ sở dữ liệu) ---
-        private List<Product> GetSampleProducts()
+        // POST: /Product/AddToCart
+        [HttpPost]
+        public ActionResult AddToCart(int productId, int quantity = 1)
         {
-            return new List<Product>
+            // Require login before adding to cart
+            if (Session["UserID"] == null)
             {
-                new Product {
-                    Id = 1,
-                    Name = "Xe đẩy em bé Aprica",
-                    Category = "Xe đẩy, Nôi cũi",
-                    Price = "1.200.000₫",
-                    ShortDescription = "Xe đẩy Aprica nội địa Nhật, còn mới 95%, đầy đủ phụ kiện. Gấp gọn dễ dàng, phù hợp cho bé từ sơ sinh đến 3 tuổi.",
-                    DetailedDescription = "Xe nhà mình dùng kỹ nên còn mới đến 95%, không có lỗi hỏng, trầy xước không đáng kể. Vải nệm đã được giặt sạch sẽ, thơm tho, bé có thể dùng ngay.",
-                    Condition = "Đã sử dụng (còn mới 95%)",
-                    Brand = "Aprica (Nhật Bản)",
-                    Location = "Quận Bình Tân, TP. Hồ Chí Minh",
-                    SellerName = "Mẹ Bắp",
-                    SellerAvatarUrl = "https://via.placeholder.com/50/fdeee9/e15b7f?Text=B",
-                    SellerRating = 4.8,
-                    SellerReviewCount = 25,
-                    ImageUrls = new List<string> {
-                        "https://www.kidsplaza.vn/media/catalog/product/a/p/aprica-kroon-hong.jpg",
-                        "https://i.pinimg.com/564x/0f/52/24/0f522434255152a450125aa5e6f54c2e.jpg",
-                        "https://i.pinimg.com/564x/1f/26/1c/1f261cb95a3299727ed248e3e414c719.jpg"
-                    }
-                },
-                new Product {
-                    Id = 2,
-                    Name = "Máy hút sữa Medela",
-                    Category = "Máy hút sữa & Dụng cụ",
-                    Price = "850.000₫",
-                    ShortDescription = "Máy hút sữa Medela Swing, lực hút mạnh, êm ái, đầy đủ phụ kiện tiệt trùng. Tặng kèm túi trữ sữa.",
-                    DetailedDescription = "Máy còn hoạt động rất tốt, pin bền. Mình đã vệ sinh và tiệt trùng tất cả các bộ phận. Mua về là dùng được ngay.",
-                    Condition = "Đã sử dụng (còn mới 90%)",
-                    Brand = "Medela",
-                    Location = "Quận Cầu Giấy, Hà Nội",
-                    SellerName = "Mẹ Gấu",
-                    SellerAvatarUrl = "https://via.placeholder.com/50/e0f7fa/009688?Text=G",
-                    SellerRating = 4.9,
-                    SellerReviewCount = 18,
-                    ImageUrls = new List<string> {
-                        "https://www.moby.com.vn/data/bt6/may-hut-sua-dien-don-medela-swing-1594126735.png",
-                        "https://i.pinimg.com/564x/a3/9a/b9/a39ab99e1c3182f2c2534125b1e6a1d4.jpg",
-                        "https://i.pinimg.com/564x/7e/76/87/7e76878b665324545d7f1d4187f4c092.jpg"
-                    }
-                },
-                new Product {
-                    Id = 3,
-                    Name = "Set body sơ sinh",
-                    Category = "Quần áo",
-                    Price = "Trao đổi",
-                    ShortDescription = "5 bộ body Nous cộc tay cho bé trai 3-6 tháng. Chất vải petit siêu mềm mát, thấm hút mồ hôi tốt.",
-                    DetailedDescription = "Đồ bé mình mặc hơi chật, mới mặc 1-2 lần nên còn rất mới, không bị xù lông hay dão. Mình muốn đổi lấy đồ cho bé gái hoặc đồ chơi gỗ.",
-                    Condition = "Đã sử dụng (còn mới 98%)",
-                    Brand = "Nous",
-                    Location = "Quận Hải Châu, Đà Nẵng",
-                    SellerName = "Mẹ Sóc",
-                    SellerAvatarUrl = "https://via.placeholder.com/50/fff9c4/fbc02d?Text=S",
-                    SellerRating = 5.0,
-                    SellerReviewCount = 31,
-                    ImageUrls = new List<string> {
-                        "https://i.pinimg.com/1200x/78/29/91/7829917da73ef1917f7b50adc409a37a.jpg",
-                        "https://i.pinimg.com/564x/4b/36/4f/4b364f514d021c72b225330e7f722026.jpg",
-                        "https://i.pinimg.com/564x/2c/80/08/2c800889f07297e59443e215458097d6.jpg"
+                return Json(new { success = false, loginRequired = true, loginUrl = Url.Action("Login", "Account") });
+            }
+
+            var product = db.Products.Include(p => p.ProductImages).FirstOrDefault(p => p.Id == productId && p.IsActive);
+            if (product == null)
+            {
+                return Json(new { success = false, message = "Sản phẩm không tồn tại hoặc đã tạm dừng." });
+            }
+
+            if (quantity <= 0) quantity = 1;
+            if (product.StockQuantity < quantity)
+            {
+                return Json(new { success = false, message = "Số lượng tồn kho không đủ." });
+            }
+
+            decimal unitPrice;
+            decimal.TryParse((product.Price ?? "0").Replace(".", "").Replace(",", "").Replace("₫", ""), out unitPrice);
+
+            var firstImage = product.ImageUrls != null && product.ImageUrls.Any() ? product.ImageUrls.First() : "~/images/No_Image_Available.png";
+            var item = new CartItemAlias
+            {
+                ProductId = product.Id,
+                ProductName = product.Name,
+                ProductImageUrl = firstImage,
+                UnitPrice = unitPrice,
+                Quantity = quantity
+            };
+
+            CartHelper.AddToCart(item);
+            return Json(new { success = true, count = CartHelper.GetCartItemCount(), total = CartHelper.GetCartTotal().ToString("N0") + "₫" });
+        }
+
+        // GET: /Product/CartSummary - Returns JSON for cart summary
+        public JsonResult Summary()
+        {
+            try
+            {
+                var count = CartHelper.GetCartItemCount();
+                var total = CartHelper.GetCartTotal();
+                return Json(new { Success = true, ItemCount = count, Total = total.ToString("N0") + "₫" }, JsonRequestBehavior.AllowGet);
+            }
+            catch
+            {
+                return Json(new { Success = false, ItemCount = 0, Total = "0₫" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // GET: /Product/Cart
+        public ActionResult Cart()
+        {
+            var cart = CartHelper.GetCart();
+            ViewBag.CartTotal = CartHelper.GetCartTotal();
+            return View(cart);
+        }
+
+        // POST: /Product/RemoveFromCart
+        [HttpPost]
+        public ActionResult RemoveFromCart(int productId)
+        {
+            CartHelper.RemoveFromCart(productId);
+            return Json(new { success = true, count = CartHelper.GetCartItemCount(), total = CartHelper.GetCartTotal().ToString("N0") + "₫" });
+        }
+
+        // POST: /Product/UpdateCartItem
+        [HttpPost]
+        public ActionResult UpdateCartItem(int productId, int quantity)
+        {
+            CartHelper.UpdateCartItem(productId, quantity);
+            return Json(new { success = true, count = CartHelper.GetCartItemCount(), total = CartHelper.GetCartTotal().ToString("N0") + "₫" });
+        }
+
+        // GET: /Product/Checkout
+        public ActionResult Checkout()
+        {
+            var cart = CartHelper.GetCart();
+            if (cart == null || cart.Count == 0)
+            {
+                return RedirectToAction("Cart");
+            }
+
+            ViewBag.CartTotal = CartHelper.GetCartTotal();
+            ViewBag.CartCount = CartHelper.GetCartItemCount();
+            return View(cart);
+        }
+
+        // POST: /Product/PlaceOrder
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult PlaceOrder(string shippingName, string shippingPhone, string shippingAddress, string note)
+        {
+            // Require login
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Checkout", "Product") });
+            }
+
+            var cart = CartHelper.GetCart();
+            if (cart == null || cart.Count == 0)
+            {
+                TempData["Error"] = "Giỏ hàng trống.";
+                return RedirectToAction("Cart");
+            }
+
+            // Group cart items by brand (materialize productIds first to avoid EF constant translation issues)
+            var productIds = cart.Select(c => c.ProductId).ToList();
+            var productIdToBrand = db.Products
+                .Where(p => productIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.BrandId })
+                .ToList()
+                .ToDictionary(x => x.Id, x => x.BrandId);
+
+            var groups = cart.GroupBy(ci => productIdToBrand.ContainsKey(ci.ProductId) ? productIdToBrand[ci.ProductId] : 0);
+
+            var orderCodes = new List<string>();
+
+            foreach (var grp in groups)
+            {
+                if (grp.Key == 0) continue; // skip if brand unresolved
+
+                var order = new Order
+                {
+                    OrderCode = GenerateOrderCode(),
+                    CustomerId = Convert.ToInt32(Session["UserID"] ?? 0),
+                    BrandId = grp.Key,
+                    Status = 0,
+                    ShippingName = shippingName,
+                    ShippingPhone = shippingPhone,
+                    ShippingAddress = shippingAddress,
+                    Note = note,
+                    PaymentMethod = "PayOS",
+                    CreatedAt = DateTime.Now
+                };
+
+                decimal subTotal = 0m;
+                foreach (var ci in grp)
+                {
+                    var prod = db.Products.FirstOrDefault(p => p.Id == ci.ProductId);
+                    if (prod == null) continue;
+
+                    var item = new OrderItem
+                    {
+                        ProductId = prod.Id,
+                        ProductName = prod.Name,
+                        ProductPrice = prod.Price,
+                        ProductImageUrl = ci.ProductImageUrl,
+                        Quantity = ci.Quantity,
+                        UnitPrice = ci.UnitPrice,
+                        TotalPrice = ci.UnitPrice * ci.Quantity
+                    };
+                    subTotal += item.TotalPrice;
+                    order.OrderItems.Add(item);
+                }
+
+                order.SubTotal = subTotal;
+                order.Commission = Math.Round(subTotal * 0.05m, 0);
+                order.TotalAmount = order.SubTotal;
+
+                db.Orders.Add(order);
+                db.SaveChanges();
+
+                // Build PayOS items
+                var paymentItems = new List<PaymentItem>();
+                foreach (var ci in grp)
+                {
+                    paymentItems.Add(new PaymentItem
+                    {
+                        Name = ci.ProductName,
+                        Quantity = ci.Quantity,
+                        Price = (int)(ci.UnitPrice)
+                    });
+                }
+
+                try
+                {
+                    var numericCode = GenerateNumericOrderCode();
+                    var link = payOSService.CreatePaymentLink(order.TotalAmount, numericCode, paymentItems, order.OrderCode);
+                    if (link != null && link.Data != null)
+                    {
+                        var payLink = new PayOSPaymentLink
+                        {
+                            PayOSLinkId = link.Data.OrderCode.ToString(),
+                            OrderCode = order.OrderCode,
+                            CheckoutUrl = link.Data.CheckoutUrl,
+                            QrCode = link.Data.QrCode,
+                            Amount = order.TotalAmount,
+                            Status = 0
+                        };
+                        db.PayOSPaymentLinks.Add(payLink);
+                        db.SaveChanges();
                     }
                 }
-                // Thêm sản phẩm có id = 4 và các sản phẩm khác vào đây
-            };
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"PayOS Create Link Error: {ex.Message}");
+                }
+
+                orderCodes.Add(order.OrderCode);
+            }
+
+            // Clear cart after creating orders
+            CartHelper.ClearCart();
+
+            return RedirectToAction("PaymentConfirmation", new { orderCodes = string.Join(",", orderCodes) });
+        }
+
+        public ActionResult PaymentConfirmation(string orderCodes)
+        {
+            if (string.IsNullOrEmpty(orderCodes))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var codes = orderCodes.Split(',');
+            var orders = db.Orders
+                .Where(o => codes.Contains(o.OrderCode))
+                .OrderByDescending(o => o.CreatedAt)
+                .ToList();
+
+            var links = db.PayOSPaymentLinks
+                .Where(p => codes.Contains(p.OrderCode))
+                .ToList()
+                .GroupBy(p => p.OrderCode)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            ViewBag.TotalAmount = orders.Sum(o => o.TotalAmount);
+            ViewBag.PaymentLinks = links;
+            return View("~/Views/Product/PaymentConfirmation.cshtml", orders);
+        }
+
+        private string GenerateOrderCode()
+        {
+            return "ME-" + DateTime.Now.ToString("yyyyMMdd") + "-" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
+        }
+
+        private long GenerateNumericOrderCode()
+        {
+            var date = DateTime.Now.ToString("yyyyMMdd");
+            var rnd = new Random();
+            var unique = rnd.Next(10000, 99999);
+            return long.Parse(date + unique.ToString());
         }
     }
 }
+
+ 

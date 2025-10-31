@@ -1,0 +1,596 @@
+﻿@model B_M.Models.ViewModels.BrandDetailViewModel
+
+@{
+    ViewBag.Title = Model.BrandInfo.BrandName;
+    Func<string, string> FormatPrice = (price) =>
+    {
+        if (string.IsNullOrEmpty(price)) return "0₫";
+        var clean = System.Text.RegularExpressions.Regex.Replace(price, @"[^\d.]", "");
+        decimal val; if (decimal.TryParse(clean, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out val))
+            return val.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + "₫";
+        return price + "₫";
+    };
+}
+
+<!-- Brand Header Section -->
+<section class="brand-header-wrapper">
+    <div class="container">
+        <div class="brand-header-content">
+            <div class="brand-logo-wrapper">
+                <div class="logo-circle">
+                    <img src="@Url.Content(Model.BrandInfo.LogoUrl)" alt="Logo @Model.BrandInfo.BrandName" class="brand-logo-img" />
+                </div>
+            </div>
+            <h1 class="brand-title">@Model.BrandInfo.BrandName</h1>
+            <p class="brand-description">@Model.BrandInfo.Description</p>
+            @Html.ActionLink("Về trang chủ", "Index", "Home", null, new { @class = "btn btn-outline-light btn-home" })
+        </div>
+    </div>
+    <div class="header-overlay"></div>
+</section>
+
+<div class="container products-section">
+    <div class="row g-4">
+        <!-- Filter Sidebar -->
+        <div class="col-lg-3 col-md-4">
+            <div class="filter-card">
+                <div class="filter-header">
+                    <i class="fa-solid fa-filter me-2"></i>
+                    <strong>Bộ lọc</strong>
+                </div>
+                <div class="filter-body">
+                    <h6 class="filter-section-title">
+                        <i class="fa-solid fa-layer-group me-2"></i>Danh mục
+                    </h6>
+                    <ul class="category-list" id="categoryFilters">
+                        <li>
+                            <a href="#" onclick="filterByCategory('all', event)" class="category-link active" data-category="all">
+                                <i class="fa-solid fa-grip me-2"></i>Tất cả
+                            </a>
+                        </li>
+                        @foreach (var c in (Model.Products?.Select(p => p.Category).Distinct().OrderBy(x => x).ToList() ?? new List<string>()))
+                        {
+                            <li>
+                                <a href="#" onclick="filterByCategory('@c', event)" class="category-link" data-category="@c">
+                                    <i class="fa-solid fa-tag me-2"></i>@c
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Toolbar -->
+            <div class="products-toolbar">
+                <div class="toolbar-left">
+                    <span class="product-count-text">
+                        Hiển thị <strong><span id="productCount">@Model.Products.Count()</span> sản phẩm</strong>
+                    </span>
+                </div>
+                <div class="toolbar-right">
+                    <select class="form-select sort-dropdown" id="sortDropdown" onchange="sortProducts(this.value)">
+                        <option value="newest">Mới nhất</option>
+                        <option value="price_asc">Giá thấp đến cao</option>
+                        <option value="price_desc">Giá cao đến thấp</option>
+                        <option value="name_asc">Tên A-Z</option>
+                        <option value="name_desc">Tên Z-A</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="row g-4" id="productGrid">
+                @if (Model.Products != null && Model.Products.Any())
+                {
+                    foreach (var p in Model.Products)
+                    {
+                        <div class="col-lg-4 col-md-6 col-sm-6 product-card-link" data-product="@p.Name" data-price="@p.Price" data-date="@p.Id" data-category="@p.Category">
+                            <a href="@Url.Action("Details","Product", new { id = p.Id })" class="product-card-wrapper">
+                                <div class="product-card">
+                                    <div class="product-image-container">
+                                        <img src="@Url.Content(p.ImageUrls?.FirstOrDefault() ?? "~/images/No_Image_Available.png")" class="product-image" alt="@p.Name" />
+                                        <div class="product-overlay">
+                                            <span class="view-details-btn">
+                                                <i class="fa-solid fa-eye me-2"></i>Xem chi tiết
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="product-info">
+                                        <h6 class="product-name">@p.Name</h6>
+                                        <div class="product-category">
+                                            <i class="fa-solid fa-tag me-1"></i>@p.Category
+                                        </div>
+                                        <div class="product-price">@FormatPrice(p.Price)</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="no-products-message">
+                            <i class="fa-solid fa-box-open"></i>
+                            <p>Chưa có sản phẩm nào</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            <nav class="pagination-wrapper" aria-label="Pagination">
+                <button id="prevPage" class="btn btn-pagination" disabled>
+                    <i class="fa-solid fa-chevron-left"></i> Trước
+                </button>
+                <span id="pageInfo" class="page-info">1/1</span>
+                <button id="nextPage" class="btn btn-pagination" disabled>
+                    Tiếp <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allProducts = [];
+    let originalProducts = [];
+    let pageSize = 9;
+    let currentPage = 1;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        allProducts = Array.from(document.querySelectorAll('.product-card-link'));
+        originalProducts = [...allProducts];
+        paginate(1);
+        const prev = document.getElementById('prevPage');
+        const next = document.getElementById('nextPage');
+        if (prev && next) {
+            prev.addEventListener('click', function () { if (currentPage > 1) paginate(currentPage - 1); });
+            next.addEventListener('click', function () { const total = Math.ceil(allProducts.length / pageSize) || 1; if (currentPage < total) paginate(currentPage + 1); });
+        }
+    });
+
+    function filterByCategory(category, e) {
+        if (e) e.preventDefault();
+
+        // Update active class
+        document.querySelectorAll('.category-link').forEach(link => link.classList.remove('active'));
+        const activeLink = e && e.target ? e.target.closest('.category-link') : null;
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+
+        const grid = document.getElementById('productGrid');
+        const filtered = category === 'all' ? originalProducts : originalProducts.filter(x => x.getAttribute('data-category') === category);
+        
+        if (filtered.length) {
+            allProducts = filtered;
+            paginate(1);
+        }
+        else {
+            grid.innerHTML = '<div class="col-12"><div class="no-products-message"><i class="fa-solid fa-box-open"></i><p>Không tìm thấy sản phẩm</p></div></div>';
+            document.getElementById('productCount').textContent = 0;
+            const pi = document.getElementById('pageInfo');
+            if (pi) pi.textContent = '0/0';
+            const prev = document.getElementById('prevPage');
+            const next = document.getElementById('nextPage');
+            if (prev && next) { prev.disabled = true; next.disabled = true; }
+        }
+    }
+
+    function sortProducts(sortBy) {
+        const items = Array.from(allProducts);
+        function parsePrice(s) { if (!s) return 0; const c = s.replace(/[^\d.]/g, ''); return parseFloat(c) || 0; }
+        items.sort((a, b) => {
+            const na = a.querySelector('.product-name').textContent;
+            const nb = b.querySelector('.product-name').textContent;
+            const pa = parsePrice(a.getAttribute('data-price'));
+            const pb = parsePrice(b.getAttribute('data-price'));
+            const da = parseInt(a.getAttribute('data-date'));
+            const db = parseInt(b.getAttribute('data-date'));
+            switch (sortBy) {
+                case 'name_asc': return na.localeCompare(nb, 'vi');
+                case 'name_desc': return nb.localeCompare(na, 'vi');
+                case 'price_asc': return pa - pb;
+                case 'price_desc': return pb - pa;
+                case 'newest': default: return db - da;
+            }
+        });
+        allProducts = items;
+        paginate(1);
+    }
+
+    function paginate(page) {
+        currentPage = page;
+        const total = Math.ceil(allProducts.length / pageSize) || 1;
+        const start = (currentPage - 1) * pageSize;
+        const slice = allProducts.slice(start, start + pageSize);
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = '';
+        slice.forEach(x => grid.appendChild(x));
+        document.getElementById('productCount').textContent = allProducts.length;
+        const pi = document.getElementById('pageInfo');
+        if (pi) pi.textContent = currentPage + '/' + total;
+        const prev = document.getElementById('prevPage');
+        const next = document.getElementById('nextPage');
+        if (prev && next) {
+            prev.disabled = currentPage <= 1;
+            next.disabled = currentPage >= total;
+        }
+    }
+</script>
+
+<style>
+/* Brand Header */
+.brand-header-wrapper {
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 60px 0;
+    margin-bottom: 40px;
+    overflow: hidden;
+}
+
+.header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+    opacity: 0.3;
+}
+
+.brand-header-content {
+    position: relative;
+    text-align: center;
+    z-index: 2;
+}
+
+.brand-logo-wrapper {
+    margin-bottom: 24px;
+}
+
+.logo-circle {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+}
+
+.brand-logo-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.brand-title {
+    color: white;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.brand-description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin-bottom: 24px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-home {
+    border: 2px solid white;
+    color: white;
+    padding: 10px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-home:hover {
+    background: white;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Products Section */
+.products-section {
+    padding-bottom: 60px;
+}
+
+/* Filter Card */
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+}
+
+.filter-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 18px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.filter-body {
+    padding: 20px;
+}
+
+.filter-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2d3748;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-list li {
+    margin-bottom: 8px;
+}
+
+.category-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #64748b;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.category-link:hover {
+    background: #f8f9fa;
+    color: #667eea;
+    transform: translateX(5px);
+}
+
+.category-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.category-link i {
+    font-size: 14px;
+    width: 20px;
+}
+
+/* Toolbar */
+.products-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.product-count-text {
+    color: #64748b;
+    font-size: 15px;
+}
+
+.product-count-text strong {
+    color: #2d3748;
+}
+
+.sort-dropdown {
+    width: auto;
+    min-width: 180px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.sort-dropdown:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Product Cards */
+.product-card-wrapper {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.product-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    height: 100%;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+}
+
+.product-image-container {
+    position: relative;
+    height: 220px;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.1);
+}
+
+.product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.product-card:hover .product-overlay {
+    opacity: 1;
+}
+
+.view-details-btn {
+    color: white;
+    font-weight: 600;
+    padding: 12px 24px;
+    border: 2px solid white;
+    border-radius: 25px;
+    display: inline-flex;
+    align-items: center;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+}
+
+.product-card:hover .view-details-btn {
+    transform: translateY(0);
+}
+
+.product-info {
+    padding: 20px;
+}
+
+.product-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 8px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 48px;
+}
+
+.product-category {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.product-category i {
+    font-size: 12px;
+}
+
+.product-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #667eea;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* No Products Message */
+.no-products-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+
+.no-products-message i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.no-products-message p {
+    font-size: 18px;
+    margin: 0;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 40px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.btn-pagination {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #64748b;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-pagination:hover:not(:disabled) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+.btn-pagination:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-info {
+    color: #2d3748;
+    font-weight: 600;
+    padding: 0 12px;
+    font-size: 15px;
+}
+</style>

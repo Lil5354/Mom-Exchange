@@ -1,0 +1,457 @@
+@model B_M.Models.ViewModels.ProductCreateViewModel
+
+@{
+    ViewBag.Title = "Thêm sản phẩm mới";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-plus-circle"></i>
+            Thêm sản phẩm mới
+        </h1>
+        <div class="page-actions">
+            @Html.ActionLink("Quay lại", "Index", "Product", new { area = "Admin" }, new { @class = "btn btn-secondary" })
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-edit"></i>
+                        Thông tin sản phẩm
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("Create", "Product", new { area = "Admin" }, FormMethod.Post, new { @enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.Label("Nhãn hàng", new { @class = "form-label required" })
+                                    @Html.DropDownListFor(m => m.BrandId, (SelectList)ViewBag.BrandId, "-- Chọn nhãn hàng --", new { @class = "form-control", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.BrandId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Name, new { @class = "form-label required" })
+                                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", @placeholder = "Nhập tên sản phẩm" })
+                                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Category, new { @class = "form-label required" })
+                                    @Html.DropDownListFor(m => m.Category, (IEnumerable<SelectListItem>)ViewBag.Categories, "Chọn danh mục", new { @class = "form-control", @id = "categoryDropdown" })
+                                    @Html.ValidationMessageFor(m => m.Category, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Price, new { @class = "form-label required" })
+                                    <div class="input-group">
+                                        @Html.TextBoxFor(m => m.Price, new { @class = "form-control", @placeholder = "0", @type = "number", @min = "0" })
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">VND</span>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Condition, new { @class = "form-label required" })
+                                    @Html.DropDownListFor(m => m.Condition, new SelectList(new[] {
+                                        new { Value = "Mới", Text = "Mới" },
+                                        new { Value = "Cũ", Text = "Cũ" },
+                                        new { Value = "Đã sử dụng", Text = "Đã sử dụng" }
+                                    }, "Value", "Text"), "Chọn tình trạng", new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.Condition, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.ShortDescription, new { @class = "form-label required" })
+                            @Html.TextAreaFor(m => m.ShortDescription, new { @class = "form-control", @rows = "3", @placeholder = "Mô tả ngắn về sản phẩm" })
+                            @Html.ValidationMessageFor(m => m.ShortDescription, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.DetailedDescription, new { @class = "form-label" })
+                            @Html.TextAreaFor(m => m.DetailedDescription, new { @class = "form-control", @rows = "5", @placeholder = "Mô tả chi tiết về sản phẩm" })
+                            @Html.ValidationMessageFor(m => m.DetailedDescription, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Location, new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.Location, new { @class = "form-control", @placeholder = "Vị trí lưu trữ sản phẩm" })
+                            @Html.ValidationMessageFor(m => m.Location, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Hình ảnh sản phẩm</label>
+                            <div class="image-upload-area">
+                                <div class="image-preview" id="imagePreview">
+                                    <div class="no-images">
+                                        <i class="fas fa-images"></i>
+                                        <p>Chưa có hình ảnh nào</p>
+                                    </div>
+                                </div>
+                                <div class="upload-controls">
+                                    <input type="file" name="ProductImages" id="ProductImages" accept="image/*" multiple class="form-control-file" onchange="previewImages(this)" />
+                                    <label for="ProductImages" class="btn btn-outline-primary">
+                                        <i class="fas fa-upload"></i>
+                                        Chọn hình ảnh
+                                    </label>
+                                    <small class="form-text text-muted">Có thể chọn nhiều hình ảnh cùng lúc (JPG, PNG, tối đa 5MB mỗi file)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                                @Html.LabelFor(m => m.IsActive, "Sản phẩm đang bán", new { @class = "form-check-label" })
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Tạo sản phẩm
+                            </button>
+                            <a href="@Url.Action("Index", "Product", new { area = "Admin" })" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                                Hủy
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-lightbulb"></i>
+                        Mẹo tạo sản phẩm
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="tips-list">
+                        <li><strong>Tên sản phẩm:</strong> Ngắn gọn, dễ hiểu</li>
+                        <li><strong>Mô tả:</strong> Nêu rõ đặc điểm nổi bật</li>
+                        <li><strong>Hình ảnh:</strong> Chất lượng cao, góc nhìn rõ ràng</li>
+                        <li><strong>Giá:</strong> Cạnh tranh, phù hợp thị trường</li>
+                        <li><strong>Danh mục:</strong> Chọn đúng để dễ tìm kiếm</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Thông tin bổ sung
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <label>Nhãn hàng:</label>
+                        <span>@(((SelectList)ViewBag.BrandId)?.SelectedValue ?? "-")</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Trạng thái mặc định:</label>
+                        <span class="badge badge-success">Đang bán</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Hình ảnh tối đa:</label>
+                        <span>Không giới hạn</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Định dạng hỗ trợ:</label>
+                        <span>JPG, PNG, GIF</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.required:after {
+    content: " *";
+    color: #e74c3c;
+}
+
+.image-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+.image-preview {
+    margin-bottom: 15px;
+    min-height: 120px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.image-preview img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: move;
+    transition: transform 0.2s;
+}
+
+.image-preview img:hover {
+    transform: scale(1.1);
+}
+
+.image-preview img.dragging {
+    opacity: 0.5;
+}
+
+.image-preview img.drag-over {
+    border: 3px solid #007bff;
+}
+
+.no-images {
+    color: #6c757d;
+    text-align: center;
+}
+
+.no-images i {
+    font-size: 32px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.upload-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.upload-controls input[type="file"] {
+    display: none;
+}
+
+.tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tips-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.tips-list li:last-child {
+    border-bottom: none;
+}
+
+.tips-list li strong {
+    color: #2c3e50;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.info-item span {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f3f4;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+    color: #6c757d;
+}
+</style>
+
+<script>
+function previewImages(input) {
+    var preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    if (input.files && input.files.length > 0) {
+        // Tạo array để lưu các Promise và index để giữ thứ tự
+        var imagePromises = [];
+        
+        // Lặp qua tất cả files và tạo Promise cho mỗi ảnh
+        for (var i = 0; i < input.files.length; i++) {
+            (function(index) { // Closure để giữ đúng index
+                var file = input.files[index];
+                
+                var promise = new Promise(function(resolve, reject) {
+                    var reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        resolve({
+                            order: index,  // Giữ nguyên thứ tự gốc
+                            dataUrl: e.target.result,
+                            fileName: file.name
+                        });
+                    };
+                    reader.onerror = function(error) {
+                        reject(error);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                imagePromises.push(promise);
+            })(i);
+        }
+
+        // Đợi TẤT CẢ ảnh load xong rồi mới render
+        Promise.all(imagePromises).then(function(results) {
+            // Sort lại theo thứ tự gốc để đảm bảo đúng thứ tự user chọn
+            results.sort(function(a, b) {
+                return a.order - b.order;
+            });
+            
+            // Clear preview trước khi render
+            preview.innerHTML = '';
+            
+            // Render tất cả ảnh theo đúng thứ tự
+            results.forEach(function(result) {
+                var img = document.createElement('img');
+                img.src = result.dataUrl;
+                img.className = 'preview-image';
+                img.setAttribute('data-order', result.order);
+                img.setAttribute('data-file-name', result.fileName);
+                img.draggable = true; // Enable drag
+                preview.appendChild(img);
+            });
+            
+            // Enable drag & drop to reorder images
+            enableDragAndDrop(preview, input);
+        }).catch(function(error) {
+            preview.innerHTML = '<div class="no-images"><i class="fas fa-exclamation-triangle"></i><p>Lỗi khi tải hình ảnh</p></div>';
+        });
+    } else {
+        preview.innerHTML = '<div class="no-images"><i class="fas fa-images"></i><p>Chưa có hình ảnh nào</p></div>';
+    }
+}
+
+// Function to enable drag & drop reordering
+function enableDragAndDrop(preview, input) {
+    var draggedElement = null;
+    
+    var images = preview.querySelectorAll('.preview-image');
+    
+    images.forEach(function(img) {
+        img.addEventListener('dragstart', function(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        img.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+        });
+        
+        img.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+            e.dataTransfer.dropEffect = 'move';
+        });
+        
+        img.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+        
+        img.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+                if (draggedElement && draggedElement !== this) {
+                var allImgs = Array.from(preview.querySelectorAll('.preview-image'));
+                var draggedIndex = allImgs.indexOf(draggedElement);
+                var targetIndex = allImgs.indexOf(this);
+                
+                // Swap elements
+                if (draggedIndex < targetIndex) {
+                    preview.insertBefore(draggedElement, this.nextSibling);
+                } else {
+                    preview.insertBefore(draggedElement, this);
+                }
+                
+                // Reorder the actual input files
+                reorderInputFiles(input, draggedIndex, targetIndex);
+            }
+        });
+    });
+}
+
+// Function to reorder files in input element
+function reorderInputFiles(input, fromIndex, toIndex) {
+    var files = Array.from(input.files);
+    var draggedFile = files[fromIndex];
+    files.splice(fromIndex, 1);
+    files.splice(toIndex, 0, draggedFile);
+    
+    // Create new FileList-like object
+    var dataTransfer = new DataTransfer();
+    files.forEach(function(file) {
+        dataTransfer.items.add(file);
+    });
+    
+    input.files = dataTransfer.files;
+}
+
+// Custom category input removed per requirement
+</script>

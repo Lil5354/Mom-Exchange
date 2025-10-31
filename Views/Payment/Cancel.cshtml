@@ -1,0 +1,59 @@
+@{
+    ViewBag.Title = "Hủy thanh toán";
+}
+
+<div class="container" style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+    <div class="cancel-message" style="text-align: center; padding: 40px; background: linear-gradient(135deg, #fff3cd, #ffc107); border-radius: 15px; margin-bottom: 30px;">
+        <i class="fa-solid fa-times-circle" style="font-size: 80px; color: #ffc107; margin-bottom: 20px;"></i>
+        <h2 style="color: #856404; margin-bottom: 10px;">@ViewBag.Message</h2>
+        <p style="color: #856404; font-size: 16px;">Đơn hàng vẫn chờ thanh toán</p>
+    </div>
+
+    @if (ViewBag.Order != null)
+    {
+        <div class="order-info-card" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
+            <h3 style="margin-bottom: 20px; color: #d63384;">
+                <i class="fa-solid fa-info-circle"></i> Thông tin đơn hàng
+            </h3>
+
+            <div style="border: 2px solid #ffc107; border-radius: 10px; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h4 style="margin: 0; color: #333;">Mã đơn hàng: <strong style="color: #d63384;">@ViewBag.Order.OrderCode</strong></h4>
+                        <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Ngày đặt: @ViewBag.Order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <span class="badge badge-warning" style="padding: 8px 15px; font-size: 14px; background: #ffc107; color: #856404; border-radius: 20px;">
+                        Chờ thanh toán
+                    </span>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Tổng tiền hàng:</span>
+                        <span><strong>@ViewBag.Order.SubTotal.ToString("N0")₫</strong></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Phí hoa hồng (5%):</span>
+                        <span>@ViewBag.Order.Commission.ToString("N0")₫</span>
+                    </div>
+                    <div style="border-top: 2px solid #ddd; padding-top: 10px; margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: #d63384;">
+                            <span>Tổng thanh toán:</span>
+                            <span>@ViewBag.Order.TotalAmount.ToString("N0")₫</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="next-steps" style="text-align: center;">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-primary" style="padding: 15px 40px; border-radius: 25px; font-weight: bold; text-decoration: none; display: inline-block; margin-right: 10px; background: linear-gradient(135deg, #d63384, #e91e63); color: white;">
+            <i class="fa-solid fa-home"></i> Về trang chủ
+        </a>
+        <a href="@Url.Action("Index", "OrderUser")" class="btn btn-outline-primary" style="padding: 15px 40px; border-radius: 25px; font-weight: bold; text-decoration: none; display: inline-block; background: white; border: 2px solid #d63384; color: #d63384;">
+            <i class="fa-solid fa-list"></i> Xem đơn hàng của tôi
+        </a>
+    </div>
+</div>
+

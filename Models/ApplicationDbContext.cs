@@ -1,6 +1,6 @@
 // File: Models/ApplicationDbContext.cs
+using B_M.Models.Entities;
 using System.Data.Entity;
-
 namespace B_M.Models
 {
     public class ApplicationDbContext : DbContext
@@ -16,7 +16,15 @@ namespace B_M.Models
         public DbSet<Category> Categories { get; set; }
 
         // Module 3 - B2C Tables (reduced to Brands lookup)
-        public DbSet<Brand> Brands { get; set; }
+        public DbSet<B_M.Models.Entities.Brand> Brands { get; set; }
+        // B2C Entities (new)
+        public DbSet<B_M.Models.Entities.Product> Products { get; set; }
+        public DbSet<B_M.Models.Entities.ProductImage> ProductImages { get; set; }
+
+		// Order & Payment Entities
+		public DbSet<B_M.Models.Entities.Order> Orders { get; set; }
+		public DbSet<B_M.Models.Entities.OrderItem> OrderItems { get; set; }
+		public DbSet<B_M.Models.Entities.PayOSPaymentLink> PayOSPaymentLinks { get; set; }
 
         // Module 3 - C2C Tables
         public DbSet<PostC2C> PostC2Cs { get; set; }
@@ -152,7 +160,96 @@ namespace B_M.Models
 
             // Brand acts as simple lookup (no owner user)
 
-            // ====== POST C2C CONFIGURATION ======
+			// ====== POST C2C CONFIGURATION ======
+			// ====== B2C PRODUCT CONFIGURATION ======
+            modelBuilder.Entity<B_M.Models.Entities.Product>()
+                .ToTable("Products")
+                .HasKey(p => p.Id);
+
+            modelBuilder.Entity<B_M.Models.Entities.Product>()
+                .Property(p => p.Name)
+                .IsRequired();
+
+            modelBuilder.Entity<B_M.Models.Entities.Product>()
+                .Property(p => p.BrandId)
+                .IsRequired();
+
+			// Link Product -> Brand via BrandId (FK to Brands.BrandID)
+			modelBuilder.Entity<B_M.Models.Entities.Product>()
+				.HasRequired(p => p.Brand)
+				.WithMany(b => b.Products)
+				.HasForeignKey(p => p.BrandId)
+				.WillCascadeOnDelete(true);
+
+            // ====== B2C PRODUCT IMAGE CONFIGURATION ======
+            modelBuilder.Entity<B_M.Models.Entities.ProductImage>()
+                .ToTable("Product_Images")
+                .HasKey(pi => pi.Id);
+
+            modelBuilder.Entity<B_M.Models.Entities.ProductImage>()
+                .Property(pi => pi.ImageUrl)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<B_M.Models.Entities.ProductImage>()
+                .HasRequired(pi => pi.Product)
+                .WithMany(p => p.ProductImages)
+                .HasForeignKey(pi => pi.ProductId)
+                .WillCascadeOnDelete(true);
+
+			// ====== ORDER CONFIGURATION ======
+			modelBuilder.Entity<B_M.Models.Entities.Order>()
+				.ToTable("Orders")
+				.HasKey(o => o.Id);
+
+			modelBuilder.Entity<B_M.Models.Entities.Order>()
+				.Property(o => o.OrderCode)
+				.IsRequired()
+				.HasMaxLength(20);
+
+			modelBuilder.Entity<B_M.Models.Entities.Order>()
+				.HasRequired(o => o.Customer)
+				.WithMany()
+				.HasForeignKey(o => o.CustomerId)
+				.WillCascadeOnDelete(false);
+
+			modelBuilder.Entity<B_M.Models.Entities.Order>()
+				.HasRequired(o => o.Brand)
+				.WithMany()
+				.HasForeignKey(o => o.BrandId)
+				.WillCascadeOnDelete(false);
+
+			// ====== ORDER ITEM CONFIGURATION ======
+			modelBuilder.Entity<B_M.Models.Entities.OrderItem>()
+				.ToTable("OrderItems")
+				.HasKey(oi => oi.Id);
+
+			modelBuilder.Entity<B_M.Models.Entities.OrderItem>()
+				.HasRequired(oi => oi.Order)
+				.WithMany(o => o.OrderItems)
+				.HasForeignKey(oi => oi.OrderId)
+				.WillCascadeOnDelete(true);
+
+			modelBuilder.Entity<B_M.Models.Entities.OrderItem>()
+				.HasOptional(oi => oi.Product)
+				.WithMany()
+				.HasForeignKey(oi => oi.ProductId)
+				.WillCascadeOnDelete(false);
+
+			// ====== PAYOS PAYMENT LINK CONFIGURATION ======
+			modelBuilder.Entity<B_M.Models.Entities.PayOSPaymentLink>()
+				.ToTable("PayOSPaymentLinks")
+				.HasKey(p => p.Id);
+
+			modelBuilder.Entity<B_M.Models.Entities.PayOSPaymentLink>()
+				.Property(p => p.PayOSLinkId)
+				.HasMaxLength(50);
+
+			modelBuilder.Entity<B_M.Models.Entities.PayOSPaymentLink>()
+				.Property(p => p.OrderCode)
+				.IsRequired()
+				.HasMaxLength(20);
+
             modelBuilder.Entity<PostC2C>()
                 .ToTable("Posts_C2C")
                 .HasKey(p => p.PostID);

@@ -1,0 +1,33 @@
+@using System.Linq
+@model IEnumerable<B_M.Models.Entities.Brand>
+
+@{
+    ViewBag.Title = "Các Nhãn Hàng Đối Tác";
+}
+
+<section class="animated-hero brand-hero">
+    <div class="hero-content" data-aos="fade-up">
+        <h1>Nhãn Hàng Đồng Hành</h1>
+        <p>MomExchange tự hào hợp tác cùng các thương hiệu uy tín hàng đầu, mang đến những sản phẩm chất lượng và an toàn nhất cho mẹ và bé.</p>
+    </div>
+</section>
+
+<div class="page-container" data-aos="fade-up" data-aos-delay="200">
+    <div class="brand-grid">
+        @foreach (var brand in Model)
+        {
+            <div class="brand-card" data-aos="fade-up" data-aos-delay="@(Model.ToList().IndexOf(brand) * 50 + 100)">
+                <a href="@Url.Action("Details", "Brand", new { id = brand.BrandID })" class="brand-card-link">
+                    <div class="brand-logo">
+                        <img src="@Url.Content(brand.LogoUrl)" alt="Logo @brand.BrandName">
+                    </div>
+                    <div class="brand-info">
+                        <h3 class="brand-name">@brand.BrandName</h3>
+                        <p class="brand-description">@brand.Description</p>
+                        <span class="brand-button">Xem sản phẩm <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</div>

@@ -759,6 +759,15 @@
                 <a href="@Url.Action("Index", "Category", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Category" ? "active" : "")">
                     <i class="fas fa-folder-tree"></i> Quản lý Danh mục
                 </a>
+                <a href="@Url.Action("Index", "Brand", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Brand" ? "active" : "")">
+                    <i class="fas fa-tags"></i> Quản lý Nhãn hàng
+                </a>
+                <a href="@Url.Action("Index", "Product", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Product" ? "active" : "")">
+                    <i class="fas fa-box"></i> Quản lý Sản phẩm B2C
+                </a>
+                <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Order" ? "active" : "")">
+                    <i class="fas fa-receipt"></i> Quản lý Đơn hàng B2C
+                </a>
                 <a href="@Url.Action("Index", "MedicalRecords", new { area = "Admin" })" class="admin-nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "MedicalRecords" ? "active" : "")">
                     <i class="fas fa-file-medical"></i> Duyệt Xác Thực Tầng 2
                 </a>

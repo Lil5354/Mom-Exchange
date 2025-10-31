@@ -54,3 +54,4 @@ packages/
 App_Data/MedicalRecords/
 !App_Data/MedicalRecords/.gitkeep
 
+old_code_base/

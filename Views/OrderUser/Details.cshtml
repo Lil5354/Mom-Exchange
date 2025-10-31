@@ -1,0 +1,343 @@
+@model B_M.Models.Entities.Order
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+}
+
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    @if (Model != null && Model.Status == 0)
+    {
+        var expireAt = (Model.CreatedAt).AddMinutes(15);
+        <div class="alert alert-warning" role="alert" style="display:flex; justify-content: space-between; align-items:center;">
+            <div>
+                <strong>Đơn hàng chờ thanh toán.</strong>
+                <span>
+                    QR/Link thanh toán hết hạn lúc: @expireAt.ToString("dd/MM/yyyy HH:mm")
+                    (<span id="countdown" data-expire="@expireAt.ToString("o")" data-orderid="@Model.Id" data-pending="1"></span>)
+                </span>
+            </div>
+            <div>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="cancelExpired(@Model.Id)">Hủy đơn khi quá hạn</button>
+            </div>
+        </div>
+    }
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2>
+            <i class="fa-solid fa-file-invoice"></i> Chi tiết đơn hàng: @Model.OrderCode
+        </h2>
+        <a href="@Url.Action("Index", "OrderUser")" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Order Items -->
+            <div class="card" style="border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div class="card-header" style="background: linear-gradient(135deg, #d63384, #e91e63); color: white; padding: 15px 20px; border-radius: 10px 10px 0 0;">
+                    <h5 style="margin: 0;">
+                        <i class="fa-solid fa-box"></i> Sản phẩm trong đơn
+                    </h5>
+                </div>
+                <div class="card-body" style="padding: 20px;">
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f0f0f0;">
+                            <img src="@Url.Content(item.ProductImageUrl)" alt="@item.ProductName" 
+                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+                            
+                            <div style="flex: 1;">
+                                <h6 style="margin: 0 0 5px 0; font-weight: 600;">@item.ProductName</h6>
+                                <div style="color: #666; font-size: 14px;">
+                                    Số lượng: @item.Quantity
+                                </div>
+                                <div style="color: #666; font-size: 14px;">
+                                    Đơn giá: @item.UnitPrice.ToString("N0")₫
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: right;">
+                                <strong style="font-size: 18px; color: #d63384;">
+                                    @item.TotalPrice.ToString("N0")₫
+                                </strong>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Shipping Information -->
+            <div class="card mt-3" style="border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div class="card-header" style="background: linear-gradient(135deg, #d63384, #e91e63); color: white; padding: 15px 20px; border-radius: 10px 10px 0 0;">
+                    <h5 style="margin: 0;">
+                        <i class="fa-solid fa-truck"></i> Thông tin giao hàng
+                    </h5>
+                </div>
+                <div class="card-body" style="padding: 20px;">
+                    <div class="info-row">
+                        <label><strong>Người nhận:</strong></label>
+                        <span>@Model.ShippingName</span>
+                    </div>
+                    <div class="info-row">
+                        <label><strong>Số điện thoại:</strong></label>
+                        <span>@Model.ShippingPhone</span>
+                    </div>
+                    <div class="info-row">
+                        <label><strong>Địa chỉ:</strong></label>
+                        <span>@Model.ShippingAddress</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+                        <div class="info-row">
+                            <label><strong>Ghi chú:</strong></label>
+                            <span>@Model.Note</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            @if (Model.Status == 0)
+            {
+                <div class="card mt-3" style="border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid #ffc107;">
+                    <div class="card-body" style="padding: 20px; background: #fff3cd;">
+                        <h5 style="color: #856404; margin-bottom: 15px;">
+                            <i class="fa-solid fa-exclamation-circle"></i> Chờ thanh toán
+                        </h5>
+                        <p style="color: #856404; margin: 0;">
+                            Đơn hàng của bạn đang chờ thanh toán. Vui lòng chuyển khoản số tiền 
+                            <strong>@Model.TotalAmount.ToString("N0")₫</strong> với nội dung: <strong>@Model.OrderCode</strong>
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <!-- Order Summary -->
+            <div class="card" style="border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px 20px; border-radius: 10px 10px 0 0;">
+                    <h5 style="margin: 0;">
+                        <i class="fa-solid fa-receipt"></i> Tóm tắt đơn hàng
+                    </h5>
+                </div>
+                <div class="card-body" style="padding: 20px;">
+                    <div class="summary-row">
+                        <span>Tổng tiền hàng:</span>
+                        <span>@Model.SubTotal.ToString("N0")₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Phí hoa hồng:</span>
+                        <span>@Model.Commission.ToString("N0")₫</span>
+                    </div>
+                    <div class="summary-row total" style="border-top: 2px solid #ddd; margin-top: 10px; padding-top: 15px;">
+                        <span><strong>Tổng thanh toán:</strong></span>
+                        <strong style="font-size: 20px; color: #d63384;">
+                            @Model.TotalAmount.ToString("N0")₫
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Status Timeline -->
+            <div class="card mt-3" style="border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div class="card-header" style="background: linear-gradient(135deg, #43e97b, #38f9d7); color: white; padding: 15px 20px; border-radius: 10px 10px 0 0;">
+                    <h5 style="margin: 0;">
+                        <i class="fa-solid fa-list-check"></i> Tiến trình đơn hàng
+                    </h5>
+                </div>
+                <div class="card-body" style="padding: 20px;">
+                    <div class="timeline">
+                        <div class="timeline-item @(Model.CreatedAt != null ? "completed" : "")">
+                            <i class="fa-solid fa-circle"></i>
+                            <div>
+                                <strong>Đơn hàng được tạo</strong><br>
+                                <small>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                        @if (Model.PaidAt != null)
+                        {
+                            <div class="timeline-item completed">
+                                <i class="fa-solid fa-circle"></i>
+                                <div>
+                                    <strong>Đã thanh toán</strong><br>
+                                    <small>@Model.PaidAt.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.ConfirmedAt != null)
+                        {
+                            <div class="timeline-item completed">
+                                <i class="fa-solid fa-circle"></i>
+                                <div>
+                                    <strong>Đã xác nhận</strong><br>
+                                    <small>@Model.ConfirmedAt.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.ShippedAt != null)
+                        {
+                            <div class="timeline-item completed">
+                                <i class="fa-solid fa-circle"></i>
+                                <div>
+                                    <strong>Đã gửi hàng</strong><br>
+                                    <small>@Model.ShippedAt.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.DeliveredAt != null)
+                        {
+                            <div class="timeline-item completed">
+                                <i class="fa-solid fa-circle"></i>
+                                <div>
+                                    <strong>Đã giao hàng</strong><br>
+                                    <small>@Model.DeliveredAt.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            @if (Model.Status == 0 || Model.Status == 1)
+            {
+                <div class="card mt-3" style="border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <div class="card-body" style="padding: 20px; text-align: center;">
+                        <button onclick="cancelOrder(@Model.Id)" 
+                                class="btn btn-danger btn-block">
+                            <i class="fa-solid fa-times"></i> Hủy đơn hàng
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+    <script>
+        // Pending order countdown (if exists)
+        (function(){
+            var el = document.getElementById('countdown');
+            if (!el) return;
+            var expireIso = el.getAttribute('data-expire');
+            if (!expireIso) return;
+            var expireAt = new Date(expireIso);
+            var pending = el.getAttribute('data-pending') === '1';
+            var orderId = parseInt(el.getAttribute('data-orderid')) || 0;
+            var fired = false;
+            function tick(){
+                var now = new Date();
+                var diff = expireAt - now;
+                if (diff <= 0){
+                    el.textContent = 'ĐÃ HẾT HẠN';
+                    if (pending && !fired && orderId > 0){
+                        fired = true;
+                        // Auto cancel once expired
+                        $.post('@Url.Action("CancelIfExpired","OrderUser")', { orderId: orderId })
+                         .done(function(res){ if(res && res.success){ location.reload(); } });
+                    }
+                    return;
+                }
+                var m = Math.floor(diff/60000);
+                var s = Math.floor((diff%60000)/1000);
+                el.textContent = m + 'm ' + s + 's';
+                setTimeout(tick, 500);
+            }
+            tick();
+        })();
+
+        function cancelOrder(orderId) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác!')) {
+                $.ajax({
+                    url: '@Url.Action("CancelOrder", "OrderUser")',
+                    type: 'POST',
+                    data: { orderId: orderId },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Đã xảy ra lỗi. Vui lòng thử lại.');
+                    }
+                });
+            }
+        }
+
+        function cancelExpired(orderId){
+            if (!confirm('Xác nhận hủy đơn hàng khi đã quá hạn thanh toán?')) return;
+            $.post('@Url.Action("CancelIfExpired","OrderUser")', { orderId: orderId })
+                .done(function(res){
+                    alert(res.message || (res.success ? 'Thành công' : 'Không thể hủy'));
+                    if(res.success){ location.reload(); }
+                })
+                .fail(function(){ alert('Đã xảy ra lỗi.'); });
+        }
+    </script>
+}
+
+<style>
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+    }
+    
+    .summary-row.total {
+        font-size: 18px;
+    }
+    
+    .timeline .timeline-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        opacity: 0.3;
+        position: relative;
+    }
+    
+    .timeline .timeline-item.completed {
+        opacity: 1;
+    }
+    
+    .timeline .timeline-item i {
+        margin-right: 15px;
+        font-size: 14px;
+        color: #d63384;
+    }
+    
+    .timeline .timeline-item.completed i {
+        color: #28a745;
+    }
+    
+    .timeline .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 6px;
+        top: 30px;
+        bottom: -15px;
+        width: 2px;
+        background: #e0e0e0;
+    }
+    
+    .timeline .timeline-item.completed:not(:last-child)::after {
+        background: #28a745;
+    }
+</style>
+

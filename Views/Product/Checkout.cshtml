@@ -1,0 +1,138 @@
+@model List<B_M.Helpers.CartItem>
+
+@{
+    ViewBag.Title = "Thanh toán";
+}
+
+<div class="container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+    <h2 style="margin-bottom: 30px;">
+        <i class="fa-solid fa-credit-card"></i> Thanh toán
+    </h2>
+    
+    @if (Model != null && Model.Any())
+    {
+        using (Html.BeginForm("PlaceOrder", "Product", FormMethod.Post, new { @class = "checkout-form" }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="checkout-section" style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 20px; color: #d63384;">
+                            <i class="fa-solid fa-truck"></i> Thông tin giao hàng
+                        </h3>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Họ và tên <span style="color: red;">*</span></label>
+                            <input type="text" name="shippingName" class="form-control" required 
+                                   value="@Session["FullName"]" 
+                                   style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Số điện thoại <span style="color: red;">*</span></label>
+                            <input type="tel" name="shippingPhone" class="form-control" required 
+                                   placeholder="0123456789"
+                                   style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Địa chỉ giao hàng <span style="color: red;">*</span></label>
+                            <textarea name="shippingAddress" class="form-control" required rows="3" 
+                                      placeholder="Ví dụ: Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                                      style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;"></textarea>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Ghi chú (tùy chọn)</label>
+                            <textarea name="note" class="form-control" rows="2" 
+                                      placeholder="Ghi chú thêm cho người bán..."
+                                      style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="checkout-section" style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 20px; color: #d63384;">
+                            <i class="fa-solid fa-box"></i> Sản phẩm (@ViewBag.CartCount sản phẩm)
+                        </h3>
+                        
+                        @foreach (var item in Model)
+                        {
+                            <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f0f0f0;">
+                                <img src="@Url.Content(item.ProductImageUrl)" alt="@item.ProductName" 
+                                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; margin-bottom: 5px;">@item.ProductName</div>
+                                    <div style="color: #666; font-size: 14px;">Số lượng: @item.Quantity</div>
+                                </div>
+                                <div style="font-weight: bold; color: #d63384;">
+                                    @item.TotalPrice.ToString("N0")₫
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <div class="col-md-5">
+                    <div class="order-summary" style="background: #f8f9fa; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 20px;">
+                        <h3 style="margin-bottom: 20px;">Tóm tắt đơn hàng</h3>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <span>Tổng tiền hàng:</span>
+                            <span>@ViewBag.CartTotal.ToString("N0")₫</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <span>Phí vận chuyển:</span>
+                            <span>Miễn phí</span>
+                        </div>
+                        
+                        <div style="border-top: 2px solid #ddd; padding-top: 15px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; color: #d63384;">
+                                <span>Tổng cộng:</span>
+                                <span>@ViewBag.CartTotal.ToString("N0")₫</span>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <strong>Thanh toán:</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 14px;">
+                                Sau khi đặt hàng, bạn sẽ nhận được mã thanh toán và chuyển khoản qua ngân hàng. 
+                                Đơn hàng sẽ được xác nhận sau khi thanh toán.
+                            </p>
+                        </div>
+                        
+                        <button type="submit" class="checkout-btn" 
+                                style="background: linear-gradient(135deg, #d63384, #e91e63); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 15px;">
+                            <i class="fa-solid fa-check"></i> Đặt hàng
+                        </button>
+                        
+                        <a href="@Url.Action("Cart", "Product")" 
+                           style="display: block; text-align: center; padding: 12px; color: #666; text-decoration: none; border: 1px solid #ddd; border-radius: 10px;">
+                            <i class="fa-solid fa-arrow-left"></i> Quay lại giỏ hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div style="text-align: center; padding: 60px 20px;">
+            <i class="fa-solid fa-shopping-cart" style="font-size: 80px; color: #ddd; margin-bottom: 20px;"></i>
+            <h3>Giỏ hàng trống</h3>
+            <a href="@Url.Action("Index", "Home")" class="cta-button primary" style="margin-top: 20px; display: inline-block;">
+                Về trang chủ
+            </a>
+        </div>
+    }
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: #d63384;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(214, 51, 132, 0.1);
+    }
+</style>
+

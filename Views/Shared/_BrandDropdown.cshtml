@@ -1,0 +1,19 @@
+@model IEnumerable<B_M.Models.Entities.Brand>
+
+@if (Model != null)
+{
+    foreach (var brand in Model)
+    {
+        <a href="@Url.Action("Index", "Brand")" style="display: block; padding: 8px 20px; color: #333; text-decoration: none; transition: background 0.3s ease;">
+            @brand.BrandName
+        </a>
+    }
+    <a href="@Url.Action("Index", "Brand")" style="display: block; padding: 8px 20px; color: #d63384; text-decoration: none; font-weight: 600; transition: background 0.3s ease;">Xem tất cả nhãn hàng</a>
+}
+else
+{
+    <a href="#" style="display: block; padding: 8px 20px; color: #333; text-decoration: none; transition: background 0.3s ease;">(Chưa có nhãn hàng)</a>
+    <a href="@Url.Action("Index", "Brand")" style="display: block; padding: 8px 20px; color: #d63384; text-decoration: none; font-weight: 600; transition: background 0.3s ease;">Xem tất cả nhãn hàng</a>
+}
+
+

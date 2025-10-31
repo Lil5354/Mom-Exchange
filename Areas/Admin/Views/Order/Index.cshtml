@@ -1,0 +1,121 @@
+@model List<B_M.Models.Entities.Order>
+
+@{
+    ViewBag.Title = "Quản lý đơn hàng";
+}
+
+<div class="container-fluid">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-shopping-bag"></i>
+            Quản lý đơn hàng
+        </h1>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td><strong>@order.OrderCode</strong></td>
+                                    <td>@order.ShippingName</td>
+                                    <td>@order.TotalAmount.ToString("N0")₫</td>
+                                    <td>
+                                        @{
+                                            var statusText = "";
+                                            var statusClass = "";
+                                            switch (order.Status)
+                                            {
+                                                case 0:
+                                                    statusText = "Chờ thanh toán";
+                                                    statusClass = "warning";
+                                                    break;
+                                                case 1:
+                                                    statusText = "Đã thanh toán";
+                                                    statusClass = "info";
+                                                    break;
+                                                case 2:
+                                                    statusText = "Đang xử lý";
+                                                    statusClass = "dark";
+                                                    break;
+                                                case 3:
+                                                    statusText = "Đã gửi hàng";
+                                                    statusClass = "success";
+                                                    break;
+                                                case 4:
+                                                    statusText = "Đã giao hàng";
+                                                    statusClass = "success";
+                                                    break;
+                                                case 5:
+                                                    statusText = "Đã hủy";
+                                                    statusClass = "danger";
+                                                    break;
+                                                default:
+                                                    statusText = "Không xác định";
+                                                    statusClass = "secondary";
+                                                    break;
+                                            }
+                                        }
+                                        <span class="badge badge-@statusClass">@statusText</span>
+                                    </td>
+                                    <td>@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <a href="@Url.Action("Details", "Order", new { area = "Admin", id = order.Id })" 
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center" style="padding: 60px 20px;">
+                <i class="fas fa-shopping-bag" style="font-size: 80px; color: #ddd; margin-bottom: 20px;"></i>
+                <h3>Chưa có đơn hàng</h3>
+                <p>Đơn hàng sẽ hiển thị tại đây khi có khách đặt hàng.</p>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .table thead th {
+        background: linear-gradient(135deg, #d63384, #e91e63);
+        color: white;
+        border: none;
+        font-weight: 600;
+        padding: 15px;
+    }
+    
+    .table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .badge {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+</style>
+

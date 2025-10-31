@@ -1,0 +1,100 @@
+@model List<B_M.Models.Entities.Order>
+
+@functions{
+    Tuple<string,string> GetStatusInfo(byte status){
+        switch(status){
+            case 0: return Tuple.Create("Chờ thanh toán","warning");
+            case 1: return Tuple.Create("Đã thanh toán","info");
+            case 2: return Tuple.Create("Đang xử lý","primary");
+            case 3: return Tuple.Create("Đã gửi hàng","success");
+            case 4: return Tuple.Create("Đã hoàn thành","success");
+            case 5: return Tuple.Create("Đã hủy","danger");
+            default: return Tuple.Create("Không xác định","secondary");
+        }
+    }
+}
+
+@if (Model != null && Model.Any())
+{
+    foreach (var order in Model.OrderByDescending(o => o.CreatedAt))
+    {
+        var info = GetStatusInfo(order.Status);
+        <div class="order-card" style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <h4 style="margin: 0 0 10px 0; color: #333;"><i class="fa-solid fa-hashtag"></i> @order.OrderCode</h4>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <p style="margin: 5px 0; color: #666; font-size: 14px;"><i class="fa-solid fa-calendar"></i> Đặt ngày: @order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 14px;"><i class="fa-solid fa-store"></i> Thương hiệu: @(order.Brand?.BrandName ?? "N/A")</p>
+                    </div>
+                </div>
+                <div style="text-align: right; margin-left: 20px;">
+                    <span class="badge bg-@info.Item2" style="padding: 8px 15px; font-size: 14px; display: inline-block; margin-bottom: 10px;">@info.Item1</span>
+                    <div><strong style="font-size: 20px; color: #d63384;">@order.TotalAmount.ToString("N0")₫</strong></div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #f0f0f0;">
+                <div style="font-size: 14px; color: #666;"><i class="fa-solid fa-box"></i> @(order.OrderItems?.Count ?? 0) sản phẩm</div>
+                <div>
+                    <a href="@Url.Action("Details", "OrderUser", new { id = order.Id })" class="btn btn-sm btn-primary" style="margin-right: 10px;"><i class="fa-solid fa-eye"></i> Xem chi tiết</a>
+                    @if (order.Status == 0 || order.Status == 1)
+                    {
+                        <button onclick="cancelOrder(@order.Id)" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-times"></i> Hủy đơn</button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    var isDemo = ViewData["Demo"] != null && (bool)ViewData["Demo"];
+    if (isDemo)
+    {
+        var status = ViewData["SampleStatus"] != null ? (int)ViewData["SampleStatus"] : -1;
+        var samples = new[]{
+            new { Code = "ME-20251031-ABC123", Date = DateTime.Now.AddDays(-1), Brand = "Sample Brand", Total= 199000m },
+            new { Code = "ME-20251030-XYZ789", Date = DateTime.Now.AddDays(-2), Brand = "Sample Brand 2", Total= 349000m }
+        };
+        foreach (var s in samples)
+        {
+            var info = GetStatusInfo(status >= 0 ? (byte)status : (byte)0);
+            <div class="order-card" style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 10px 0; color: #333;"><i class="fa-solid fa-hashtag"></i> @s.Code</h4>
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;"><i class="fa-solid fa-calendar"></i> Đặt ngày: @s.Date.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;"><i class="fa-solid fa-store"></i> Thương hiệu: @s.Brand</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right; margin-left: 20px;">
+                        <span class="badge bg-@info.Item2" style="padding: 8px 15px; font-size: 14px; display: inline-block; margin-bottom: 10px;">@info.Item1</span>
+                        <div><strong style="font-size: 20px; color: #d63384;">@s.Total.ToString("N0")₫</strong></div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #f0f0f0;">
+                    <div style="font-size: 14px; color: #666;"><i class="fa-solid fa-box"></i> 2 sản phẩm</div>
+                    <div>
+                        <a href="#" class="btn btn-sm btn-primary" style="margin-right: 10px;"><i class="fa-solid fa-eye"></i> Xem chi tiết</a>
+                        @if (status == 0 || status == 1)
+                        {
+                            <button class="btn btn-sm btn-outline-danger" disabled><i class="fa-solid fa-times"></i> Hủy đơn</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <i class="fa-solid fa-inbox" style="font-size: 80px; color: #ddd; margin-bottom: 20px;"></i>
+            <h3>Chưa có đơn hàng nào</h3>
+            <p style="color: #666;">Không có đơn hàng nào trong danh mục này.</p>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary" style="margin-top: 20px;"><i class="fa-solid fa-shopping-cart"></i> Mua sắm ngay</a>
+        </div>
+    }
+}
+
+

@@ -349,11 +349,9 @@
                             <a href="@Url.Action("Index", "C2C")" style="color: #333; text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 20px; transition: all 0.3s ease; position: relative; white-space: nowrap;">Thanh lý & Trao đổi</a>
                             <div class="nav-item-dropdown" style="position: relative;">
                                 <a href="@Url.Action("Index", "Brand")" style="color: #333; text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 20px; transition: all 0.3s ease; position: relative; white-space: nowrap;">Nhãn hàng <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 5px;"></i></a>
-                                <div class="dropdown-content" style="position: absolute; top: 100%; left: 0; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; padding: 10px 0; min-width: 200px; z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease;">
-                                    <a href="#" style="display: block; padding: 8px 20px; color: #333; text-decoration: none; transition: background 0.3s ease;">Bobby</a>
-                                    <a href="#" style="display: block; padding: 8px 20px; color: #333; text-decoration: none; transition: background 0.3s ease;">Huggies</a>
-                                    <a href="@Url.Action("Index", "Brand")" style="display: block; padding: 8px 20px; color: #d63384; text-decoration: none; font-weight: 600; transition: background 0.3s ease;">Xem tất cả nhãn hàng</a>
-                                </div>
+                                    <div class="dropdown-content" style="position: absolute; top: 100%; left: 0; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; padding: 10px 0; min-width: 200px; z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease;">
+                                    @{Html.RenderAction("BrandDropdown", "Brand");}
+                            </div>
                             </div>
                             <a href="@Url.Action("Index", "Community")" style="color: #333; text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 20px; transition: all 0.3s ease; position: relative; white-space: nowrap;">Cộng đồng</a>
                         </div>
@@ -444,7 +442,7 @@
                                             <i class="fa-solid fa-question-circle" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Quên mật khẩu
                                         </a>
-                                        <a href="@Url.Action("Orders", "Account")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
+                                        <a href="@Url.Action("Index", "OrderUser")" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.3s ease; font-size: 14px;">
                                             <i class="fa-solid fa-shopping-bag" style="margin-right: 10px; color: #d63384; width: 16px;"></i>
                                             Đơn hàng của tôi
                                         </a>
@@ -475,7 +473,7 @@
                                         </a>
                                     </div>
                                 </div>
-                                <a href="#" class="btn-gradient" style="background: linear-gradient(135deg, #d63384, #e91e63); color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(214, 51, 132, 0.3); white-space: nowrap;">
+                                <a href="@Url.Action("Cart", "Product")" class="btn-gradient" style="background: linear-gradient(135deg, #d63384, #e91e63); color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(214, 51, 132, 0.3); white-space: nowrap;">
                                     <i class="fa-solid fa-cart-shopping" style="margin-right: 5px;"></i> Giỏ hàng
                                 </a>
                             </div>
@@ -635,24 +633,27 @@
         }
 
         function loadCartSummary() {
-            // Load cart summary on page load if user is logged in
-            if ('@Session["FullName"]' !== '') {
-                fetch('@Url.Action("Summary", "Cart")', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.Success) {
-                        updateCartBadge(data.ItemCount);
-                    }
-                })
-                .catch(error => {
-                    console.log('Cart summary load failed:', error);
-                });
-            }
+            // Load cart summary on page load (no need to check login for cart summary)
+            fetch('@Url.Action("Summary", "Product")', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.Success) {
+                    updateCartBadge(data.ItemCount);
+                }
+            })
+            .catch(error => {
+                console.log('Cart summary load failed:', error);
+            });
         }
 
 

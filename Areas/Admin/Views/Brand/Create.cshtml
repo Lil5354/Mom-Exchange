@@ -1,0 +1,40 @@
+@model B_M.Models.Entities.Brand
+@{
+    ViewBag.Title = "Thêm nhãn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-card form-card">
+    <div class="admin-card-header">
+        <h5><i class="fas fa-plus"></i> @ViewBag.Title</h5>
+        <a href="@Url.Action("Index")" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+    </div>
+    <div class="admin-card-body">
+        @using (Html.BeginForm(null, null, FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label class="required">Tên nhãn hàng</label>
+                @Html.TextBoxFor(m => m.BrandName, new { @class = "form-control", placeholder = "VD: Huggies, Pigeon..." })
+                @Html.ValidationMessageFor(m => m.BrandName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label>Upload logo</label>
+                <input type="file" name="logoFile" class="form-control" accept="image/*" />
+            </div>
+
+            <div class="form-group">
+                <label>Mô tả</label>
+                @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 3 })
+            </div>
+
+            <div class="btn-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary"><i class="fas fa-times"></i> Hủy</a>
+            </div>
+        }
+    </div>
+</div>
+
+

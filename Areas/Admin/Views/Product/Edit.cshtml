@@ -1,0 +1,551 @@
+@model B_M.Models.ViewModels.ProductEditViewModel
+
+
+@{
+    ViewBag.Title = "Chỉnh sửa sản phẩm";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-edit"></i>
+            Chỉnh sửa sản phẩm
+        </h1>
+        <div class="page-actions">
+            @Html.ActionLink("Quay lại", "Index", "Product", new { area = "Admin" }, new { @class = "btn btn-secondary" })
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-edit"></i>
+                        Thông tin sản phẩm
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("Edit", "Product", new { area = "Admin" }, FormMethod.Post, new { @enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.Id)
+                        @Html.HiddenFor(m => m.BrandId)
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Name, new { @class = "form-label required" })
+                                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", @placeholder = "Nhập tên sản phẩm" })
+                                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Category, new { @class = "form-label required" })
+                                    @Html.DropDownListFor(m => m.Category, (SelectList)ViewBag.Category, "Chọn danh mục", new { @class = "form-control", @id = "categoryDropdown" })
+                                    @Html.ValidationMessageFor(m => m.Category, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Price, new { @class = "form-label required" })
+                                    <div class="input-group">
+                                        @Html.TextBoxFor(m => m.Price, new { @class = "form-control", @placeholder = "0", @type = "number", @min = "0" })
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">VND</span>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Condition, new { @class = "form-label required" })
+                                    @Html.DropDownListFor(m => m.Condition, new SelectList(new[] {
+                                        new { Value = "Mới", Text = "Mới" },
+                                        new { Value = "Cũ", Text = "Cũ" },
+                                        new { Value = "Đã sử dụng", Text = "Đã sử dụng" }
+                                    }, "Value", "Text", Model.Condition), "Chọn tình trạng", new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.Condition, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.ShortDescription, new { @class = "form-label required" })
+                            @Html.TextAreaFor(m => m.ShortDescription, new { @class = "form-control", @rows = "3", @placeholder = "Mô tả ngắn về sản phẩm" })
+                            @Html.ValidationMessageFor(m => m.ShortDescription, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.DetailedDescription, new { @class = "form-label" })
+                            @Html.TextAreaFor(m => m.DetailedDescription, new { @class = "form-control", @rows = "5", @placeholder = "Mô tả chi tiết về sản phẩm" })
+                            @Html.ValidationMessageFor(m => m.DetailedDescription, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Location, new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.Location, new { @class = "form-control", @placeholder = "Vị trí lưu trữ sản phẩm" })
+                            @Html.ValidationMessageFor(m => m.Location, "", new { @class = "text-danger" })
+                        </div>
+
+                        <!-- Hidden field để lưu danh sách ảnh đã xóa -->
+                        <input type="hidden" name="DeletedImageUrls" id="DeletedImageUrls" value="" />
+
+                        <!-- Current Images -->
+                        if (Model.ExistingImageUrls != null && Model.ExistingImageUrls.Any())
+                        {
+                            <div class="form-group">
+                                <label class="form-label">Hình ảnh hiện tại</label>
+                                <input type="hidden" name="ReorderedImageUrls" id="ReorderedImageUrls" value="@string.Join(",", Model.ExistingImageUrls)" />
+                                <div class="current-images" id="currentImages">
+                                    @foreach (var imageUrl in Model.ExistingImageUrls)
+                                    {
+                                        <div class="current-image-item" data-image-url="@imageUrl" draggable="true">
+                                            <img src="@Url.Content(imageUrl)" alt="Hình ảnh sản phẩm" class="current-image" />
+                                            <button type="button" class="btn btn-sm btn-danger remove-image" onclick="removeCurrentImage(this, '@imageUrl')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- New Images Upload -->
+                        <div class="form-group">
+                            <label class="form-label">Thêm hình ảnh mới</label>
+                            <div class="image-upload-area">
+                                <div class="image-preview" id="imagePreview">
+                                    <div class="no-images">
+                                        <i class="fas fa-images"></i>
+                                        <p>Chọn hình ảnh mới</p>
+                                    </div>
+                                </div>
+                                <div class="upload-controls">
+                                    <input type="file" name="ProductImages" id="ProductImages" accept="image/*" multiple class="form-control-file" onchange="previewImages(this)" />
+                                    <label for="ProductImages" class="btn btn-outline-primary">
+                                        <i class="fas fa-upload"></i>
+                                        Chọn hình ảnh mới
+                                    </label>
+                                    <small class="form-text text-muted">Có thể chọn nhiều hình ảnh cùng lúc (JPG, PNG, tối đa 5MB mỗi file)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                                @Html.LabelFor(m => m.IsActive, "Sản phẩm đang bán", new { @class = "form-check-label" })
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Cập nhật sản phẩm
+                            </button>
+                            <a href="@Url.Action("Index", "Product", new { area = "Admin" })" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                                Hủy
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Thông tin sản phẩm
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <label>ID sản phẩm:</label>
+                        <span>#@Model.Id</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Ngày tạo:</label>
+                        <span>@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Trạng thái hiện tại:</label>
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge badge-success">Đang bán</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-danger" style="color: white !important;">Tạm dừng</span>
+                        }
+                    </div>
+                    <div class="info-item">
+                        <label>Số hình ảnh:</label>
+                        <span>@(Model.ExistingImageUrls?.Count ?? 0) hình</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-lightbulb"></i>
+                        Mẹo chỉnh sửa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="tips-list">
+                        <li><strong>Hình ảnh:</strong> Hình mới sẽ được thêm vào hình cũ</li>
+                        <li><strong>Giá:</strong> Cập nhật giá phù hợp với thị trường</li>
+                        <li><strong>Mô tả:</strong> Làm rõ đặc điểm và lợi ích</li>
+                        <li><strong>Trạng thái:</strong> Tạm dừng khi hết hàng</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .required:after {
+        content: " *";
+        color: #e74c3c;
+    }
+
+    .current-images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .current-image-item {
+        position: relative;
+        display: inline-block;
+    }
+
+    .current-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .remove-image {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+    }
+
+    .image-upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        background: #f8f9fa;
+    }
+
+    .image-preview {
+        margin-bottom: 15px;
+        min-height: 120px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    .image-preview img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        cursor: move;
+        transition: transform 0.2s;
+    }
+
+    .image-preview img:hover {
+        transform: scale(1.1);
+    }
+
+    .image-preview img.dragging {
+        opacity: 0.5;
+    }
+
+    .image-preview img.drag-over {
+        border: 3px solid #007bff;
+    }
+
+    .no-images {
+        color: #6c757d;
+        text-align: center;
+    }
+
+        .no-images i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+    .upload-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .upload-controls input[type="file"] {
+            display: none;
+        }
+
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .tips-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f3f4;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+            .tips-list li:last-child {
+                border-bottom: none;
+            }
+
+            .tips-list li strong {
+                color: #2c3e50;
+            }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+        .info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .info-item label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .info-item span {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #f1f3f4;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-color: #ced4da;
+        color: #6c757d;
+    }
+</style>
+
+<script>
+    function previewImages(input) {
+        var preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+
+        if (input.files && input.files.length > 0) {
+            // Tạo array để lưu các Promise và index để giữ thứ tự
+            var imagePromises = [];
+            
+            // Lặp qua tất cả files và tạo Promise cho mỗi ảnh
+            for (var i = 0; i < input.files.length; i++) {
+                (function(index) { // Closure để giữ đúng index
+                    var file = input.files[index];
+                    
+                    var promise = new Promise(function(resolve, reject) {
+                        var reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            resolve({
+                                order: index,  // Giữ nguyên thứ tự gốc
+                                dataUrl: e.target.result,
+                                fileName: file.name
+                            });
+                        };
+                        reader.onerror = function(error) {
+                            reject(error);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                    imagePromises.push(promise);
+                })(i);
+            }
+
+            // Đợi TẤT CẢ ảnh load xong rồi mới render
+            Promise.all(imagePromises).then(function(results) {
+                // Sort lại theo thứ tự gốc để đảm bảo đúng thứ tự user chọn
+                results.sort(function(a, b) {
+                    return a.order - b.order;
+                });
+                
+                // Clear preview trước khi render
+                preview.innerHTML = '';
+                
+                // Render tất cả ảnh theo đúng thứ tự
+                results.forEach(function(result) {
+                    var img = document.createElement('img');
+                    img.src = result.dataUrl;
+                    img.className = 'preview-image';
+                    img.setAttribute('data-order', result.order);
+                    img.setAttribute('data-file-name', result.fileName);
+                    img.draggable = true; // Enable drag
+                    preview.appendChild(img);
+                });
+                
+                // Enable drag & drop to reorder images
+                enableDragAndDrop(preview, input);
+            }).catch(function(error) {
+                preview.innerHTML = '<div class="no-images"><i class="fas fa-exclamation-triangle"></i><p>Lỗi khi tải hình ảnh</p></div>';
+            });
+        } else {
+            preview.innerHTML = '<div class="no-images"><i class="fas fa-images"></i><p>Chọn hình ảnh mới</p></div>';
+        }
+    }
+
+    // Function to enable drag & drop reordering
+    function enableDragAndDrop(preview, input) {
+        var draggedElement = null;
+        
+        var images = preview.querySelectorAll('.preview-image');
+        
+        images.forEach(function(img) {
+            img.addEventListener('dragstart', function(e) {
+                draggedElement = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            img.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+            });
+            
+            img.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+                e.dataTransfer.dropEffect = 'move';
+            });
+            
+            img.addEventListener('dragleave', function() {
+                this.classList.remove('drag-over');
+            });
+            
+            img.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                
+                if (draggedElement && draggedElement !== this) {
+                var allImgs = Array.from(preview.querySelectorAll('.preview-image'));
+                var draggedIndex = allImgs.indexOf(draggedElement);
+                var targetIndex = allImgs.indexOf(this);
+                
+                // Swap elements
+                if (draggedIndex < targetIndex) {
+                    preview.insertBefore(draggedElement, this.nextSibling);
+                } else {
+                    preview.insertBefore(draggedElement, this);
+                }
+                
+                // Reorder the actual input files
+                reorderInputFiles(input, draggedIndex, targetIndex);
+            }
+            });
+        });
+    }
+
+    // Function to reorder files in input element
+    function reorderInputFiles(input, fromIndex, toIndex) {
+        var files = Array.from(input.files);
+        var draggedFile = files[fromIndex];
+        files.splice(fromIndex, 1);
+        files.splice(toIndex, 0, draggedFile);
+        
+        // Create new FileList-like object
+        var dataTransfer = new DataTransfer();
+        files.forEach(function(file) {
+            dataTransfer.items.add(file);
+        });
+        
+        input.files = dataTransfer.files;
+    }
+
+    function removeCurrentImage(button, imageUrl) {
+        if (confirm('Bạn có chắc chắn muốn xóa hình ảnh này?')) {
+            // Lưu URL vào hidden field để gửi về server
+            var deletedUrlsInput = document.getElementById('DeletedImageUrls');
+            var deletedUrls = deletedUrlsInput.value ? deletedUrlsInput.value.split(',') : [];
+            deletedUrls.push(imageUrl);
+            deletedUrlsInput.value = deletedUrls.join(',');
+            
+            // Xóa hình ảnh khỏi UI
+            button.parentElement.remove();
+
+            // Cập nhật ReorderedImageUrls sau khi xóa
+            updateReorderedList();
+        }
+    }
+
+    // Custom category input removed per requirement
+
+    // Drag & drop reorder for current images
+    (function(){
+        var container = document.getElementById('currentImages');
+        if (!container) return;
+        var dragged = null;
+        container.querySelectorAll('.current-image-item').forEach(function(item){
+            item.addEventListener('dragstart', function(){ dragged = this; this.classList.add('dragging'); });
+            item.addEventListener('dragend', function(){ this.classList.remove('dragging'); updateReorderedList(); });
+            item.addEventListener('dragover', function(e){ e.preventDefault(); });
+            item.addEventListener('drop', function(e){ e.preventDefault(); if (!dragged || dragged===this) return; if (dragged.compareDocumentPosition(this) & Node.DOCUMENT_POSITION_FOLLOWING) { container.insertBefore(dragged, this); } else { container.insertBefore(dragged, this.nextSibling); } });
+        });
+    })();
+
+    function updateReorderedList(){
+        var container = document.getElementById('currentImages');
+        var hidden = document.getElementById('ReorderedImageUrls');
+        if (!container || !hidden) return;
+        var urls = Array.prototype.map.call(container.querySelectorAll('.current-image-item'), function(el){ return el.getAttribute('data-image-url'); });
+        hidden.value = urls.join(',');
+    }
+</script>

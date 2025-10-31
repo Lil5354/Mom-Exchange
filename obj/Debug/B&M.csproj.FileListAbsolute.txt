@@ -106,12 +106,6 @@ D:\Douments\GitHub\Mom-Exchange\obj\Debug\B&M.csproj.CoreCompileInputs.cache
 D:\Douments\GitHub\Mom-Exchange\obj\Debug\B&M.csproj.Up2Date
 D:\Douments\GitHub\Mom-Exchange\obj\Debug\B&M.dll
 D:\Douments\GitHub\Mom-Exchange\obj\Debug\B&M.pdb
-C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.csproj.AssemblyReference.cache
-C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B_M.Migrations.InitialCreate.resources
-C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B_M.Migrations.AddImgUrlForMilk.resources
-C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B_M.Migrations.AddPasswordResetCodes.resources
-C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.csproj.GenerateResource.cache
-C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.csproj.CoreCompileInputs.cache
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\bin\B&M.dll.config
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\bin\B&M.dll
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\bin\B&M.pdb
@@ -211,6 +205,12 @@ C:\Users\Admin\Downloads\FINAL\Mom-Exchange\bin\System.Web.Razor.xml
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\bin\System.Web.WebPages.xml
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\bin\System.Web.WebPages.Deployment.xml
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\bin\System.Web.WebPages.Razor.xml
+C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.csproj.AssemblyReference.cache
+C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B_M.Migrations.InitialCreate.resources
+C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B_M.Migrations.AddImgUrlForMilk.resources
+C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B_M.Migrations.AddPasswordResetCodes.resources
+C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.csproj.GenerateResource.cache
+C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.csproj.CoreCompileInputs.cache
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.csproj.Up2Date
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.dll
 C:\Users\Admin\Downloads\FINAL\Mom-Exchange\obj\Debug\B&M.pdb

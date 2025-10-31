@@ -162,6 +162,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MilkDonationController.cs" />
     <Compile Include="Controllers\C2CController.cs" />
+    <Compile Include="Controllers\CommunityController.cs" />
     <Compile Include="Controllers\NotificationApiController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />
@@ -257,6 +258,9 @@
     <Content Include="Content\account-style.css" />
     <Content Include="Content\c2c-marketplace.css" />
     <Content Include="Content\milk-donation-style.css" />
+    <Content Include="Content\swap-style.css" />
+    <Content Include="Content\community.css" />
+    <Content Include="Content\puzzle-minigame.css" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-grid.rtl.css" />
@@ -308,6 +312,7 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\trade-popup.js" />
+    <Content Include="Scripts\puzzle-minigame.js" />
     <Content Include="videos\1.mp4" />
     <Content Include="videos\2.mp4" />
     <Content Include="videos\3.mp4" />

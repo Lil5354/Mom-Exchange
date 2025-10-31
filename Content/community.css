@@ -1,0 +1,454 @@
+/* ===== COMMUNITY PAGE CSS ===== */
+/* Based on MarryBaby.vn design */
+
+:root {
+    --primary-blue: #2c5aa0;
+    --secondary-blue: #4472c4;
+    --light-blue: #e7f1ff;
+    --success-green: #28a745;
+    --warning-orange: #ffc107;
+    --danger-red: #dc3545;
+    --light-gray: #f8f9fa;
+    --medium-gray: #6c757d;
+    --dark-gray: #495057;
+    --white: #ffffff;
+    --border-color: #e1e5e9;
+    --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-medium: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+/* ===== BASE STYLES ===== */
+.community-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.community-hero {
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+    color: var(--white);
+    padding: 40px 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 30px;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* ===== NAVIGATION TABS ===== */
+.community-nav {
+    background: var(--white);
+    border-bottom: 2px solid var(--border-color);
+    padding: 0;
+    position: sticky;
+    top: 60px;
+    z-index: 100;
+}
+
+.nav-tabs {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.nav-tab {
+    padding: 15px 25px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: var(--medium-gray);
+}
+
+.nav-tab:hover {
+    color: var(--primary-blue);
+    background: var(--light-blue);
+}
+
+.nav-tab.active {
+    color: var(--primary-blue);
+    border-bottom-color: var(--primary-blue);
+    background: var(--light-blue);
+}
+
+/* ===== MAIN CONTENT ===== */
+.community-main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    padding: 40px 0;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* ===== LEFT CONTENT ===== */
+.main-content {
+    background: var(--white);
+}
+
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.topic-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-light);
+}
+
+.topic-card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.topic-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--light-blue);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: var(--primary-blue);
+}
+
+.topic-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+}
+
+.topic-description {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.topic-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--medium-gray);
+}
+
+/* ===== FEATURED POSTS ===== */
+.featured-posts {
+    margin-bottom: 40px;
+}
+
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.post-item {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.post-item:hover {
+    box-shadow: var(--shadow-light);
+}
+
+.post-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--light-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--primary-blue);
+    flex-shrink: 0;
+}
+
+.post-content {
+    flex: 1;
+}
+
+.post-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+.post-meta {
+    font-size: 0.8rem;
+    color: var(--medium-gray);
+    margin-bottom: 8px;
+}
+
+.post-preview {
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+    line-height: 1.4;
+}
+
+.post-badge {
+    background: var(--success-green);
+    color: var(--white);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.post-badge.milk {
+    background: var(--warning-orange);
+}
+
+.post-badge.exchange {
+    background: var(--primary-blue);
+}
+
+/* ===== RIGHT SIDEBAR ===== */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.sidebar-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: var(--shadow-light);
+}
+
+.sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+}
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: var(--light-blue);
+    color: var(--primary-blue);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.action-btn:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+    transform: translateX(3px);
+}
+
+.action-icon {
+    font-size: 1.1rem;
+}
+
+/* ===== TOOLS SECTION ===== */
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.tool-item {
+    background: var(--light-gray);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.tool-item:hover {
+    background: var(--light-blue);
+    color: var(--primary-blue);
+}
+
+.tool-icon {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.tool-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ===== COMMUNITY GROUPS ===== */
+.groups-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.group-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--light-gray);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.group-item:hover {
+    background: var(--light-blue);
+}
+
+.group-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-blue);
+    color: var(--white);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.group-info {
+    flex: 1;
+}
+
+.group-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--primary-blue);
+    margin-bottom: 2px;
+}
+
+.group-members {
+    font-size: 0.8rem;
+    color: var(--medium-gray);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .community-main {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .hero-stats {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .nav-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    .topics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tools-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .post-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.fade-in.delay-1 { animation-delay: 0.1s; }
+.fade-in.delay-2 { animation-delay: 0.2s; }
+.fade-in.delay-3 { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
